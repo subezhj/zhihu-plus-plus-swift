@@ -216,4 +216,8 @@ public extension View {
     func liquidGlassCircle(isProminent: Bool = false) -> some View {
         modifier(LiquidGlassModifier(shape: Circle(), isProminent: isProminent))
     }
+
+    func liquidGlassCard(cornerRadius: CGFloat = 16, isProminent: Bool = false) -> some View {
+        modifier(LiquidGlassModifier(shape: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous), isProminent: isProminent))
+    }
 }

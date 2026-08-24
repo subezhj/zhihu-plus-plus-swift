@@ -23,11 +23,11 @@ struct FeedItemRow: View {
         Button {
             onOpen(item.route)
         } label: {
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(alignment: .top, spacing: 10) {
-                    VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 7) {
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 6) {
                         Text(item.title)
-                            .font(.headline)
+                            .font(.headline.weight(.semibold))
                             .foregroundStyle(.primary)
                             .lineLimit(2)
 
@@ -49,8 +49,8 @@ struct FeedItemRow: View {
                             url: thumbnailURL,
                             cropAnchor: thumbnailPlacement.cropAnchor
                         )
-                            .frame(width: 84, height: 60)
-                            .clipped()
+                        .frame(width: 86, height: 62)
+                        .clipped()
                     }
                 }
 
@@ -63,9 +63,9 @@ struct FeedItemRow: View {
                         url: thumbnailURL,
                         cropAnchor: thumbnailPlacement.cropAnchor
                     )
-                        .frame(maxWidth: .infinity)
-                        .frame(height: wideThumbnailHeight)
-                        .clipped()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: wideThumbnailHeight)
+                    .clipped()
                 }
 
                 if showsThumbnail, presentation.showsFeedThumbnails, !item.media.isEmpty {
@@ -73,9 +73,12 @@ struct FeedItemRow: View {
                 }
 
                 FeedItemMetadataRow(item: item)
+                    .padding(.top, 2)
             }
             .contentShape(Rectangle())
-            .padding(.vertical, presentation.feedDensity.rowVerticalPadding)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .liquidGlassCard(cornerRadius: 16, isProminent: false)
         }
         .buttonStyle(.plain)
     }

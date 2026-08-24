@@ -45,16 +45,18 @@ struct HotListNativeView: View {
                 }
 
                 ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in
-                    HStack(alignment: .top, spacing: 12) {
+                    HStack(alignment: .top, spacing: 10) {
                         Text("\(index + 1)")
-                            .font(.headline.monospacedDigit())
+                            .font(.headline.weight(.bold).monospacedDigit())
                             .foregroundStyle(index < 3 ? Color.accentColor : Color.secondary)
-                            .frame(minWidth: 26, alignment: .trailing)
-                            .padding(.top, 5)
+                            .frame(minWidth: 24, alignment: .trailing)
+                            .padding(.top, 14)
                             .accessibilityHidden(true)
                         FeedItemRow(item: item, showsThumbnail: false, onOpen: onOpen)
                     }
-                    .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 18))
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
                 }
 
                 if let errorMessage = store.errorMessage {

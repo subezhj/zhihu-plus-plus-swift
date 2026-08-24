@@ -342,7 +342,9 @@ struct HomeNativeView: View {
                         store.opened(item)
                         onOpen(route)
                     }
-                    .listRowInsets(EdgeInsets(top: 5, leading: 18, bottom: 5, trailing: 18))
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
                 }
 
                 if let message = store.errorMessage {
@@ -481,7 +483,9 @@ struct FollowNativeView: View {
 
                 ForEach(visibleItems) { item in
                     FeedItemRow(item: item, showsThumbnail: true, onOpen: onOpen)
-                        .listRowInsets(EdgeInsets(top: 5, leading: 18, bottom: 5, trailing: 18))
+                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
                 }
 
                 if let message = store.moments.errorMessage {
