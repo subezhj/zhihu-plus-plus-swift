@@ -136,31 +136,32 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                     shape
                         .fill(Color(uiColor: .secondarySystemGroupedBackground))
                 } else if isProminent {
-                    shape
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color.primary.opacity(colorScheme == .dark ? 0.95 : 0.88),
-                                    Color.primary.opacity(colorScheme == .dark ? 0.82 : 0.75)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .overlay(
-                            shape
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [
-                                            Color.white.opacity(colorScheme == .dark ? 0.5 : 0.35),
-                                            Color.white.opacity(0.1)
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 0.6
+                    ZStack {
+                        shape
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.primary.opacity(colorScheme == .dark ? 0.95 : 0.88),
+                                        Color.primary.opacity(colorScheme == .dark ? 0.82 : 0.75)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
                                 )
-                        )
+                            )
+
+                        shape
+                            .stroke(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(colorScheme == .dark ? 0.5 : 0.35),
+                                        Color.white.opacity(0.1)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 0.5
+                            )
+                    }
                 } else {
                     ZStack {
                         shape
@@ -171,8 +172,8 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                             .fill(
                                 LinearGradient(
                                     colors: [
-                                        Color.white.opacity(colorScheme == .dark ? 0.28 : 0.6),
-                                        Color.white.opacity(colorScheme == .dark ? 0.06 : 0.18)
+                                        Color.white.opacity(colorScheme == .dark ? 0.22 : 0.55),
+                                        Color.white.opacity(colorScheme == .dark ? 0.04 : 0.14)
                                     ],
                                     startPoint: .top,
                                     endPoint: .bottom
@@ -184,13 +185,13 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        Color.white.opacity(colorScheme == .dark ? 0.65 : 0.85),
-                                        Color.primary.opacity(0.12)
+                                        Color.white.opacity(colorScheme == .dark ? 0.6 : 0.8),
+                                        Color.primary.opacity(0.1)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 ),
-                                lineWidth: 0.6
+                                lineWidth: 0.5
                             )
                     }
                 }
