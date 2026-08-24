@@ -223,7 +223,7 @@ public struct NativeThinDivider: View {
 
     public var body: some View {
         Rectangle()
-            .fill(Color(uiColor: .separator).opacity(0.4))
-            .frame(height: 0.33)
+            .fill(Color(uiColor: .separator).opacity(0.65))
+            .frame(height: 0.5)
     }
 }

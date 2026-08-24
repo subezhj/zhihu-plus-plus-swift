@@ -14,6 +14,8 @@ struct NativeCollectionsView: View {
         self.onOpenContent = onOpenContent
     }
 
+    @Environment(\.nativeContentPresentation) private var presentation
+
     var body: some View {
         List {
             if let error = store.errorMessage, !store.collections.isEmpty {
@@ -21,24 +23,18 @@ struct NativeCollectionsView: View {
             }
             ForEach(store.collections) { collection in
                 NavigationLink(value: NativeShellRoute.collectionContent(collection.id)) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(collection.title)
-                            .font(.headline.weight(.semibold))
-                            .foregroundStyle(.primary)
-                        if !collection.description.isEmpty {
-                            Text(collection.description)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(2)
+                    if presentation.liquidGlassEnabled {
+                        collectionRow(collection)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 12)
+                            .liquidGlassCard(cornerRadius: 16, isProminent: false)
+                    } else {
+                        VStack(alignment: .leading, spacing: 0) {
+                            collectionRow(collection)
+                                .padding(.vertical, 10)
+                            NativeThinDivider()
                         }
-                        Text("\(collection.itemCount) 条收藏 · \(collection.likeCount) 个赞同")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 12)
-                    .liquidGlassCard(cornerRadius: 16, isProminent: false)
                 }
                 .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                 .listRowSeparator(.hidden)
@@ -54,6 +50,25 @@ struct NativeCollectionsView: View {
         .task {
             if store.collections.isEmpty, !store.isLoading { await store.refresh() }
         }
+    }
+
+    @ViewBuilder
+    private func collectionRow(_ collection: NativeCollectionSummary) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(collection.title)
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(.primary)
+            if !collection.description.isEmpty {
+                Text(collection.description)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            Text("\(collection.itemCount) 条收藏 · \(collection.likeCount) 个赞同")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder private var paginationFooter: some View {
