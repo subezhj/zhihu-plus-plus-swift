@@ -23,6 +23,20 @@ struct AppHostView: View {
             }
         }
         .onAppear {
+            let dynamicDark = UIColor { traits in
+                traits.userInterfaceStyle == .dark
+                    ? UIColor(red: 25.0 / 255.0, green: 25.0 / 255.0, blue: 25.0 / 255.0, alpha: 1.0)
+                    : .systemBackground
+            }
+
+            // Configure global UIWindow background so no default black root shines through
+            if let window = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .flatMap({ $0.windows })
+                .first(where: { $0.isKeyWindow }) {
+                window.backgroundColor = dynamicDark
+            }
+
             let tabAppearance = UITabBarAppearance()
             tabAppearance.configureWithTransparentBackground()
             tabAppearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
@@ -31,11 +45,6 @@ struct AppHostView: View {
             UITabBar.appearance().scrollEdgeAppearance = tabAppearance
 
             // Configure system-wide list / scroll background to #191919 in dark mode
-            let dynamicDark = UIColor { traits in
-                traits.userInterfaceStyle == .dark
-                    ? UIColor(red: 25.0 / 255.0, green: 25.0 / 255.0, blue: 25.0 / 255.0, alpha: 1.0)
-                    : .systemBackground
-            }
             UICollectionView.appearance().backgroundColor = dynamicDark
             UITableView.appearance().backgroundColor = dynamicDark
             

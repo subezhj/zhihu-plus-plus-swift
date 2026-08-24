@@ -257,7 +257,7 @@ private struct CommentSheetPresentationModifier: ViewModifier {
             content
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
-                .presentationBackground(.clear)
+                .presentationBackground(Color.nativeSystemBackground)
         } else if #available(iOS 16, *) {
             content
                 .presentationDetents([.large])

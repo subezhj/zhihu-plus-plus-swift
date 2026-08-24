@@ -63,6 +63,7 @@ struct SearchNativeView: View {
                 .accessibilityLabel("正在搜索")
             }
         }
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: store.queryText) { value in
             if value.isEmpty, !store.submittedQuery.isEmpty {
