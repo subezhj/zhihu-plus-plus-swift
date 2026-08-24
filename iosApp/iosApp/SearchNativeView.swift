@@ -71,7 +71,7 @@ struct SearchNativeView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .principal) {
+            ToolbarItem(placement: .navigationBarLeading) {
                 searchField
             }
             ToolbarItem(placement: .primaryAction) {
@@ -88,7 +88,7 @@ struct SearchNativeView: View {
     }
 
     private var searchField: some View {
-        HStack(spacing: 7) {
+        HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
             TextField(searchPrompt, text: $store.queryText)
@@ -112,9 +112,9 @@ struct SearchNativeView: View {
             }
         }
         .padding(.horizontal, 10)
-        .frame(width: 240)
-        .frame(minHeight: 34)
-        .background(.quaternary, in: Capsule())
+        .frame(minWidth: 260, maxWidth: .infinity)
+        .frame(height: 36)
+        .liquidGlassCapsule(isProminent: false)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("search_field")
     }
