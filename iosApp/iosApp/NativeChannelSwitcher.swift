@@ -105,13 +105,13 @@ struct NativeChannelSwitcher<Channel: Identifiable & Hashable, ChannelContent: V
             HStack(alignment: .center, spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("首页")
-                        .font(.title.bold())
+                        .font(.system(size: 28, weight: .bold))
                         .foregroundStyle(.primary)
 
                     if let status = status(selectedChannel) {
                         Text(status)
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(Color.secondary.opacity(0.9))
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(Color.secondary.opacity(0.8))
                             .accessibilityIdentifier("home_channel_refresh_status")
                     }
                 }
@@ -124,6 +124,7 @@ struct NativeChannelSwitcher<Channel: Identifiable & Hashable, ChannelContent: V
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, NativeHomeHeaderLayoutPolicy.horizontalContentInset)
+            .padding(.bottom, 4)
             .frame(
                 height: NativeHomeHeaderLayoutPolicy.expandedTitleHeight
                     * (1 - normalizedCollapseProgress),
