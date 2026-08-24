@@ -11,7 +11,6 @@ struct NativeChannelSwitcher<Channel: Identifiable & Hashable, ChannelContent: V
     private let systemImage: (Channel) -> String
     private let status: (Channel) -> String?
     private let content: (Channel) -> ChannelContent
-    private let topTrailingControls: (() -> AnyView)?
     private let collapseProgress: CGFloat
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -38,7 +37,6 @@ struct NativeChannelSwitcher<Channel: Identifiable & Hashable, ChannelContent: V
         self.systemImage = systemImage
         self.status = status
         self.collapseProgress = collapseProgress
-        self.topTrailingControls = topTrailingControls
         self.content = content
     }
 
@@ -76,19 +74,14 @@ struct NativeChannelSwitcher<Channel: Identifiable & Hashable, ChannelContent: V
     }
 
     private var expandedHeader: some View {
-        VStack(spacing: 0) {
-            expandedTitle
-
-            NativeChannelSelector(
-                channels: channels,
-                selection: $selection,
-                title: title,
-                systemImage: systemImage,
-                collapseProgress: normalizedCollapseProgress,
-                expandedHeight: NativeHomeHeaderLayoutPolicy.channelSelectorHeight
-            )
-        }
-        .background(.ultraThinMaterial)
+        NativeChannelSelector(
+            channels: channels,
+            selection: $selection,
+            title: title,
+            systemImage: systemImage,
+            collapseProgress: normalizedCollapseProgress,
+            expandedHeight: NativeHomeHeaderLayoutPolicy.channelSelectorHeight
+        )
         .frame(
             height: NativeHomeHeaderLayoutPolicy.expandedHeaderHeight,
             alignment: .top
@@ -97,53 +90,6 @@ struct NativeChannelSwitcher<Channel: Identifiable & Hashable, ChannelContent: V
         .allowsHitTesting(isEnabled && normalizedCollapseProgress < 1)
         .environment(\.nativeChannelIsActive, isEnabled)
         .accessibilityHidden(normalizedCollapseProgress >= 1)
-    }
-
-    @ViewBuilder
-    private var expandedTitle: some View {
-        if let selectedChannel = channels.first(where: { $0.id == selection }) {
-            HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("首页")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundStyle(.primary)
-
-                    if let status = status(selectedChannel) {
-                        Text(status)
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(Color.secondary.opacity(0.8))
-                            .accessibilityIdentifier("home_channel_refresh_status")
-                    }
-                }
-
-                Spacer(minLength: 0)
-
-                if let topTrailingControls {
-                    topTrailingControls()
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, NativeHomeHeaderLayoutPolicy.horizontalContentInset)
-            .padding(.bottom, 4)
-            .frame(
-                height: NativeHomeHeaderLayoutPolicy.expandedTitleHeight
-                    * (1 - normalizedCollapseProgress),
-                alignment: .center
-            )
-            .opacity(
-                NativeRootHeaderVisibility.expandedOpacity(
-                    collapseProgress: normalizedCollapseProgress
-                )
-            )
-            .clipped()
-            .accessibilityElement(children: .combine)
-            .accessibilityAddTraits(.isHeader)
-            .accessibilityHidden(
-                NativeRootHeaderVisibility.usesCompactSemantics(
-                    collapseProgress: normalizedCollapseProgress
-                )
-            )
-        }
     }
 
     private var normalizedCollapseProgress: CGFloat {

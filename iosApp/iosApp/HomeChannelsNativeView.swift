@@ -103,16 +103,17 @@ struct HomeChannelsNativeView: View {
                     now: refreshStatusNow
                 )
             },
-            collapseProgress: selectedCollapseProgress,
-            topTrailingControls: {
-                AnyView(homeTopTrailingControls)
-            }
+            collapseProgress: selectedCollapseProgress
         ) { channel in
             channelContent(channel)
         }
-        .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(isOperationallyVisible ? .hidden : .visible, for: .navigationBar)
+        .navigationTitle("首页")
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                homeTopTrailingControls
+            }
+        }
         .onAppear {
             lastSelectedChannelID = selectedChannelID
             synchronizeOperationalVisibility()
