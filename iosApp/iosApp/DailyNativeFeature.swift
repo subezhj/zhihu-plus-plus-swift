@@ -405,12 +405,14 @@ struct DailyNativeView: View {
                 NativeRootLargeTitle(
                     "首页",
                     coordinateSpaceName: "daily-root-scroll",
-                    displaysTitle: false,
+                    displaysTitle: true,
                     isActive: isActiveChannel,
                     isRefreshing: store.isRefreshing,
                     collapseProgress: $collapseProgress
                 )
-                    .id(NativeHomeHeaderLayoutPolicy.scrollAnchor(for: .daily))
+                .id(NativeHomeHeaderLayoutPolicy.scrollAnchor(for: .daily))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.nativeSystemBackground)
 
                 if store.sections.isEmpty, store.isLoading {
                     HStack { Spacer(); ProgressView("正在加载日报"); Spacer() }

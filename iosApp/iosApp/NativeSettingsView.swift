@@ -48,6 +48,7 @@ struct NativeSettingsView: View {
                 }
                 Toggle("液态玻璃视觉效果", isOn: liquidGlassBinding)
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
 
             Section {
                 settingSlider(
@@ -77,6 +78,7 @@ struct NativeSettingsView: View {
             } footer: {
                 Text("字号会继续响应系统的动态字体；IP 属地始终显示在正文末尾。")
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
 
             Section {
                 Picker("推荐源", selection: recommendationSourceBinding) {
@@ -115,11 +117,13 @@ struct NativeSettingsView: View {
             } footer: {
                 Text("推荐页每次请求 10 条并自动补足目标数量；App 与 Web 推荐都会过滤带标记的推广内容。Web 推荐需要登录。")
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
 
             Section("搜索") {
                 Toggle("显示热搜", isOn: searchHotBinding)
                 Toggle("保存并显示搜索历史", isOn: searchHistoryBinding)
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
 
             Section {
                 Toggle("再次点击当前标签回到顶部或刷新", isOn: topLevelReselectBinding)
@@ -145,6 +149,7 @@ struct NativeSettingsView: View {
             } footer: {
                 Text("再次点击当前标签时：列表不在顶部则先回到顶部；已经在顶部或连续再次点击则刷新。")
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
 
             Section("App 布局") {
                 Picker("启动时打开", selection: startTabBinding) {
@@ -153,12 +158,14 @@ struct NativeSettingsView: View {
                     }
                 }
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
 
             Section("通知") {
                 NavigationLink(value: NativeShellRoute.notificationSettings) {
                     Text("应用内通知")
                 }
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
 
             Section("更新") {
                 Link(destination: SideStoreUpdateSource.addSourceURL) {
@@ -175,6 +182,7 @@ struct NativeSettingsView: View {
                 .buttonStyle(.plain)
                 .accessibilityHint("将在 SideStore 中打开")
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
 
             Section("系统") {
                 if appLock.settingPresentation.isVisible {
@@ -188,6 +196,7 @@ struct NativeSettingsView: View {
                     Text("系统与更新")
                 }
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
 
             Section {
                 Toggle("性能诊断日志", isOn: Binding(
@@ -211,6 +220,7 @@ struct NativeSettingsView: View {
             } footer: {
                 Text("仅记录脱敏后的性能元数据，不记录账号凭据、正文、评论或搜索词。每次启动或重新开启会创建新会话，单份最多 15 MB，保留最近 5 份。")
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
         }
         .scrollContentBackground(.hidden)
         .background(Color.nativeSystemBackground.ignoresSafeArea())
@@ -377,6 +387,7 @@ private struct PerformanceDiagnosticsLogsView: View {
                         .buttonStyle(.borderless)
                         .accessibilityLabel("导出诊断日志")
                     }
+                    .listRowBackground(Color.nativeSystemBackground)
                     .swipeActions {
                         Button(role: .destructive) {
                             Task { await controller.delete(log) }
@@ -387,6 +398,8 @@ private struct PerformanceDiagnosticsLogsView: View {
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .navigationTitle("诊断日志")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -466,8 +479,11 @@ private struct BlockedQuestionAuthorsView: View {
                         store.unblock(memberID: author.memberID)
                     }
                 }
+                .listRowBackground(Color.nativeSystemBackground)
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .navigationTitle("已屏蔽的提问者")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -482,6 +498,7 @@ struct NativeNotificationSettingsView: View {
                 Toggle("打开通知后自动已读", isOn: autoReadBinding)
                 Toggle("显示未读标记", isOn: unreadBadgeBinding)
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
 
             Section {
                 ForEach(NativeNotificationType.allCases) { type in
@@ -492,7 +509,10 @@ struct NativeNotificationSettingsView: View {
             } footer: {
                 Text("选择在应用内通知页面显示哪些通知。邀请回答默认关闭，其他未知类型仍会显示。")
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .navigationTitle("通知设置")
         .navigationBarTitleDisplayMode(.inline)
     }

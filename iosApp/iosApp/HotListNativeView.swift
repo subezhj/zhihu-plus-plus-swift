@@ -28,12 +28,14 @@ struct HotListNativeView: View {
                 NativeRootLargeTitle(
                     "首页",
                     coordinateSpaceName: "hot-root-scroll",
-                    displaysTitle: false,
+                    displaysTitle: true,
                     isActive: isActiveChannel,
                     isRefreshing: store.isRefreshing,
                     collapseProgress: $collapseProgress
                 )
                 .id(NativeHomeHeaderLayoutPolicy.scrollAnchor(for: .hot))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.nativeSystemBackground)
 
                 if store.items.isEmpty, store.isLoading {
                     HStack {

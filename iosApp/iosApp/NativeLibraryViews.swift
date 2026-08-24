@@ -192,15 +192,20 @@ struct NativeHistoryView: View {
         List {
             if let error = store.errorMessage, !store.items.isEmpty {
                 NativeInlineRetry(message: error) { Task { await store.loadMore() } }
+                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowSeparator(.hidden)
             }
             ForEach(store.items) { item in
                 NativeHistoryRow(item: item, onOpenContent: onOpenContent)
+                    .listRowBackground(Color.nativeSystemBackground)
             }
             if store.canLoadMore {
                 NativePaginationFooter(
                     isLoading: store.isLoadingMore,
                     accessibilityIdentifier: "native_history_pagination_footer"
                 )
+                .listRowBackground(Color.nativeSystemBackground)
+                .listRowSeparator(.hidden)
                 .task { await store.loadMore() }
             }
         }

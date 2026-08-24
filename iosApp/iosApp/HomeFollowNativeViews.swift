@@ -325,12 +325,14 @@ struct HomeNativeView: View {
             List {
                 NativeRootLargeTitle(
                     "首页",
-                    displaysTitle: false,
+                    displaysTitle: true,
                     isActive: isActiveChannel,
                     isRefreshing: store.isRefreshing,
                     collapseProgress: $collapseProgress
                 )
-                    .id(NativeHomeHeaderLayoutPolicy.scrollAnchor(for: .recommendation))
+                .id(NativeHomeHeaderLayoutPolicy.scrollAnchor(for: .recommendation))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.nativeSystemBackground)
 
                 if store.items.isEmpty, store.isLoading {
                     HStack { Spacer(); ProgressView("正在加载推荐"); Spacer() }
@@ -467,12 +469,14 @@ struct FollowNativeView: View {
                 NativeRootLargeTitle(
                     "首页",
                     coordinateSpaceName: followCoordinateSpaceName,
-                    displaysTitle: false,
+                    displaysTitle: true,
                     isActive: isActiveChannel,
                     isRefreshing: store.isMomentsRefreshing,
                     collapseProgress: $collapseProgress
                 )
                     .id(NativeHomeHeaderLayoutPolicy.scrollAnchor(for: .following))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.nativeSystemBackground)
 
                 recentUsers
 

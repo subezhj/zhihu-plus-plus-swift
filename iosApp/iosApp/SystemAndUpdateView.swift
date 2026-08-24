@@ -69,8 +69,11 @@ struct SystemAndUpdateView: View {
         List {
             Section {
                 LabeledContent("版本", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.3.1")
+                    .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
                 LabeledContent("构建编号 (CI Run)", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1")
+                    .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
                 LabeledContent("Bundle ID", value: Bundle.main.bundleIdentifier ?? "—")
+                    .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
             } header: {
                 Text("当前构建信息")
             }
@@ -91,6 +94,9 @@ struct SystemAndUpdateView: View {
                 Text("代码和功能反馈请前往GitHub。上边的频道用于用户交流和闲聊，开发者不一定会在线回答问题。")
             }
         }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .navigationTitle("系统与更新")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarHidden(false)
@@ -118,6 +124,7 @@ struct SystemAndUpdateView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
         .accessibilityHint("将按设置的外部页面打开方式打开")
     }
 }
