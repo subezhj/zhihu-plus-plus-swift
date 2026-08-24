@@ -88,9 +88,9 @@ struct SearchNativeView: View {
     }
 
     private var searchField: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 15))
+                .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(.secondary)
             TextField(searchPrompt, text: $store.queryText)
                 .font(.system(size: 16))
@@ -114,9 +114,10 @@ struct SearchNativeView: View {
                 .accessibilityLabel("清空搜索内容")
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 7)
-        .background(Color(uiColor: .secondarySystemFill), in: Capsule())
+        .padding(.horizontal, 12)
+        .frame(minWidth: 260, maxWidth: .infinity)
+        .frame(height: 38)
+        .liquidGlassCapsule(isProminent: false)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("search_field")
     }
@@ -138,8 +139,8 @@ struct SearchNativeView: View {
         guard !Task.isCancelled,
               focusRequest == request,
               NativeSearchFocusRequestPolicy.shouldConsume(
-                  request,
-                  lastConsumedToken: lastConsumedFocusRequestToken
+                request,
+                lastConsumedToken: lastConsumedFocusRequestToken
               )
         else { return }
         lastConsumedFocusRequestToken = request.token
@@ -161,18 +162,22 @@ struct SearchNativeView: View {
                         Task { await store.submitQuery(row.query) }
                     } label: {
                         Label(row.query, systemImage: "clock.arrow.circlepath")
-                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                            .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                 }
             } header: {
                 HStack {
                     Text("搜索历史")
+                        .font(.subheadline.weight(.medium))
                     Spacer()
                     Button("清空") { store.clearHistory() }
+                        .font(.footnote)
                         .textCase(nil)
                 }
+                .padding(.top, 4)
             }
         }
 
@@ -182,25 +187,29 @@ struct SearchNativeView: View {
                     Button {
                         Task { await store.submitQuery(suggestion.query) }
                     } label: {
-                        HStack(spacing: 12) {
+                        HStack(spacing: 14) {
                             Text("\(index + 1)")
-                                .font(.body.monospacedDigit())
+                                .font(.subheadline.weight(.semibold).monospacedDigit())
                                 .foregroundStyle(index < 3 ? Color.accentColor : Color.secondary)
-                                .frame(minWidth: 24, alignment: .trailing)
+                                .frame(minWidth: 20, alignment: .leading)
                             Text(suggestion.query)
+                                .font(.body)
                                 .foregroundStyle(.primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             if let popularity = suggestion.popularityText {
                                 Text(popularity)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary.opacity(0.8))
                             }
                         }
-                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .padding(.vertical, 3)
+                        .frame(maxWidth: .infinity, minHeight: 38, alignment: .leading)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
                 }
+            } header: {
 
                 if store.isRefreshingSuggestions {
                     HStack {

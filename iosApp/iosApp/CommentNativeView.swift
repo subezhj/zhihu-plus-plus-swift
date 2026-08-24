@@ -677,9 +677,9 @@ private struct CommentComposerBar: View {
                 Spacer()
             }
             .padding(.horizontal, 14)
-            .frame(minHeight: 44)
-            .background(Color.secondary.opacity(0.09), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .padding(.horizontal, 12)
+            .frame(minHeight: 42)
+            .liquidGlassCapsule(isProminent: false)
+            .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .contentShape(Rectangle())
         }
@@ -716,11 +716,11 @@ private struct CommentComposerBar: View {
                 }
                 .padding(.horizontal, 12)
             }
-            HStack(alignment: .center, spacing: 6) {
+            HStack(alignment: .center, spacing: 8) {
                 Button { showsEmojiPicker = true } label: {
                     Image(systemName: "face.smiling")
                         .font(.system(size: 21, weight: .medium))
-                        .frame(width: 44, height: 44)
+                        .frame(width: 38, height: 38)
                         .contentShape(Rectangle())
                 }
                 .accessibilityLabel("选择表情")
@@ -729,7 +729,7 @@ private struct CommentComposerBar: View {
                 Button { showsPhotoPicker = true } label: {
                     Image(systemName: "photo")
                         .font(.system(size: 21, weight: .medium))
-                        .frame(width: 44, height: 44)
+                        .frame(width: 38, height: 38)
                         .contentShape(Rectangle())
                 }
                 .accessibilityLabel("选择图片")
@@ -737,9 +737,9 @@ private struct CommentComposerBar: View {
 
                 CommentDraftField(store: store, isFocused: $isDraftFocused)
                 .textFieldStyle(.plain)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 9)
-                .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .liquidGlassCapsule(isProminent: false)
 
                 Button {
                     if case .failed = store.draft.submissionState {
@@ -749,11 +749,12 @@ private struct CommentComposerBar: View {
                     }
                 } label: {
                     if case .submitting = store.draft.submissionState {
-                        ProgressView().frame(width: 44, height: 44)
+                        ProgressView().frame(width: 38, height: 38)
                     } else {
                         Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 25, weight: .semibold))
-                            .frame(width: 44, height: 44)
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 38, height: 38)
                             .contentShape(Rectangle())
                     }
                 }
@@ -868,11 +869,9 @@ private enum CommentPhotoPickerError: LocalizedError {
 
 private struct CommentComposerBackground: View {
     var body: some View {
-        Color(uiColor: .secondarySystemBackground)
+        Rectangle()
+            .fill(.ultraThinMaterial)
             .ignoresSafeArea(edges: .bottom)
-            .overlay(alignment: .top) {
-                Divider()
-            }
     }
 }
 
