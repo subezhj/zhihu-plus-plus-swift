@@ -103,17 +103,12 @@ struct HomeChannelsNativeView: View {
                     now: refreshStatusNow
                 )
             },
-            collapseProgress: selectedCollapseProgress
+            collapseProgress: selectedCollapseProgress,
+            topTrailingControls: {
+                AnyView(homeTopTrailingControls)
+            }
         ) { channel in
             channelContent(channel)
-        }
-        .safeAreaInset(edge: .top, spacing: 0) {
-            if isOperationallyVisible {
-                homeTopBar(
-                    now: refreshStatusNow,
-                    refreshPresentations: refreshPresentations
-                )
-            }
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
@@ -189,72 +184,95 @@ struct HomeChannelsNativeView: View {
         }
     }
 
-    private func homeTopBar(
-        now: Date,
-        refreshPresentations: HomeChannelRefreshPresentationMap
-    ) -> some View {
-        ZStack {
-            NativeRootCompactTitle(
-                selectedChannel.title,
-                subtitle: refreshPresentations
-                    .presentation(for: selectedChannel)
-                    .statusText(now: now),
-                collapseProgress: compactHeaderProgress
-            )
-
-            HStack(spacing: 10) {
-                Spacer(minLength: 0)
-                ForEach(HomeTopBarControl.visibleControls) { control in
-                    homeTopBarButton(control)
-                }
+    private var homeTopTrailingControls: some View {
+        HStack(spacing: 10) {
+            ForEach(HomeTopBarControl.visibleControls) { control in
+                homeTopBarButton(control)
             }
-            .padding(.horizontal, 14)
         }
-        .frame(height: 52)
-        .background(Color(uiColor: .systemBackground))
-        .zIndex(10)
-        .accessibilityIdentifier("home_top_bar")
-#if DEBUG
-        .accessibilityValue("collapse_progress_\(Int(selectedCollapseProgress * 100))")
-#endif
     }
 
     @ViewBuilder
     private func homeTopBarButton(_ control: HomeTopBarControl) -> some View {
         switch control {
         case .creation:
-            Button(action: onOpenCreation) {
-                Image(systemName: "square.and.pencil")
-                    .frame(width: 44, height: 44)
-                    .contentShape(Circle())
+            if #available(iOS 26, *) {
+                Button(action: onOpenCreation) {
+                    Image(systemName: "square.and.pencil")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .frame(width: 40, height: 40)
+                }
+                .buttonStyle(.plain)
+                .glassEffect(.regular.interactive(), in: .circle)
+                .contentShape(Circle())
+                .accessibilityLabel("创作")
+                .accessibilityIdentifier("home_creation_entry")
+            } else {
+                Button(action: onOpenCreation) {
+                    Image(systemName: "square.and.pencil")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .frame(width: 40, height: 40)
+                }
+                .buttonStyle(.plain)
+                .background(.ultraThinMaterial, in: Circle())
+                .contentShape(Circle())
+                .accessibilityLabel("创作")
+                .accessibilityIdentifier("home_creation_entry")
             }
-            .background(Color.secondary.opacity(0.1), in: Circle())
-            .accessibilityLabel("创作")
-            .accessibilityIdentifier("home_creation_entry")
 
         case .notifications:
             let presentation = HomeNotificationIndicatorPresentation(
                 unreadCount: notificationUnreadCount
             )
-            Button(action: onOpenNotifications) {
-                Image(systemName: "bell")
-                    .frame(width: 44, height: 44)
-                    .contentShape(Circle())
-                    .overlay(alignment: .topTrailing) {
-                        if presentation.showsDot {
-                            Circle()
-                                .fill(.red)
-                                .frame(width: 9, height: 9)
-                                .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 2))
-                                .offset(x: -5, y: 5)
-                                .accessibilityHidden(true)
+            if #available(iOS 26, *) {
+                Button(action: onOpenNotifications) {
+                    Image(systemName: "bell")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .frame(width: 40, height: 40)
+                        .overlay(alignment: .topTrailing) {
+                            if presentation.showsDot {
+                                Circle()
+                                    .fill(.red)
+                                    .frame(width: 9, height: 9)
+                                    .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 2))
+                                    .offset(x: -2, y: 2)
+                                    .accessibilityHidden(true)
+                            }
                         }
-                    }
+                }
+                .buttonStyle(.plain)
+                .glassEffect(.regular.interactive(), in: .circle)
+                .contentShape(Circle())
+                .accessibilityLabel(presentation.accessibilityLabel)
+                .accessibilityValue(presentation.accessibilityValue)
+                .accessibilityIdentifier("home_notifications_entry")
+            } else {
+                Button(action: onOpenNotifications) {
+                    Image(systemName: "bell")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .frame(width: 40, height: 40)
+                        .overlay(alignment: .topTrailing) {
+                            if presentation.showsDot {
+                                Circle()
+                                    .fill(.red)
+                                    .frame(width: 9, height: 9)
+                                    .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 2))
+                                    .offset(x: -2, y: 2)
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                }
+                .buttonStyle(.plain)
+                .background(.ultraThinMaterial, in: Circle())
+                .contentShape(Circle())
+                .accessibilityLabel(presentation.accessibilityLabel)
+                .accessibilityValue(presentation.accessibilityValue)
+                .accessibilityIdentifier("home_notifications_entry")
             }
-            .background(Color.secondary.opacity(0.1), in: Circle())
-            .accessibilityLabel(presentation.accessibilityLabel)
-            .accessibilityValue(presentation.accessibilityValue)
-            .accessibilityIdentifier("home_notifications_entry")
         }
     }
 

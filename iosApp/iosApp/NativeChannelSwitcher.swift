@@ -11,6 +11,7 @@ struct NativeChannelSwitcher<Channel: Identifiable & Hashable, ChannelContent: V
     private let systemImage: (Channel) -> String
     private let status: (Channel) -> String?
     private let content: (Channel) -> ChannelContent
+    private let topTrailingControls: (() -> AnyView)?
     private let collapseProgress: CGFloat
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -27,6 +28,7 @@ struct NativeChannelSwitcher<Channel: Identifiable & Hashable, ChannelContent: V
         systemImage: @escaping (Channel) -> String,
         status: @escaping (Channel) -> String? = { _ in nil },
         collapseProgress: CGFloat = 0,
+        topTrailingControls: (() -> AnyView)? = nil,
         @ViewBuilder content: @escaping (Channel) -> ChannelContent
     ) {
         self.channels = channels
@@ -36,6 +38,7 @@ struct NativeChannelSwitcher<Channel: Identifiable & Hashable, ChannelContent: V
         self.systemImage = systemImage
         self.status = status
         self.collapseProgress = collapseProgress
+        self.topTrailingControls = topTrailingControls
         self.content = content
     }
 
@@ -99,16 +102,24 @@ struct NativeChannelSwitcher<Channel: Identifiable & Hashable, ChannelContent: V
     @ViewBuilder
     private var expandedTitle: some View {
         if let selectedChannel = channels.first(where: { $0.id == selection }) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text("首页")
-                    .font(.title.bold())
-                    .foregroundStyle(.primary)
+            HStack(alignment: .center, spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("首页")
+                        .font(.title.bold())
+                        .foregroundStyle(.primary)
 
-                if let status = status(selectedChannel) {
-                    Text(status)
-                        .font(.callout.weight(.medium))
-                        .foregroundStyle(Color.secondary.opacity(0.9))
-                        .accessibilityIdentifier("home_channel_refresh_status")
+                    if let status = status(selectedChannel) {
+                        Text(status)
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(Color.secondary.opacity(0.9))
+                            .accessibilityIdentifier("home_channel_refresh_status")
+                    }
+                }
+
+                Spacer(minLength: 0)
+
+                if let topTrailingControls {
+                    topTrailingControls()
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -116,7 +127,7 @@ struct NativeChannelSwitcher<Channel: Identifiable & Hashable, ChannelContent: V
             .frame(
                 height: NativeHomeHeaderLayoutPolicy.expandedTitleHeight
                     * (1 - normalizedCollapseProgress),
-                alignment: .bottom
+                alignment: .center
             )
             .opacity(
                 NativeRootHeaderVisibility.expandedOpacity(
@@ -586,17 +597,31 @@ private struct NativeChannelPillButtonStyle: ButtonStyle {
 
     @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .foregroundStyle(isSelected ? Color(uiColor: .systemBackground) : Color.primary)
-            .padding(.horizontal, isSelected ? 16 : 0)
-            .frame(minWidth: isSelected ? 124 : 78, minHeight: 44)
-            .background(
-                isSelected ? Color.primary.opacity(0.9) : Color.secondary.opacity(0.1),
-                in: Capsule()
-            )
-            .contentShape(Capsule())
-            .scaleEffect(configuration.isPressed ? 0.96 : 1)
-            .opacity(configuration.isPressed ? 0.82 : 1)
+        if #available(iOS 26, *) {
+            configuration.label
+                .foregroundStyle(isSelected ? Color(uiColor: .systemBackground) : Color.primary)
+                .padding(.horizontal, isSelected ? 16 : 0)
+                .frame(minWidth: isSelected ? 124 : 78, minHeight: 44)
+                .glassEffect(
+                    isSelected ? .regular.tint(.primary).interactive() : .regular.interactive(),
+                    in: .capsule
+                )
+                .contentShape(Capsule())
+                .scaleEffect(configuration.isPressed ? 0.96 : 1)
+                .opacity(configuration.isPressed ? 0.82 : 1)
+        } else {
+            configuration.label
+                .foregroundStyle(isSelected ? Color(uiColor: .systemBackground) : Color.primary)
+                .padding(.horizontal, isSelected ? 16 : 0)
+                .frame(minWidth: isSelected ? 124 : 78, minHeight: 44)
+                .background(
+                    isSelected ? Color.primary.opacity(0.9) : Color.secondary.opacity(0.1),
+                    in: Capsule()
+                )
+                .contentShape(Capsule())
+                .scaleEffect(configuration.isPressed ? 0.96 : 1)
+                .opacity(configuration.isPressed ? 0.82 : 1)
+        }
     }
 }
 

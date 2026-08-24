@@ -503,6 +503,7 @@ struct NativeAppShell: View {
             rootContent(for: tab)
                 .navigationDestination(for: NativeShellRoute.self) { destination($0, in: tab) }
         }
+        .background(GlobalInteractivePopGestureEnabler())
     }
 
     @ViewBuilder
@@ -1169,5 +1170,38 @@ private struct NativeSignedOutLibraryView: View {
             action: openLogin
         )
         .navigationTitle("知乎++")
+    }
+}
+
+private struct GlobalInteractivePopGestureEnabler: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> InteractivePopGestureViewController {
+        InteractivePopGestureViewController()
+    }
+
+    func updateUIViewController(_ uiViewController: InteractivePopGestureViewController, context: Context) {}
+}
+
+private final class InteractivePopGestureViewController: UIViewController, UIGestureRecognizerDelegate {
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        setupInteractivePopGesture()
+    }
+
+    private func setupInteractivePopGesture() {
+        guard let navigationController else { return }
+        navigationController.interactivePopGestureRecognizer?.delegate = self
+        navigationController.interactivePopGestureRecognizer?.isEnabled = true
+    }
+
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        guard let navigationController else { return false }
+        return navigationController.viewControllers.count > 1
+    }
+
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+    ) -> Bool {
+        true
     }
 }
