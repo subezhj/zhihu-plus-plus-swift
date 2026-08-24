@@ -88,9 +88,22 @@ struct NativeChannelSwitcher<Channel: Identifiable & Hashable, ChannelContent: V
                 expandedHeight: NativeHomeHeaderLayoutPolicy.channelSelectorHeight
             )
         }
-        .background(.ultraThinMaterial)
+        .background {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.15),
+                            Color.clear
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+        }
         .overlay(alignment: .bottom) {
-            Divider().opacity(0.4)
+            Divider().opacity(0.3)
         }
         .frame(
             height: NativeHomeHeaderLayoutPolicy.expandedHeaderHeight,

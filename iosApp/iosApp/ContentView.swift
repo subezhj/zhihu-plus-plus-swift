@@ -14,23 +14,21 @@ struct AppHostView: View {
 
     var body: some View {
         ZStack {
-            if #available(iOS 16.0, *) {
-                NativeAppShell(
-                    hostModel: hostModel,
-                    isAppUnlocked: appLock.state == .unlocked
-                )
-            } else {
-                VStack(spacing: 14) {
-                    Image(systemName: "iphone.gen3").font(.largeTitle)
-                    Text("需要更新 iOS").font(.title2.bold())
-                    Text("纯 Swift 版本需要 iOS 16 或更高版本。")
-                        .foregroundStyle(.secondary)
-                }
-                .padding()
-            }
+            NativeAppShell(
+                hostModel: hostModel,
+                isAppUnlocked: appLock.state == .unlocked
+            )
             if appLock.state != .unlocked {
                 NativeAppLockGate(coordinator: appLock, disableUnavailableLock: { hostModel.setAppLock(false) })
             }
+        }
+        .onAppear {
+            let appearance = UITabBarAppearance()
+            appearance.configureWithDefaultBackground()
+            appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
+            appearance.shadowColor = UIColor.separator.withAlphaComponent(0.2)
+            UITabBar.appearance().standardAppearance = appearance
+            UITabBar.appearance().scrollEdgeAppearance = appearance
         }
         .fullScreenCover(item: $router.presentedModal, onDismiss: hostModel.modalDidDismiss) { modal in
             switch modal {
