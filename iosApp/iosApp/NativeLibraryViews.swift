@@ -99,8 +99,12 @@ struct NativeCollectionsView: View {
     @ViewBuilder private var paginationFooter: some View {
         if store.isLoading, !store.collections.isEmpty {
             HStack { Spacer(); ProgressView(); Spacer() }
+                .listRowBackground(Color.nativeSystemBackground)
+                .listRowSeparator(.hidden)
         } else if !store.isEnd, !store.collections.isEmpty {
             Color.clear.frame(height: 1).task { await store.loadMore() }
+                .listRowBackground(Color.nativeSystemBackground)
+                .listRowSeparator(.hidden)
         }
     }
 }
@@ -124,18 +128,27 @@ struct NativeCollectionContentView: View {
                 Section {
                     Text("\(collection.itemCount) 条收藏 · \(collection.likeCount) 个赞同 · \(collection.commentCount) 条评论")
                         .font(.subheadline).foregroundStyle(.secondary)
+                        .listRowBackground(Color.nativeSystemBackground)
+                        .listRowSeparator(.hidden)
                 }
             }
             if let error = store.errorMessage, !store.items.isEmpty {
                 NativeInlineRetry(message: error) { Task { await store.loadMore() } }
+                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowSeparator(.hidden)
             }
             ForEach(store.items) { item in
                 NativeLibraryItemRow(item: item, onOpenContent: onOpenContent)
+                    .listRowBackground(Color.nativeSystemBackground)
             }
             if store.isLoading, !store.items.isEmpty {
                 HStack { Spacer(); ProgressView(); Spacer() }
+                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowSeparator(.hidden)
             } else if !store.isEnd, !store.items.isEmpty {
                 Color.clear.frame(height: 1).task { await store.loadMore() }
+                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowSeparator(.hidden)
             }
         }
         .listStyle(.plain)

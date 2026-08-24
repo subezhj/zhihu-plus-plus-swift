@@ -170,6 +170,8 @@ struct SearchNativeView: View {
                     }
                     .buttonStyle(.plain)
                     .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowSeparator(.hidden)
                 }
             } header: {
                 HStack {
@@ -181,6 +183,7 @@ struct SearchNativeView: View {
                         .textCase(nil)
                 }
                 .padding(.top, 4)
+                .listRowBackground(Color.nativeSystemBackground)
             }
         }
 
@@ -211,6 +214,8 @@ struct SearchNativeView: View {
                     }
                     .buttonStyle(.plain)
                     .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowSeparator(.hidden)
                 }
 
                 if store.isRefreshingSuggestions {
@@ -219,10 +224,14 @@ struct SearchNativeView: View {
                         ProgressView()
                         Spacer()
                     }
+                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowSeparator(.hidden)
                 } else if let error = store.suggestionErrorMessage {
                     FeedRetryRow(message: error) {
                         Task { await store.refreshSuggestions() }
                     }
+                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowSeparator(.hidden)
                 }
             } header: {
                 HStack {
@@ -240,6 +249,7 @@ struct SearchNativeView: View {
                     .accessibilityLabel("刷新热搜")
                 }
                 .padding(.top, 4)
+                .listRowBackground(Color.nativeSystemBackground)
             }
         }
 
@@ -248,10 +258,14 @@ struct SearchNativeView: View {
                  ? "输入关键词搜索 \(store.memberDisplayName) 的创作"
                  : "请输入搜索内容")
                 .foregroundStyle(.secondary)
+                .listRowBackground(Color.nativeSystemBackground)
+                .listRowSeparator(.hidden)
         } else if store.showsHistory, store.history.isEmpty,
                   (!store.showsHotSearch || (!store.isRefreshingSuggestions && store.suggestions.isEmpty && store.suggestionErrorMessage == nil)) {
             Text("暂无搜索历史，输入关键词搜索后会保存在这里")
                 .foregroundStyle(.secondary)
+                .listRowBackground(Color.nativeSystemBackground)
+                .listRowSeparator(.hidden)
         }
     }
 
