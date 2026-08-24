@@ -15,7 +15,6 @@ struct NativeMediaGallery: View {
     @State private var zoomedIndices: Set<Int> = []
     @State private var pageDragOffset: CGFloat = 0
     @State private var dismissOffset: CGFloat = 0
-    @State private var shareItems: NativeMediaActivityItems?
     @State private var message: NativeMediaMessage?
     @State private var isSaving = false
 
@@ -75,9 +74,6 @@ struct NativeMediaGallery: View {
         .background(Color.black.ignoresSafeArea())
         .overlay(alignment: .top) { topControls }
         .preferredColorScheme(.dark)
-        .sheet(item: $shareItems) { items in
-            NativeMediaActivityView(activityItems: items.values)
-        }
         .alert(item: $message) { message in
             Alert(
                 title: Text("操作结果"),
@@ -105,14 +101,15 @@ struct NativeMediaGallery: View {
 
             Menu {
                 if let currentImage {
-                    Button {
-                        shareItems = NativeMediaActivityItems(values: [currentImage])
-                    } label: {
+                    ShareLink(
+                        item: Image(uiImage: currentImage),
+                        preview: SharePreview("知乎++图片", image: Image(uiImage: currentImage))
+                    ) {
                         Label("分享图片文件", systemImage: "square.and.arrow.up")
                     }
                 }
 
-                if #available(iOS 16, *), let currentURL {
+                if let currentURL {
                     ShareLink(item: currentURL) {
                         Label("分享图片链接", systemImage: "link")
                     }

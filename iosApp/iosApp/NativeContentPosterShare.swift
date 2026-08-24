@@ -460,7 +460,6 @@ struct NativeContentPosterShareView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var renderedImage: UIImage?
-    @State private var activity: NativeContentPosterActivity?
     @State private var errorMessage: String?
     @State private var isRendering = true
 
