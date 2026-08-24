@@ -598,16 +598,16 @@ private struct CommentRow: View {
                 }
             }
 
-            HStack(spacing: 16) {
+            HStack(spacing: 14) {
                 Button {
                     store.toggleLike(commentID: comment.id, level: interactionLevel)
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 3) {
                         Image(systemName: comment.isLiked ? "hand.thumbsup.fill" : "hand.thumbsup")
-                            .font(.system(size: 13, weight: .medium))
+                            .font(.system(size: 11.5, weight: .medium))
                         if comment.likeCount > 0 {
                             Text("\(comment.likeCount)")
-                                .font(.footnote.weight(.medium).monospacedDigit())
+                                .font(.caption2.weight(.medium).monospacedDigit())
                         }
                     }
                 }
@@ -619,13 +619,13 @@ private struct CommentRow: View {
                     Button {
                         store.openReplies(rootCommentID: comment.id)
                     } label: {
-                        HStack(spacing: 3) {
+                        HStack(spacing: 2.5) {
                             Text("共 \(comment.childCommentCount) 条回复")
+                                .font(.caption2.weight(.medium))
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 10, weight: .semibold))
+                                .font(.system(size: 9, weight: .semibold))
                         }
                     }
-                    .font(.footnote.weight(.medium))
                     .accessibilityIdentifier("reply_count_open_\(comment.id)")
                 }
             }

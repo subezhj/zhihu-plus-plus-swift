@@ -23,12 +23,20 @@ struct AppHostView: View {
             }
         }
         .onAppear {
-            let appearance = UITabBarAppearance()
-            appearance.configureWithTransparentBackground()
-            appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
-            appearance.shadowColor = UIColor.separator.withAlphaComponent(0.15)
-            UITabBar.appearance().standardAppearance = appearance
-            UITabBar.appearance().scrollEdgeAppearance = appearance
+            let tabAppearance = UITabBarAppearance()
+            tabAppearance.configureWithTransparentBackground()
+            tabAppearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
+            tabAppearance.shadowColor = UIColor.separator.withAlphaComponent(0.15)
+            UITabBar.appearance().standardAppearance = tabAppearance
+            UITabBar.appearance().scrollEdgeAppearance = tabAppearance
+
+            let navAppearance = UINavigationBarAppearance()
+            navAppearance.configureWithTransparentBackground()
+            navAppearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
+            navAppearance.shadowColor = UIColor.separator.withAlphaComponent(0.15)
+            UINavigationBar.appearance().standardAppearance = navAppearance
+            UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
+            UINavigationBar.appearance().compactAppearance = navAppearance
         }
         .fullScreenCover(item: $router.presentedModal, onDismiss: hostModel.modalDidDismiss) { modal in
             switch modal {

@@ -86,7 +86,6 @@ struct NativeChannelSwitcher<Channel: Identifiable & Hashable, ChannelContent: V
             height: NativeHomeHeaderLayoutPolicy.expandedHeaderHeight,
             alignment: .top
         )
-        .clipped()
         .allowsHitTesting(isEnabled && normalizedCollapseProgress < 1)
         .environment(\.nativeChannelIsActive, isEnabled)
         .accessibilityHidden(normalizedCollapseProgress >= 1)
