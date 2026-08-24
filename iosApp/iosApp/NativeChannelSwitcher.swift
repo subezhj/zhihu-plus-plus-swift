@@ -597,31 +597,17 @@ private struct NativeChannelPillButtonStyle: ButtonStyle {
 
     @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
-        if #available(iOS 26, *) {
-            configuration.label
-                .foregroundStyle(isSelected ? Color(uiColor: .systemBackground) : Color.primary)
-                .padding(.horizontal, isSelected ? 16 : 0)
-                .frame(minWidth: isSelected ? 124 : 78, minHeight: 44)
-                .glassEffect(
-                    isSelected ? .regular.tint(.primary).interactive() : .regular.interactive(),
-                    in: .capsule
-                )
-                .contentShape(Capsule())
-                .scaleEffect(configuration.isPressed ? 0.96 : 1)
-                .opacity(configuration.isPressed ? 0.82 : 1)
-        } else {
-            configuration.label
-                .foregroundStyle(isSelected ? Color(uiColor: .systemBackground) : Color.primary)
-                .padding(.horizontal, isSelected ? 16 : 0)
-                .frame(minWidth: isSelected ? 124 : 78, minHeight: 44)
-                .background(
-                    isSelected ? Color.primary.opacity(0.9) : Color.secondary.opacity(0.1),
-                    in: Capsule()
-                )
-                .contentShape(Capsule())
-                .scaleEffect(configuration.isPressed ? 0.96 : 1)
-                .opacity(configuration.isPressed ? 0.82 : 1)
-        }
+        configuration.label
+            .foregroundStyle(isSelected ? Color(uiColor: .systemBackground) : Color.primary)
+            .padding(.horizontal, isSelected ? 16 : 0)
+            .frame(minWidth: isSelected ? 124 : 78, minHeight: 44)
+            .background(
+                isSelected ? Color.primary.opacity(0.9) : Color.secondary.opacity(0.1),
+                in: Capsule()
+            )
+            .contentShape(Capsule())
+            .scaleEffect(configuration.isPressed ? 0.96 : 1)
+            .opacity(configuration.isPressed ? 0.82 : 1)
     }
 }
 

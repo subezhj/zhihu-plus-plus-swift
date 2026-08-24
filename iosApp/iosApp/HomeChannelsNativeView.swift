@@ -196,83 +196,44 @@ struct HomeChannelsNativeView: View {
     private func homeTopBarButton(_ control: HomeTopBarControl) -> some View {
         switch control {
         case .creation:
-            if #available(iOS 26, *) {
-                Button(action: onOpenCreation) {
-                    Image(systemName: "square.and.pencil")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.primary)
-                        .frame(width: 40, height: 40)
-                }
-                .buttonStyle(.plain)
-                .glassEffect(.regular.interactive(), in: .circle)
-                .contentShape(Circle())
-                .accessibilityLabel("创作")
-                .accessibilityIdentifier("home_creation_entry")
-            } else {
-                Button(action: onOpenCreation) {
-                    Image(systemName: "square.and.pencil")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.primary)
-                        .frame(width: 40, height: 40)
-                }
-                .buttonStyle(.plain)
-                .background(.ultraThinMaterial, in: Circle())
-                .contentShape(Circle())
-                .accessibilityLabel("创作")
-                .accessibilityIdentifier("home_creation_entry")
+            Button(action: onOpenCreation) {
+                Image(systemName: "square.and.pencil")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .frame(width: 40, height: 40)
             }
+            .buttonStyle(.plain)
+            .background(.ultraThinMaterial, in: Circle())
+            .contentShape(Circle())
+            .accessibilityLabel("创作")
+            .accessibilityIdentifier("home_creation_entry")
 
         case .notifications:
             let presentation = HomeNotificationIndicatorPresentation(
                 unreadCount: notificationUnreadCount
             )
-            if #available(iOS 26, *) {
-                Button(action: onOpenNotifications) {
-                    Image(systemName: "bell")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.primary)
-                        .frame(width: 40, height: 40)
-                        .overlay(alignment: .topTrailing) {
-                            if presentation.showsDot {
-                                Circle()
-                                    .fill(.red)
-                                    .frame(width: 9, height: 9)
-                                    .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 2))
-                                    .offset(x: -2, y: 2)
-                                    .accessibilityHidden(true)
-                            }
+            Button(action: onOpenNotifications) {
+                Image(systemName: "bell")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .frame(width: 40, height: 40)
+                    .overlay(alignment: .topTrailing) {
+                        if presentation.showsDot {
+                            Circle()
+                                .fill(.red)
+                                .frame(width: 9, height: 9)
+                                .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 2))
+                                .offset(x: -2, y: 2)
+                                .accessibilityHidden(true)
                         }
-                }
-                .buttonStyle(.plain)
-                .glassEffect(.regular.interactive(), in: .circle)
-                .contentShape(Circle())
-                .accessibilityLabel(presentation.accessibilityLabel)
-                .accessibilityValue(presentation.accessibilityValue)
-                .accessibilityIdentifier("home_notifications_entry")
-            } else {
-                Button(action: onOpenNotifications) {
-                    Image(systemName: "bell")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.primary)
-                        .frame(width: 40, height: 40)
-                        .overlay(alignment: .topTrailing) {
-                            if presentation.showsDot {
-                                Circle()
-                                    .fill(.red)
-                                    .frame(width: 9, height: 9)
-                                    .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 2))
-                                    .offset(x: -2, y: 2)
-                                    .accessibilityHidden(true)
-                            }
-                        }
-                }
-                .buttonStyle(.plain)
-                .background(.ultraThinMaterial, in: Circle())
-                .contentShape(Circle())
-                .accessibilityLabel(presentation.accessibilityLabel)
-                .accessibilityValue(presentation.accessibilityValue)
-                .accessibilityIdentifier("home_notifications_entry")
+                    }
             }
+            .buttonStyle(.plain)
+            .background(.ultraThinMaterial, in: Circle())
+            .contentShape(Circle())
+            .accessibilityLabel(presentation.accessibilityLabel)
+            .accessibilityValue(presentation.accessibilityValue)
+            .accessibilityIdentifier("home_notifications_entry")
         }
     }
 

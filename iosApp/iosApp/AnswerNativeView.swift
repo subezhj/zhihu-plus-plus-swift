@@ -284,23 +284,12 @@ private struct AnswerActionBar: View {
     let onComments: () -> Void
 
     var body: some View {
-        Group {
-            if #available(iOS 26, *) {
-                GlassEffectContainer(spacing: 8) {
-                    actions
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .glassEffect(.regular.interactive(), in: .capsule)
-                }
-            } else {
-                actions
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 7)
-                    .background(.ultraThinMaterial, in: Capsule())
-            }
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 6)
+        actions
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(.ultraThinMaterial, in: Capsule())
+            .padding(.horizontal, 20)
+            .padding(.vertical, 6)
     }
 
     private var actions: some View {

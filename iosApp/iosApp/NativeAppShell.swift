@@ -320,9 +320,7 @@ struct NativeAppShell: View {
     }
 
     var body: some View {
-        tabBarBehavior(
-            appTabView
-        )
+        appTabView
         .background(
             NativeTabTapObserver(
                 isEnabled: true,
@@ -448,35 +446,12 @@ struct NativeAppShell: View {
         .environmentObject(hostModel.questionAuthorBlocklist)
     }
 
-    @ViewBuilder
     private var appTabView: some View {
-        if #available(iOS 26.0, *) {
-            TabView(selection: tabSelection) {
-                Tab("首页", systemImage: NativeAppTab.home.systemImage, value: NativeAppTab.home) {
-                    tabNavigationStack(for: .home)
-                }
-                Tab("收藏", systemImage: NativeAppTab.collections.systemImage, value: NativeAppTab.collections) {
-                    tabNavigationStack(for: .collections)
-                }
-                Tab("账号", systemImage: NativeAppTab.account.systemImage, value: NativeAppTab.account) {
-                    tabNavigationStack(for: .account)
-                }
-                Tab(
-                    "搜索",
-                    systemImage: NativeAppTab.search.systemImage,
-                    value: NativeAppTab.search,
-                    role: .search
-                ) {
-                    tabNavigationStack(for: .search)
-                }
-            }
-        } else {
-            TabView(selection: tabSelection) {
-                ForEach(NativeAppTab.fixedBottomBarTabs) { tab in
-                    tabNavigationStack(for: tab)
-                        .tabItem { Label(tab.title, systemImage: tab.systemImage) }
-                        .tag(tab)
-                }
+        TabView(selection: tabSelection) {
+            ForEach(NativeAppTab.fixedBottomBarTabs) { tab in
+                tabNavigationStack(for: tab)
+                    .tabItem { Label(tab.title, systemImage: tab.systemImage) }
+                    .tag(tab)
             }
         }
     }
@@ -890,13 +865,6 @@ struct NativeAppShell: View {
             }
             navigate(.collections(userToken: token))
         }
-    }
-
-    @ViewBuilder
-    private func tabBarBehavior<Content: View>(_ content: Content) -> some View {
-        if #available(iOS 26.0, *) {
-            content.tabBarMinimizeBehavior(.onScrollDown)
-        } else { content }
     }
 }
 
