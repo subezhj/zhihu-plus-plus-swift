@@ -35,6 +35,17 @@ struct NativeSettingsView: View {
                         Text(mode.title).tag(mode)
                     }
                 }
+                Picker("主题强调色", selection: accentThemeBinding) {
+                    ForEach(NativeAccentTheme.allCases) { theme in
+                        HStack {
+                            Circle()
+                                .fill(theme.color)
+                                .frame(width: 12, height: 12)
+                            Text(theme.title)
+                        }
+                        .tag(theme)
+                    }
+                }
                 Toggle("液态玻璃视觉效果", isOn: liquidGlassBinding)
             }
 
@@ -208,6 +219,10 @@ struct NativeSettingsView: View {
 
     private var themeBinding: Binding<NativeThemeMode> {
         Binding(get: { preferences.themeMode }, set: preferences.setThemeMode)
+    }
+
+    private var accentThemeBinding: Binding<NativeAccentTheme> {
+        Binding(get: { preferences.accentTheme }, set: preferences.setAccentTheme)
     }
 
     private var liquidGlassBinding: Binding<Bool> {

@@ -503,7 +503,7 @@ private struct NativeSpecialSectionView: View {
                 NativeSpecialItemRow(item: item, onOpenContent: onOpenContent)
                     .padding(.horizontal, 18)
                 if index < section.items.count - 1 {
-                    Divider().padding(.leading, 18)
+                    NativeThinDivider().padding(.leading, 18)
                 }
             }
         }

@@ -321,6 +321,7 @@ struct NativeAppShell: View {
 
     var body: some View {
         appTabView
+        .tint(preferences.accentTheme.color)
         .background(
             NativeTabTapObserver(
                 isEnabled: true,

@@ -547,7 +547,7 @@ private struct NativeChannelPillButtonStyle: ButtonStyle {
             .foregroundStyle(isSelected ? Color(uiColor: .systemBackground) : Color.primary)
             .padding(.horizontal, isSelected ? 16 : 0)
             .frame(minWidth: isSelected ? 116 : 74, minHeight: 38)
-            .liquidGlassCapsule(isProminent: isSelected)
+            .liquidGlassCapsule(isProminent: isSelected, ignoreToggle: true)
             .contentShape(Capsule())
             .scaleEffect(configuration.isPressed ? 0.96 : 1)
             .opacity(configuration.isPressed ? 0.82 : 1)

@@ -163,7 +163,7 @@ struct QABodyView: View {
                 }
             }
         case .divider:
-            Divider()
+            NativeThinDivider()
         }
     }
 

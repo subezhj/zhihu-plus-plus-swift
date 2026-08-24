@@ -78,6 +78,42 @@ enum NativeThemeMode: String, CaseIterable, Identifiable {
     }
 }
 
+enum NativeAccentTheme: String, CaseIterable, Identifiable {
+    case blue = "BLUE"
+    case indigo = "INDIGO"
+    case purple = "PURPLE"
+    case teal = "TEAL"
+    case green = "GREEN"
+    case orange = "ORANGE"
+    case pink = "PINK"
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .blue: return "知乎蓝（经典）"
+        case .indigo: return "深邃靛蓝"
+        case .purple: return "优雅极光紫"
+        case .teal: return "清爽青绿"
+        case .green: return "薄荷绿"
+        case .orange: return "温暖活力橙"
+        case .pink: return "樱花粉"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .blue: return Color.blue
+        case .indigo: return Color.indigo
+        case .purple: return Color.purple
+        case .teal: return Color.teal
+        case .green: return Color.green
+        case .orange: return Color.orange
+        case .pink: return Color.pink
+        }
+    }
+}
+
 enum NativeFeedDensity: String, CaseIterable, Identifiable {
     case compact
     case standard
@@ -185,6 +221,7 @@ final class NativeShellPreferences: ObservableObject {
 
     enum Key {
         static let themeMode = "themeMode"
+        static let accentTheme = "nativeAccentTheme"
         static let accountInHome = "duo3_home_account"
         static let selectedTabs = "bottom_bar_items"
         static let tabOrder = "bottom_bar_item_order"
@@ -212,6 +249,7 @@ final class NativeShellPreferences: ObservableObject {
     private let defaults: UserDefaults
 
     @Published private(set) var themeMode: NativeThemeMode
+    @Published private(set) var accentTheme: NativeAccentTheme
     @Published private(set) var accountInHome: Bool
     @Published private(set) var selectedTabs: [NativeAppTab]
     @Published private(set) var startTab: NativeAppTab
@@ -297,6 +335,8 @@ final class NativeShellPreferences: ObservableObject {
         defaults.set(Self.currentBottomTabStructureVersion, forKey: Key.bottomTabStructureVersion)
         let rawTheme = defaults.string(forKey: Key.themeMode) ?? NativeThemeMode.system.rawValue
         themeMode = NativeThemeMode(rawValue: rawTheme) ?? .system
+        let rawAccent = defaults.string(forKey: Key.accentTheme) ?? NativeAccentTheme.blue.rawValue
+        accentTheme = NativeAccentTheme(rawValue: rawAccent) ?? .blue
         let storedStart = defaults.string(forKey: Key.startTab)
         let preferredStart = storedStart.flatMap(NativeAppTab.init(rawValue:))
         let normalizedStart = preferredStart.flatMap {
@@ -344,6 +384,12 @@ final class NativeShellPreferences: ObservableObject {
         hapticsEnabled = Self.bool(defaults, key: Key.hapticsEnabled, defaultValue: true)
         hapticStrength = defaults.string(forKey: Key.hapticStrength)
             .flatMap(NativeHapticStrength.init(rawValue:)) ?? .standard
+    }
+
+    func setAccentTheme(_ theme: NativeAccentTheme) {
+        guard accentTheme != theme else { return }
+        accentTheme = theme
+        defaults.set(theme.rawValue, forKey: Key.accentTheme)
     }
 
     func setLiquidGlassEnabled(_ enabled: Bool) {

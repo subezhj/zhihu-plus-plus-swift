@@ -118,19 +118,21 @@ private struct NativeAppLockGate: View {
 public struct LiquidGlassModifier<S: Shape>: ViewModifier {
     let shape: S
     let isProminent: Bool
+    let ignoreToggle: Bool
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.nativeContentPresentation) private var presentation
 
-    public init(shape: S, isProminent: Bool = false) {
+    public init(shape: S, isProminent: Bool = false, ignoreToggle: Bool = false) {
         self.shape = shape
         self.isProminent = isProminent
+        self.ignoreToggle = ignoreToggle
     }
 
     public func body(content: Content) -> some View {
         content
             .background {
-                if !presentation.liquidGlassEnabled {
+                if !ignoreToggle && !presentation.liquidGlassEnabled {
                     shape
                         .fill(Color(uiColor: .secondarySystemGroupedBackground))
                 } else if isProminent {
@@ -156,14 +158,8 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     ),
-                                    lineWidth: 0.8
+                                    lineWidth: 0.6
                                 )
-                        )
-                        .shadow(
-                            color: Color.black.opacity(colorScheme == .dark ? 0.4 : 0.18),
-                            radius: 8,
-                            x: 0,
-                            y: 3
                         )
                 } else {
                     ZStack {
@@ -194,34 +190,40 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 ),
-                                lineWidth: 0.8
+                                lineWidth: 0.6
                             )
                     }
-                    .shadow(
-                        color: Color.black.opacity(colorScheme == .dark ? 0.35 : 0.12),
-                        radius: 6,
-                        x: 0,
-                        y: 2.5
-                    )
                 }
             }
     }
 }
 
 public extension View {
-    func liquidGlass<S: Shape>(in shape: S, isProminent: Bool = false) -> some View {
-        modifier(LiquidGlassModifier(shape: shape, isProminent: isProminent))
+    func liquidGlass<S: Shape>(in shape: S, isProminent: Bool = false, ignoreToggle: Bool = false) -> some View {
+        modifier(LiquidGlassModifier(shape: shape, isProminent: isProminent, ignoreToggle: ignoreToggle))
     }
 
-    func liquidGlassCapsule(isProminent: Bool = false) -> some View {
-        modifier(LiquidGlassModifier(shape: Capsule(), isProminent: isProminent))
+    func liquidGlassCapsule(isProminent: Bool = false, ignoreToggle: Bool = false) -> some View {
+        modifier(LiquidGlassModifier(shape: Capsule(), isProminent: isProminent, ignoreToggle: ignoreToggle))
     }
 
-    func liquidGlassCircle(isProminent: Bool = false) -> some View {
-        modifier(LiquidGlassModifier(shape: Circle(), isProminent: isProminent))
+    func liquidGlassCircle(isProminent: Bool = false, ignoreToggle: Bool = false) -> some View {
+        modifier(LiquidGlassModifier(shape: Circle(), isProminent: isProminent, ignoreToggle: ignoreToggle))
     }
 
     func liquidGlassCard(cornerRadius: CGFloat = 16, isProminent: Bool = false) -> some View {
-        modifier(LiquidGlassModifier(shape: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous), isProminent: isProminent))
+        modifier(LiquidGlassModifier(shape: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous), isProminent: isProminent, ignoreToggle: false))
+    }
+}
+
+// MARK: - Standard Ultra-Thin Divider
+
+public struct NativeThinDivider: View {
+    public init() {}
+
+    public var body: some View {
+        Rectangle()
+            .fill(Color(uiColor: .separator).opacity(0.4))
+            .frame(height: 0.33)
     }
 }
