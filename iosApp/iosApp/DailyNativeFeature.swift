@@ -535,7 +535,7 @@ struct DailyNativeView: View {
     }
 
     @ViewBuilder
-    private func dailyStoryContent(_ story: DailyStorySummary) -> some View {
+    private func dailyStoryContent(_ story: DailyStoryDTO) -> some View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 5) {
                 Text(story.title).font(.headline).foregroundStyle(.primary)
