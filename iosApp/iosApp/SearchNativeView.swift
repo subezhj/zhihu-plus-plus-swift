@@ -71,7 +71,7 @@ struct SearchNativeView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
+            ToolbarItem(placement: .principal) {
                 searchField
             }
             ToolbarItem(placement: .primaryAction) {
