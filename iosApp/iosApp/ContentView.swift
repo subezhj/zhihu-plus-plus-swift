@@ -148,13 +148,13 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                                 .stroke(
                                     LinearGradient(
                                         colors: [
-                                            Color.white.opacity(colorScheme == .dark ? 0.45 : 0.3),
-                                            Color.white.opacity(0.08)
+                                            Color.white.opacity(colorScheme == .dark ? 0.5 : 0.35),
+                                            Color.white.opacity(0.1)
                                         ],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     ),
-                                    lineWidth: 0.75
+                                    lineWidth: 0.8
                                 )
                         )
                         .shadow(
@@ -164,41 +164,43 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                             y: 3
                         )
                 } else {
-                    shape
-                        .fill(.ultraThinMaterial)
-                        .overlay(
-                            shape
-                                .fill(
-                                    LinearGradient(
-                                        colors: [
-                                            Color.white.opacity(colorScheme == .dark ? 0.22 : 0.55),
-                                            Color.white.opacity(colorScheme == .dark ? 0.05 : 0.15)
-                                        ],
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
+                    ZStack {
+                        shape
+                            .fill(.ultraThinMaterial)
+
+                        // Real-time specular sheen
+                        shape
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(colorScheme == .dark ? 0.28 : 0.6),
+                                        Color.white.opacity(colorScheme == .dark ? 0.06 : 0.18)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
                                 )
-                        )
-                        .overlay(
-                            shape
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [
-                                            Color.white.opacity(colorScheme == .dark ? 0.55 : 0.75),
-                                            Color.primary.opacity(0.1)
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 0.75
-                                )
-                        )
-                        .shadow(
-                            color: Color.black.opacity(colorScheme == .dark ? 0.35 : 0.12),
-                            radius: 6,
-                            x: 0,
-                            y: 2.5
-                        )
+                            )
+
+                        // 3D Glass rim edge
+                        shape
+                            .stroke(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(colorScheme == .dark ? 0.65 : 0.85),
+                                        Color.primary.opacity(0.12)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 0.8
+                            )
+                    }
+                    .shadow(
+                        color: Color.black.opacity(colorScheme == .dark ? 0.35 : 0.12),
+                        radius: 6,
+                        x: 0,
+                        y: 2.5
+                    )
                 }
             }
     }
