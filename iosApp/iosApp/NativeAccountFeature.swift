@@ -330,7 +330,7 @@ struct NativeAccountView: View {
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
-        .background(Color.nativeSystemBackground)
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .navigationTitle("账号")
         .navigationBarTitleDisplayMode(.large)
         .refreshable {

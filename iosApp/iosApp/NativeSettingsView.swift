@@ -28,248 +28,195 @@ struct NativeSettingsView: View {
     @AppStorage("pinAnswerDate") private var pinAnswerDate = false
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                settingsSection(header: "外观") {
-                    Picker("显示模式", selection: themeBinding) {
-                        ForEach(NativeThemeMode.allCases) { mode in
-                            Text(mode.title).tag(mode)
-                        }
-                    }
-                    settingsDivider
-                    Picker("主题强调色", selection: accentThemeBinding) {
-                        ForEach(NativeAccentTheme.allCases) { theme in
-                            HStack {
-                                Circle()
-                                    .fill(theme.color)
-                                    .frame(width: 12, height: 12)
-                                Text(theme.title)
-                            }
-                            .tag(theme)
-                        }
-                    }
-                    settingsDivider
-                    Toggle("液态玻璃视觉效果", isOn: liquidGlassBinding)
-                }
-
-                settingsSection(header: "阅读排版", footer: "字号会继续响应系统的动态字体；IP 属地始终显示在正文末尾。") {
-                    settingSlider(
-                        title: "正文字号",
-                        value: fontSizeBinding,
-                        range: 80 ... 150,
-                        step: 5,
-                        valueText: "\(preferences.contentFontSizePercent)%"
-                    )
-                    settingsDivider
-                    settingSlider(
-                        title: "行间距",
-                        value: lineHeightBinding,
-                        range: 100 ... 300,
-                        step: 10,
-                        valueText: String(format: "%.1f 倍", Double(preferences.contentLineHeightPercent) / 100)
-                    )
-                    settingsDivider
-                    settingSlider(
-                        title: "段落间距",
-                        value: blockSpacingBinding,
-                        range: 0 ... 300,
-                        step: 10,
-                        valueText: "\(preferences.contentBlockSpacingPercent)%"
-                    )
-                    settingsDivider
-                    Toggle("将回答发布时间显示在正文顶部", isOn: $pinAnswerDate)
-                }
-
-                settingsSection(header: "信息流", footer: "推荐页每次请求 10 条并自动补足目标数量；App 与 Web 推荐都会过滤带标记的推广内容。Web 推荐需要登录。") {
-                    Picker("推荐源", selection: recommendationSourceBinding) {
-                        ForEach(HomeRecommendationSource.allCases) { source in
-                            Text(source.title).tag(source)
-                        }
-                    }
-                    settingsDivider
-                    Stepper(
-                        value: refreshTargetItemCountBinding,
-                        in: HomeRecommendationRefreshConfiguration.targetItemRange
-                    ) {
-                        LabeledContent(
-                            "每次刷新",
-                            value: "\(preferences.homeRefreshTargetItemCount) 条"
-                        )
-                    }
-                    settingsDivider
-                    Picker("显示密度", selection: feedDensityBinding) {
-                        ForEach(NativeFeedDensity.allCases) { density in
-                            Text(density.title).tag(density)
-                        }
-                    }
-                    settingsDivider
-                    Stepper(value: feedExcerptLinesBinding, in: 1 ... 5) {
-                        LabeledContent("正文摘要", value: "\(preferences.feedExcerptLines) 行")
-                    }
-                    settingsDivider
-                    Toggle("显示缩略图", isOn: feedThumbnailsBinding)
-                    settingsDivider
-                    NavigationLink {
-                        BlockedQuestionAuthorsView(store: questionAuthorBlocklist)
-                    } label: {
-                        LabeledContent(
-                            "已屏蔽的提问者",
-                            value: "\(questionAuthorBlocklist.entries.count)"
-                        )
+        Form {
+            Section("外观") {
+                Picker("显示模式", selection: themeBinding) {
+                    ForEach(NativeThemeMode.allCases) { mode in
+                        Text(mode.title).tag(mode)
                     }
                 }
-
-                settingsSection(header: "搜索") {
-                    Toggle("显示热搜", isOn: searchHotBinding)
-                    settingsDivider
-                    Toggle("保存并显示搜索历史", isOn: searchHistoryBinding)
-                }
-
-                settingsSection(header: "交互", footer: "再次点击当前标签时：列表不在顶部则先回到顶部；已经在顶部或连续再次点击则刷新。") {
-                    Toggle("再次点击当前标签回到顶部或刷新", isOn: topLevelReselectBinding)
-                    settingsDivider
-                    Toggle("触觉反馈", isOn: hapticsEnabledBinding)
-                    settingsDivider
-                    Picker("反馈力度", selection: hapticStrengthBinding) {
-                        ForEach(NativeHapticStrength.allCases) { strength in
-                            Text(strength.title).tag(strength)
-                        }
-                    }
-                    .disabled(!preferences.hapticsEnabled)
-                    settingsDivider
-                    Picker("默认分享动作", selection: shareActionBinding) {
-                        ForEach(NativeDefaultShareAction.allCases) { action in
-                            Text(action.title).tag(action)
-                        }
-                    }
-                    settingsDivider
-                    Picker("外部页面打开方式", selection: externalPageOpeningModeBinding) {
-                        ForEach(NativeExternalPageOpeningMode.allCases) { mode in
-                            Text(mode.title).tag(mode)
-                        }
-                    }
-                }
-
-                settingsSection(header: "App 布局") {
-                    Picker("启动时打开", selection: startTabBinding) {
-                        ForEach(NativeAppTab.fixedBottomBarTabs) { tab in
-                            Text(tab.title).tag(tab)
-                        }
-                    }
-                }
-
-                settingsSection(header: "通知") {
-                    NavigationLink(value: NativeShellRoute.notificationSettings) {
+                Picker("主题强调色", selection: accentThemeBinding) {
+                    ForEach(NativeAccentTheme.allCases) { theme in
                         HStack {
-                            Text("应用内通知")
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.footnote.weight(.semibold))
-                                .foregroundStyle(.tertiary)
+                            Circle()
+                                .fill(theme.color)
+                                .frame(width: 12, height: 12)
+                            Text(theme.title)
                         }
+                        .tag(theme)
                     }
                 }
+                Toggle("液态玻璃视觉效果", isOn: liquidGlassBinding)
+            }
 
-                settingsSection(header: "更新") {
-                    Link(destination: SideStoreUpdateSource.addSourceURL) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("添加 SideStore 更新源")
-                                .foregroundStyle(.primary)
-                            Text("首次添加后可接收 GitHub Release 更新")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .contentShape(Rectangle())
+            Section {
+                settingSlider(
+                    title: "正文字号",
+                    value: fontSizeBinding,
+                    range: 80 ... 150,
+                    step: 5,
+                    valueText: "\(preferences.contentFontSizePercent)%"
+                )
+                settingSlider(
+                    title: "行间距",
+                    value: lineHeightBinding,
+                    range: 100 ... 300,
+                    step: 10,
+                    valueText: String(format: "%.1f 倍", Double(preferences.contentLineHeightPercent) / 100)
+                )
+                settingSlider(
+                    title: "段落间距",
+                    value: blockSpacingBinding,
+                    range: 0 ... 300,
+                    step: 10,
+                    valueText: "\(preferences.contentBlockSpacingPercent)%"
+                )
+                Toggle("将回答发布时间显示在正文顶部", isOn: $pinAnswerDate)
+            } header: {
+                Text("阅读排版")
+            } footer: {
+                Text("字号会继续响应系统的动态字体；IP 属地始终显示在正文末尾。")
+            }
+
+            Section {
+                Picker("推荐源", selection: recommendationSourceBinding) {
+                    ForEach(HomeRecommendationSource.allCases) { source in
+                        Text(source.title).tag(source)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityHint("将在 SideStore 中打开")
                 }
-
-                settingsSection(header: "系统") {
-                    if appLock.settingPresentation.isVisible {
-                        Toggle("App 锁", isOn: Binding(
-                            get: { systemSettings.appLock == true },
-                            set: setAppLock
-                        ))
-                        .disabled(!appLock.settingPresentation.canEnable && systemSettings.appLock != true)
-                        settingsDivider
-                    }
-                    NavigationLink(value: NativeShellRoute.systemAndUpdate) {
-                        HStack {
-                            Text("系统与更新")
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.footnote.weight(.semibold))
-                                .foregroundStyle(.tertiary)
-                        }
+                Stepper(
+                    value: refreshTargetItemCountBinding,
+                    in: HomeRecommendationRefreshConfiguration.targetItemRange
+                ) {
+                    LabeledContent(
+                        "每次刷新",
+                        value: "\(preferences.homeRefreshTargetItemCount) 条"
+                    )
+                }
+                Picker("显示密度", selection: feedDensityBinding) {
+                    ForEach(NativeFeedDensity.allCases) { density in
+                        Text(density.title).tag(density)
                     }
                 }
+                Stepper(value: feedExcerptLinesBinding, in: 1 ... 5) {
+                    LabeledContent("正文摘要", value: "\(preferences.feedExcerptLines) 行")
+                }
+                Toggle("显示缩略图", isOn: feedThumbnailsBinding)
+                NavigationLink {
+                    BlockedQuestionAuthorsView(store: questionAuthorBlocklist)
+                } label: {
+                    LabeledContent(
+                        "已屏蔽的提问者",
+                        value: "\(questionAuthorBlocklist.entries.count)"
+                    )
+                }
+            } header: {
+                Text("信息流")
+            } footer: {
+                Text("推荐页每次请求 10 条并自动补足目标数量；App 与 Web 推荐都会过滤带标记的推广内容。Web 推荐需要登录。")
+            }
 
-                settingsSection(header: "诊断", footer: "仅记录脱敏后的性能元数据，不记录账号凭据、正文、评论或搜索词。每次启动或重新开启会创建新会话，单份最多 15 MB，保留最近 5 份。") {
-                    Toggle("性能诊断日志", isOn: Binding(
-                        get: { performanceDiagnostics.isEnabled },
-                        set: performanceDiagnostics.setEnabled
-                    ))
-                    settingsDivider
-                    NavigationLink {
-                        PerformanceDiagnosticsLogsView(controller: performanceDiagnostics)
-                    } label: {
-                        if let latest = performanceDiagnostics.logs.first {
-                            LabeledContent(
-                                "诊断日志",
-                                value: "\(latest.modifiedAt.formatted(date: .abbreviated, time: .shortened)) · \(ByteCountFormatter.string(fromByteCount: latest.byteCount, countStyle: .file))"
-                            )
-                        } else {
-                            LabeledContent("诊断日志", value: "暂无")
-                        }
+            Section("搜索") {
+                Toggle("显示热搜", isOn: searchHotBinding)
+                Toggle("保存并显示搜索历史", isOn: searchHistoryBinding)
+            }
+
+            Section {
+                Toggle("再次点击当前标签回到顶部或刷新", isOn: topLevelReselectBinding)
+                Toggle("触觉反馈", isOn: hapticsEnabledBinding)
+                Picker("反馈力度", selection: hapticStrengthBinding) {
+                    ForEach(NativeHapticStrength.allCases) { strength in
+                        Text(strength.title).tag(strength)
+                    }
+                }
+                .disabled(!preferences.hapticsEnabled)
+                Picker("默认分享动作", selection: shareActionBinding) {
+                    ForEach(NativeDefaultShareAction.allCases) { action in
+                        Text(action.title).tag(action)
+                    }
+                }
+                Picker("外部页面打开方式", selection: externalPageOpeningModeBinding) {
+                    ForEach(NativeExternalPageOpeningMode.allCases) { mode in
+                        Text(mode.title).tag(mode)
+                    }
+                }
+            } header: {
+                Text("交互")
+            } footer: {
+                Text("再次点击当前标签时：列表不在顶部则先回到顶部；已经在顶部或连续再次点击则刷新。")
+            }
+
+            Section("App 布局") {
+                Picker("启动时打开", selection: startTabBinding) {
+                    ForEach(NativeAppTab.fixedBottomBarTabs) { tab in
+                        Text(tab.title).tag(tab)
                     }
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+
+            Section("通知") {
+                NavigationLink(value: NativeShellRoute.notificationSettings) {
+                    Text("应用内通知")
+                }
+            }
+
+            Section("更新") {
+                Link(destination: SideStoreUpdateSource.addSourceURL) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("添加 SideStore 更新源")
+                            .foregroundStyle(.primary)
+                        Text("首次添加后可接收 GitHub Release 更新")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("将在 SideStore 中打开")
+            }
+
+            Section("系统") {
+                if appLock.settingPresentation.isVisible {
+                    Toggle("App 锁", isOn: Binding(
+                        get: { systemSettings.appLock == true },
+                        set: setAppLock
+                    ))
+                    .disabled(!appLock.settingPresentation.canEnable && systemSettings.appLock != true)
+                }
+                NavigationLink(value: NativeShellRoute.systemAndUpdate) {
+                    Text("系统与更新")
+                }
+            }
+
+            Section {
+                Toggle("性能诊断日志", isOn: Binding(
+                    get: { performanceDiagnostics.isEnabled },
+                    set: performanceDiagnostics.setEnabled
+                ))
+                NavigationLink {
+                    PerformanceDiagnosticsLogsView(controller: performanceDiagnostics)
+                } label: {
+                    if let latest = performanceDiagnostics.logs.first {
+                        LabeledContent(
+                            "诊断日志",
+                            value: "\(latest.modifiedAt.formatted(date: .abbreviated, time: .shortened)) · \(ByteCountFormatter.string(fromByteCount: latest.byteCount, countStyle: .file))"
+                        )
+                    } else {
+                        LabeledContent("诊断日志", value: "暂无")
+                    }
+                }
+            } header: {
+                Text("诊断")
+            } footer: {
+                Text("仅记录脱敏后的性能元数据，不记录账号凭据、正文、评论或搜索词。每次启动或重新开启会创建新会话，单份最多 15 MB，保留最近 5 份。")
+            }
         }
         .scrollContentBackground(.hidden)
         .background(Color.nativeSystemBackground.ignoresSafeArea())
         .navigationTitle("设置")
         .navigationBarTitleDisplayMode(.inline)
         .task { await performanceDiagnostics.refreshLogs() }
-    }
-
-    private var settingsDivider: some View {
-        Divider()
-            .opacity(0.4)
-            .padding(.vertical, 4)
-    }
-
-    @ViewBuilder
-    private func settingsSection<Content: View>(
-        header: String? = nil,
-        footer: String? = nil,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            if let header {
-                Text(header)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 4)
-            }
-
-            VStack(alignment: .leading, spacing: 8) {
-                content()
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .liquidGlassCard(cornerRadius: 16, isProminent: false)
-
-            if let footer {
-                Text(footer)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 4)
-            }
-        }
     }
 
     private var themeBinding: Binding<NativeThemeMode> {
