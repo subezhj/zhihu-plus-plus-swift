@@ -59,7 +59,20 @@ private struct PersonGlassTabButtonStyle: ButtonStyle {
             .foregroundStyle(isSelected ? Color.white : Color.primary)
             .padding(.horizontal, 14)
             .frame(minHeight: 38)
-            .background(isSelected ? Color.accentColor : Color.secondary.opacity(0.1), in: Capsule())
+            .background {
+                if isSelected {
+                    Capsule()
+                        .fill(Color.accentColor)
+                        .shadow(color: Color.accentColor.opacity(0.3), radius: 4, x: 0, y: 2)
+                } else {
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+                        )
+                }
+            }
             .opacity(configuration.isPressed ? 0.78 : 1)
     }
 }

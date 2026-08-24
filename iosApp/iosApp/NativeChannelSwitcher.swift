@@ -601,10 +601,20 @@ private struct NativeChannelPillButtonStyle: ButtonStyle {
             .foregroundStyle(isSelected ? Color(uiColor: .systemBackground) : Color.primary)
             .padding(.horizontal, isSelected ? 16 : 0)
             .frame(minWidth: isSelected ? 116 : 74, minHeight: 38)
-            .background(
-                isSelected ? Color.primary.opacity(0.9) : Color.secondary.opacity(0.1),
-                in: Capsule()
-            )
+            .background {
+                if isSelected {
+                    Capsule()
+                        .fill(Color.primary.opacity(0.92))
+                        .shadow(color: Color.black.opacity(0.12), radius: 4, x: 0, y: 2)
+                } else {
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+                        )
+                }
+            }
             .contentShape(Capsule())
             .scaleEffect(configuration.isPressed ? 0.96 : 1)
             .opacity(configuration.isPressed ? 0.82 : 1)

@@ -203,7 +203,15 @@ struct HomeChannelsNativeView: View {
                     .frame(width: 36, height: 36)
             }
             .buttonStyle(.plain)
-            .background(.ultraThinMaterial, in: Circle())
+            .background {
+                Circle()
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                    )
+                    .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+            }
             .contentShape(Circle())
             .accessibilityLabel("创作")
             .accessibilityIdentifier("home_creation_entry")
@@ -229,7 +237,15 @@ struct HomeChannelsNativeView: View {
                     }
             }
             .buttonStyle(.plain)
-            .background(.ultraThinMaterial, in: Circle())
+            .background {
+                Circle()
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                    )
+                    .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+            }
             .contentShape(Circle())
             .accessibilityLabel(presentation.accessibilityLabel)
             .accessibilityValue(presentation.accessibilityValue)
