@@ -35,6 +35,7 @@ struct NativeCollectionsView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 12)
                     .liquidGlassCard(cornerRadius: 16, isProminent: false)

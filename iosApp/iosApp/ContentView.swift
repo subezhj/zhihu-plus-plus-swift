@@ -120,6 +120,7 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
     let isProminent: Bool
 
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.nativeContentPresentation) private var presentation
 
     public init(shape: S, isProminent: Bool = false) {
         self.shape = shape
@@ -129,7 +130,10 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
     public func body(content: Content) -> some View {
         content
             .background {
-                if isProminent {
+                if !presentation.liquidGlassEnabled {
+                    shape
+                        .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                } else if isProminent {
                     shape
                         .fill(
                             LinearGradient(

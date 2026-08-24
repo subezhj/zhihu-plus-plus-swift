@@ -139,6 +139,7 @@ struct NativeContentPresentationPreferences: Equatable {
     var feedDensity = NativeFeedDensity.standard
     var feedExcerptLines = 2
     var showsFeedThumbnails = true
+    var liquidGlassEnabled = true
 
     var fontScale: CGFloat { CGFloat(fontSizePercent) / 100 }
 
@@ -196,6 +197,7 @@ final class NativeShellPreferences: ObservableObject {
         static let feedDensity = "nativeFeedDensity"
         static let feedExcerptLines = "nativeFeedExcerptLines"
         static let showFeedThumbnail = "showFeedThumbnail"
+        static let liquidGlassEnabled = "nativeLiquidGlassEnabled"
         static let homeRecommendationSource = "homeRecommendationSource"
         static let homeRefreshTargetItemCount = "homeRefreshTargetItemCount"
         static let showSearchHotSearch = "showSearchHotSearch"
@@ -222,6 +224,7 @@ final class NativeShellPreferences: ObservableObject {
     @Published private(set) var showsFeedThumbnails: Bool
     @Published private(set) var homeRecommendationSource: HomeRecommendationSource
     @Published private(set) var homeRefreshTargetItemCount: Int
+    @Published private(set) var liquidGlassEnabled: Bool
     @Published private(set) var showsSearchHotSearch: Bool
     @Published private(set) var showsSearchHistory: Bool
     @Published private(set) var topLevelReselectEnabled: Bool
@@ -237,7 +240,8 @@ final class NativeShellPreferences: ObservableObject {
             blockSpacingPercent: contentBlockSpacingPercent,
             feedDensity: feedDensity,
             feedExcerptLines: feedExcerptLines,
-            showsFeedThumbnails: showsFeedThumbnails
+            showsFeedThumbnails: showsFeedThumbnails,
+            liquidGlassEnabled: liquidGlassEnabled
         )
     }
 
@@ -321,6 +325,7 @@ final class NativeShellPreferences: ObservableObject {
             ? 2
             : defaults.integer(forKey: Key.feedExcerptLines), to: 1 ... 5)
         showsFeedThumbnails = Self.bool(defaults, key: Key.showFeedThumbnail, defaultValue: true)
+        liquidGlassEnabled = Self.bool(defaults, key: Key.liquidGlassEnabled, defaultValue: true)
         homeRecommendationSource = defaults.string(forKey: Key.homeRecommendationSource)
             .flatMap(HomeRecommendationSource.init(rawValue:)) ?? .app
         homeRefreshTargetItemCount = Self.clamp(
@@ -339,6 +344,12 @@ final class NativeShellPreferences: ObservableObject {
         hapticsEnabled = Self.bool(defaults, key: Key.hapticsEnabled, defaultValue: true)
         hapticStrength = defaults.string(forKey: Key.hapticStrength)
             .flatMap(NativeHapticStrength.init(rawValue:)) ?? .standard
+    }
+
+    func setLiquidGlassEnabled(_ enabled: Bool) {
+        guard liquidGlassEnabled != enabled else { return }
+        liquidGlassEnabled = enabled
+        defaults.set(enabled, forKey: Key.liquidGlassEnabled)
     }
 
     func setThemeMode(_ mode: NativeThemeMode) {

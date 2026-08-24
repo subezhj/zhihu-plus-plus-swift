@@ -119,7 +119,6 @@ struct NativeChannelSwitcher<Channel: Identifiable & Hashable, ChannelContent: V
                     .environment(\.nativeChannelIsActive, isActive)
             }
         }
-        .clipped()
     }
 
     private var selectedChannelIndex: Int {

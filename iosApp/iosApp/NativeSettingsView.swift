@@ -35,6 +35,7 @@ struct NativeSettingsView: View {
                         Text(mode.title).tag(mode)
                     }
                 }
+                Toggle("液态玻璃视觉效果", isOn: liquidGlassBinding)
             }
 
             Section {
@@ -207,6 +208,10 @@ struct NativeSettingsView: View {
 
     private var themeBinding: Binding<NativeThemeMode> {
         Binding(get: { preferences.themeMode }, set: preferences.setThemeMode)
+    }
+
+    private var liquidGlassBinding: Binding<Bool> {
+        Binding(get: { preferences.liquidGlassEnabled }, set: preferences.setLiquidGlassEnabled)
     }
 
     private var startTabBinding: Binding<NativeAppTab> {
