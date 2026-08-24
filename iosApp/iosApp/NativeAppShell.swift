@@ -477,8 +477,12 @@ struct NativeAppShell: View {
     private func tabNavigationStack(for tab: NativeAppTab) -> some View {
         NavigationStack(path: navigation.binding(for: tab)) {
             rootContent(for: tab)
+                .scrollContentBackground(.hidden)
+                .background(Color.nativeSystemBackground.ignoresSafeArea())
                 .navigationDestination(for: NativeShellRoute.self) { destination($0, in: tab) }
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .background(GlobalInteractivePopGestureEnabler())
     }
 
@@ -663,6 +667,8 @@ struct NativeAppShell: View {
                 SystemAndUpdateView(openExternalLink: hostModel.openSystemExternalLink)
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .toolbar(.hidden, for: .tabBar)
     }
 
