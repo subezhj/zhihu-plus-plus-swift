@@ -652,21 +652,6 @@ private enum NativePhotoLibraryError: Error {
     case saveFailed
 }
 
-private struct NativeMediaActivityItems: Identifiable {
-    let id = UUID()
-    let values: [Any]
-}
-
-private struct NativeMediaActivityView: UIViewControllerRepresentable {
-    let activityItems: [Any]
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
-    }
-
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
-
 private struct NativeMediaMessage: Identifiable {
     let id = UUID()
     let text: String

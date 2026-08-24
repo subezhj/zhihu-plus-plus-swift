@@ -644,7 +644,7 @@ private struct CommentComposerBar: View {
     @ObservedObject var store: CommentSessionStore
     let level: CommentLevelKey
     @State private var showsEmojiPicker = false
-    @State private var showsPhotoPicker = false
+    @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var photoError: String?
     @FocusState private var isDraftFocused: Bool
 
@@ -660,6 +660,18 @@ private struct CommentComposerBar: View {
         .onChange(of: store.composerPresentation) { presentation in
             isDraftFocused = presentation.isActive(for: level)
         }
+        .onChange(of: selectedPhotoItem) { newItem in
+            guard let newItem else { return }
+            Task {
+                do {
+                    if let data = try await newItem.loadTransferable(type: Data.self) {
+                        await MainActor.run { store.setDraftImage(data) }
+                    }
+                } catch {
+                    await MainActor.run { photoError = error.localizedDescription }
+                }
+            }
+        }
         .onAppear {
             isDraftFocused = store.composerPresentation.isActive(for: level)
         }
@@ -668,14 +680,6 @@ private struct CommentComposerBar: View {
             CommentEmojiPicker { emoji in
                 store.appendEmoji(emoji.placeholder)
                 showsEmojiPicker = false
-            }
-        }
-        .sheet(isPresented: $showsPhotoPicker) {
-            CommentPhotoPicker(isPresented: $showsPhotoPicker) { result in
-                switch result {
-                case let .success(data): store.setDraftImage(data)
-                case let .failure(error): photoError = error.localizedDescription
-                }
             }
         }
         .alert("无法选择图片", isPresented: Binding(
@@ -750,7 +754,10 @@ private struct CommentComposerBar: View {
                 .accessibilityLabel("选择表情")
                 .accessibilityIdentifier("comment_emoji_picker")
 
-                Button { showsPhotoPicker = true } label: {
+                PhotosPicker(
+                    selection: $selectedPhotoItem,
+                    matching: .images
+                ) {
                     Image(systemName: "photo")
                         .font(.system(size: 21, weight: .medium))
                         .frame(width: 38, height: 38)
@@ -843,44 +850,6 @@ private struct CommentEmojiPresentationModifier: ViewModifier {
                 .presentationDragIndicator(.visible)
         } else {
             content
-        }
-    }
-}
-
-private struct CommentPhotoPicker: UIViewControllerRepresentable {
-    @Binding var isPresented: Bool
-    let completion: (Result<Data, Error>) -> Void
-
-    func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
-
-    func makeUIViewController(context: Context) -> PHPickerViewController {
-        var configuration = PHPickerConfiguration(photoLibrary: .shared())
-        configuration.filter = .images
-        configuration.selectionLimit = 1
-        let picker = PHPickerViewController(configuration: configuration)
-        picker.delegate = context.coordinator
-        return picker
-    }
-
-    func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
-
-    final class Coordinator: NSObject, PHPickerViewControllerDelegate {
-        private let parent: CommentPhotoPicker
-
-        init(parent: CommentPhotoPicker) { self.parent = parent }
-
-        func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-            parent.isPresented = false
-            guard let provider = results.first?.itemProvider else { return }
-            provider.loadDataRepresentation(forTypeIdentifier: UTType.image.identifier) { data, error in
-                DispatchQueue.main.async {
-                    if let data {
-                        self.parent.completion(.success(data))
-                    } else {
-                        self.parent.completion(.failure(error ?? CommentPhotoPickerError.unreadableImage))
-                    }
-                }
-            }
         }
     }
 }

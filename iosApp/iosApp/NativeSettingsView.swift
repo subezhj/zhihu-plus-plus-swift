@@ -343,7 +343,6 @@ struct NativeSettingsView: View {
 @available(iOS 16.0, *)
 private struct PerformanceDiagnosticsLogsView: View {
     @ObservedObject var controller: NativePerformanceDiagnosticsController
-    @State private var sharePresentation: PerformanceDiagnosticSharePresentation?
     @State private var confirmsDeleteAll = false
 
     var body: some View {
@@ -370,12 +369,7 @@ private struct PerformanceDiagnosticsLogsView: View {
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
-                        Button {
-                            Task {
-                                guard let url = await controller.shareURL(for: log) else { return }
-                                sharePresentation = .init(url: url)
-                            }
-                        } label: {
+                        ShareLink(item: log.url) {
                             Image(systemName: "square.and.arrow.up")
                         }
                         .buttonStyle(.borderless)
@@ -404,26 +398,8 @@ private struct PerformanceDiagnosticsLogsView: View {
             }
             Button("取消", role: .cancel) {}
         }
-        .sheet(item: $sharePresentation) { presentation in
-            PerformanceDiagnosticsShareSheet(items: [presentation.url])
-        }
         .task { await controller.refreshLogs() }
     }
-}
-
-private struct PerformanceDiagnosticSharePresentation: Identifiable {
-    let url: URL
-    var id: URL { url }
-}
-
-private struct PerformanceDiagnosticsShareSheet: UIViewControllerRepresentable {
-    let items: [Any]
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
-    }
-
-    func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }
 
 private struct BlockedQuestionAuthorsView: View {

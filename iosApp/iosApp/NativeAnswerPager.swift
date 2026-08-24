@@ -158,26 +158,6 @@ private struct QAMarkdownSharePresentation: Identifiable {
     }
 }
 
-private struct QAMarkdownActivityView: UIViewControllerRepresentable {
-    let presentation: QAMarkdownSharePresentation
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        let controller = UIActivityViewController(
-            activityItems: [presentation.activityItem],
-            applicationActivities: nil
-        )
-        controller.completionWithItemsHandler = { _, _, _, _ in
-            presentation.cleanup()
-        }
-        return controller
-    }
-
-    func updateUIViewController(
-        _ uiViewController: UIActivityViewController,
-        context: Context
-    ) {}
-}
-
 private struct NativeAnswerInteractivePopBridge: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> NativeAnswerInteractivePopObserverController {
         NativeAnswerInteractivePopObserverController()

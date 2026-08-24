@@ -487,20 +487,9 @@ private struct PersonBadgeSheet: View {
 
 private struct PersonLegacyShareButton: View {
     let url: URL
-    @State private var isPresenting = false
-
     var body: some View {
-        Button { isPresenting = true } label: { Image(systemName: "square.and.arrow.up") }
-            .sheet(isPresented: $isPresenting) { ActivityViewController(items: [url]) }
+        ShareLink(item: url) {
+            Image(systemName: "square.and.arrow.up")
+        }
     }
-}
-
-private struct ActivityViewController: UIViewControllerRepresentable {
-    let items: [Any]
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
-    }
-
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }

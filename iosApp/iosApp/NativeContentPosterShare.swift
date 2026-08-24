@@ -500,20 +500,21 @@ struct NativeContentPosterShareView: View {
                     Button("取消") { dismiss() }
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    Button("分享") {
-                        guard let renderedImage else { return }
-                        activity = NativeContentPosterActivity(
-                            items: [renderedImage]
-                        )
+                    if let renderedImage {
+                        ShareLink(
+                            item: Image(uiImage: renderedImage),
+                            preview: SharePreview("知乎++分享海报", image: Image(uiImage: renderedImage))
+                        ) {
+                            Text("分享")
+                        }
+                    } else {
+                        Button("分享") {}
+                            .disabled(true)
                     }
-                    .disabled(renderedImage == nil)
                 }
             }
         }
         .task(id: document.id) { await render() }
-        .sheet(item: $activity) { activity in
-            NativeContentPosterActivityView(items: activity.items)
-        }
     }
 
     @MainActor
@@ -530,24 +531,6 @@ struct NativeContentPosterShareView: View {
         }
         isRendering = false
     }
-}
-
-private struct NativeContentPosterActivity: Identifiable {
-    let id = UUID()
-    let items: [Any]
-}
-
-private struct NativeContentPosterActivityView: UIViewControllerRepresentable {
-    let items: [Any]
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
-    }
-
-    func updateUIViewController(
-        _ uiViewController: UIActivityViewController,
-        context: Context
-    ) {}
 }
 
 private extension String {

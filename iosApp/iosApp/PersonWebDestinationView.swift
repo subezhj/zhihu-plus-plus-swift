@@ -239,19 +239,8 @@ private struct PersonWebLegacyShareButton: View {
     @State private var isPresenting = false
 
     var body: some View {
-        Button { isPresenting = true } label: { Image(systemName: "square.and.arrow.up") }
-            .sheet(isPresented: $isPresenting) {
-                PersonWebActivityController(items: [url])
-            }
+        ShareLink(item: url) {
+            Image(systemName: "square.and.arrow.up")
+        }
     }
-}
-
-private struct PersonWebActivityController: UIViewControllerRepresentable {
-    let items: [Any]
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
-    }
-
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
