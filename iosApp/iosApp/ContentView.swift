@@ -191,6 +191,9 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                 } else {
                     ZStack {
                         shape
+                            .fill(Color.nativeSecondarySystemGroupedBackground)
+
+                        shape
                             .fill(.ultraThinMaterial)
 
                         // Real-time specular sheen
@@ -198,21 +201,21 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                             .fill(
                                 LinearGradient(
                                     colors: [
-                                        Color.white.opacity(colorScheme == .dark ? 0.22 : 0.55),
-                                        Color.white.opacity(colorScheme == .dark ? 0.04 : 0.14)
+                                        Color.white.opacity(colorScheme == .dark ? 0.12 : 0.45),
+                                        Color.white.opacity(colorScheme == .dark ? 0.02 : 0.08)
                                     ],
                                     startPoint: .top,
                                     endPoint: .bottom
                                 )
                             )
 
-                        // 3D Glass rim edge
+                        // Apple standard 3D Glass rim edge stroke
                         shape
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        Color.white.opacity(colorScheme == .dark ? 0.6 : 0.8),
-                                        Color.primary.opacity(0.1)
+                                        Color.white.opacity(colorScheme == .dark ? 0.35 : 0.65),
+                                        Color.white.opacity(colorScheme == .dark ? 0.08 : 0.2)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
