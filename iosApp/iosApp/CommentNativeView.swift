@@ -489,24 +489,39 @@ private struct CommentRow: View {
         self.onShare = onShare
     }
 
+    @Environment(\.nativeContentPresentation) private var presentation
+
     var body: some View {
-        rowContent
-            .contextMenu {
-                Button(action: beginReply) {
-                    Label("回复 @\(comment.author.displayName)", systemImage: "arrowshape.turn.up.left")
+        Group {
+            if presentation.liquidGlassEnabled {
+                rowContent
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .liquidGlassCard(cornerRadius: 16, isProminent: false)
+            } else {
+                VStack(alignment: .leading, spacing: 0) {
+                    rowContent
+                        .padding(.vertical, 10)
+                    NativeThinDivider()
                 }
-                Button {
-                    UIPasteboard.general.string = CommentPlainText.value(from: comment.contentHTML)
-                } label: {
-                    Label("复制评论", systemImage: "doc.on.doc")
-                }
-                Button(action: onShare) {
-                    Label("分享", systemImage: "square.and.arrow.up")
-                }
-                .accessibilityIdentifier("comment_context_share_\(comment.id)")
             }
-            .accessibilityIdentifier("comment_row_\(comment.id)")
-            .accessibilityHint("长按或左滑可回复、复制或分享")
+        }
+        .contextMenu {
+            Button(action: beginReply) {
+                Label("回复 @\(comment.author.displayName)", systemImage: "arrowshape.turn.up.left")
+            }
+            Button {
+                UIPasteboard.general.string = CommentPlainText.value(from: comment.contentHTML)
+            } label: {
+                Label("复制评论", systemImage: "doc.on.doc")
+            }
+            Button(action: onShare) {
+                Label("分享", systemImage: "square.and.arrow.up")
+            }
+            .accessibilityIdentifier("comment_context_share_\(comment.id)")
+        }
+        .accessibilityIdentifier("comment_row_\(comment.id)")
+        .accessibilityHint("长按或左滑可回复、复制或分享")
     }
 
     private var rowContent: some View {
@@ -610,9 +625,6 @@ private struct CommentRow: View {
             .foregroundStyle(.tint)
             .buttonStyle(.borderless)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .liquidGlassCard(cornerRadius: 16, isProminent: false)
         .contentShape(Rectangle())
     }
 

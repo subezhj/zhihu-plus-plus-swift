@@ -287,7 +287,7 @@ private struct AnswerActionBar: View {
         actions
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
-            .liquidGlassCapsule()
+            .liquidGlassCapsule(ignoreToggle: true)
             .padding(.horizontal, 20)
             .padding(.vertical, 6)
     }

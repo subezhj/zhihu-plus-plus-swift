@@ -23,64 +23,76 @@ struct FeedItemRow: View {
         Button {
             onOpen(item.route)
         } label: {
-            VStack(alignment: .leading, spacing: 7) {
-                HStack(alignment: .top, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(item.title)
-                            .font(.headline.weight(.semibold))
-                            .foregroundStyle(.primary)
-                            .lineLimit(2)
+            if presentation.liquidGlassEnabled {
+                rowContent
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .liquidGlassCard(cornerRadius: 16, isProminent: false)
+            } else {
+                VStack(alignment: .leading, spacing: 0) {
+                    rowContent
+                        .padding(.vertical, 12)
+                    NativeThinDivider()
+                }
+            }
+        }
+        .buttonStyle(.plain)
+    }
 
-                        if let summary = item.summary, !summary.isEmpty {
-                            let renderedPointSize = summaryPointSize * presentation.fontScale
-                            Text(summary)
-                                .font(.system(size: renderedPointSize))
-                                .foregroundStyle(.secondary)
-                                .lineSpacing(presentation.extraLineSpacing(for: renderedPointSize) * 0.45)
-                                .lineLimit(presentation.feedExcerptLines)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+    private var rowContent: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(item.title)
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(2)
 
-                    if showsThumbnail, presentation.showsFeedThumbnails, item.media.isEmpty,
-                       thumbnailPlacement == .trailing,
-                       let thumbnailURL = item.thumbnailURL {
-                        FeedSingleThumbnail(
-                            url: thumbnailURL,
-                            cropAnchor: thumbnailPlacement.cropAnchor
-                        )
-                        .frame(width: 86, height: 62)
-                        .clipped()
+                    if let summary = item.summary, !summary.isEmpty {
+                        let renderedPointSize = summaryPointSize * presentation.fontScale
+                        Text(summary)
+                            .font(.system(size: renderedPointSize))
+                            .foregroundStyle(.secondary)
+                            .lineSpacing(presentation.extraLineSpacing(for: renderedPointSize) * 0.45)
+                            .lineLimit(presentation.feedExcerptLines)
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                if showsThumbnail,
-                   presentation.showsFeedThumbnails,
-                   item.media.isEmpty,
-                   thumbnailPlacement == .wideInline,
+                if showsThumbnail, presentation.showsFeedThumbnails, item.media.isEmpty,
+                   thumbnailPlacement == .trailing,
                    let thumbnailURL = item.thumbnailURL {
                     FeedSingleThumbnail(
                         url: thumbnailURL,
                         cropAnchor: thumbnailPlacement.cropAnchor
                     )
-                    .frame(maxWidth: .infinity)
-                    .frame(height: wideThumbnailHeight)
+                    .frame(width: 86, height: 62)
                     .clipped()
                 }
-
-                if showsThumbnail, presentation.showsFeedThumbnails, !item.media.isEmpty {
-                    FeedMediaPreview(media: item.media)
-                }
-
-                FeedItemMetadataRow(item: item)
-                    .padding(.top, 2)
             }
-            .contentShape(Rectangle())
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .liquidGlassCard(cornerRadius: 16, isProminent: false)
+
+            if showsThumbnail,
+               presentation.showsFeedThumbnails,
+               item.media.isEmpty,
+               thumbnailPlacement == .wideInline,
+               let thumbnailURL = item.thumbnailURL {
+                FeedSingleThumbnail(
+                    url: thumbnailURL,
+                    cropAnchor: thumbnailPlacement.cropAnchor
+                )
+                .frame(maxWidth: .infinity)
+                .frame(height: wideThumbnailHeight)
+                .clipped()
+            }
+
+            if showsThumbnail, presentation.showsFeedThumbnails, !item.media.isEmpty {
+                FeedMediaPreview(media: item.media)
+            }
+
+            FeedItemMetadataRow(item: item)
+                .padding(.top, 2)
         }
-        .buttonStyle(.plain)
+        .contentShape(Rectangle())
     }
 
     private var thumbnailPlacement: FeedThumbnailPlacement {
