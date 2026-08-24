@@ -81,8 +81,8 @@ struct NativeCollectionsView: View {
                 .font(.headline.weight(.semibold))
                 .foregroundStyle(.primary)
                 .lineLimit(2)
-            if let description = collection.description, !description.isEmpty {
-                Text(description)
+            if !collection.description.isEmpty {
+                Text(collection.description)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
