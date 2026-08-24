@@ -183,14 +183,14 @@ struct QrAuthorizationView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                Divider()
+                NativeThinDivider()
             } else if let message = model.webErrorMessage {
                 Label(message, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.red)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                Divider()
+                NativeThinDivider()
             }
 
             QrAuthorizationWebView(

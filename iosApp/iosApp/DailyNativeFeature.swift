@@ -397,6 +397,8 @@ struct DailyNativeView: View {
         self.onOpen = onOpen
     }
 
+    @Environment(\.nativeContentPresentation) private var presentation
+
     var body: some View {
         ScrollViewReader { proxy in
             List {
@@ -430,26 +432,23 @@ struct DailyNativeView: View {
                                     }
                                 }
                             } label: {
-                                HStack(alignment: .top, spacing: 12) {
-                                    VStack(alignment: .leading, spacing: 5) {
-                                        Text(story.title).font(.headline).foregroundStyle(.primary)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                        Text(story.hint).font(.caption).foregroundStyle(.secondary)
-                                    }
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    if let imageURL = story.imageURL {
-                                        AsyncImage(url: imageURL) { image in
-                                            image.resizable().scaledToFill()
-                                        } placeholder: {
-                                            Color.secondary.opacity(0.12)
-                                        }
-                                        .frame(width: 92, height: 68)
-                                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                if presentation.liquidGlassEnabled {
+                                    dailyStoryContent(story)
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 12)
+                                        .liquidGlassCard(cornerRadius: 16, isProminent: false)
+                                } else {
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        dailyStoryContent(story)
+                                            .padding(.vertical, 10)
+                                        NativeThinDivider()
                                     }
                                 }
                             }
                             .buttonStyle(.plain)
-                            .listRowInsets(EdgeInsets(top: 6, leading: 18, bottom: 6, trailing: 18))
+                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
                         }
                     }
                 }
@@ -533,6 +532,28 @@ struct DailyNativeView: View {
             }
         }
         .accessibilityIdentifier("daily_native")
+    }
+
+    @ViewBuilder
+    private func dailyStoryContent(_ story: DailyStorySummary) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(story.title).font(.headline).foregroundStyle(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(story.hint).font(.caption).foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            if let imageURL = story.imageURL {
+                AsyncImage(url: imageURL) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    Color.secondary.opacity(0.12)
+                }
+                .frame(width: 92, height: 68)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+        }
+        .contentShape(Rectangle())
     }
 
     private func formatted(_ date: String) -> String {

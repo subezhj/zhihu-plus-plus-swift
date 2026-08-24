@@ -371,7 +371,7 @@ private struct NativePaginationFooter: View {
                 }
                 .frame(height: 52)
             }
-            Divider()
+            NativeThinDivider()
         }
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)

@@ -594,7 +594,7 @@ struct WritePinNativeView: View {
                 .font(.title2.bold())
                 .textFieldStyle(.plain)
                 .padding(.horizontal)
-            Divider().padding(.horizontal)
+            NativeThinDivider().padding(.horizontal)
             TextEditor(text: $store.text)
                 .overlay(alignment: .topLeading) {
                     if store.text.isEmpty { Text("分享你此刻的想法…").foregroundStyle(.secondary).padding(8) }

@@ -232,7 +232,7 @@ struct NativeLoginView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .accessibilityIdentifier("login_verify_loading")
-            Divider()
+            NativeThinDivider()
         } else if model.isWebLoading {
             HStack(spacing: 10) {
                 ProgressView()
@@ -242,14 +242,14 @@ struct NativeLoginView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .accessibilityIdentifier("login_web_loading")
-            Divider()
+            NativeThinDivider()
         } else if let errorMessage = model.errorMessage {
             Label(errorMessage, systemImage: "exclamationmark.triangle")
                 .foregroundStyle(.red)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-            Divider()
+            NativeThinDivider()
         }
     }
 }

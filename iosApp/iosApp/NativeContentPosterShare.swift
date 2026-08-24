@@ -309,7 +309,7 @@ private struct NativeContentPosterView: View {
                     }
                 }
 
-                Divider()
+                NativeThinDivider()
 
                 VStack(alignment: .leading, spacing: 15) {
                     ForEach(Array(prepared.document.blocks.enumerated()), id: \.offset) { _, block in
@@ -434,7 +434,7 @@ private struct NativeContentPosterView: View {
                 }
             }
         case .divider:
-            Divider()
+            NativeThinDivider()
         }
     }
 

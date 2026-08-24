@@ -182,7 +182,7 @@ struct RiskControlView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .accessibilityIdentifier("risk_control_completing")
-            Divider()
+            NativeThinDivider()
         } else if model.isLoading {
             HStack(spacing: 10) {
                 ProgressView()
@@ -192,14 +192,14 @@ struct RiskControlView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .accessibilityIdentifier("risk_control_loading")
-            Divider()
+            NativeThinDivider()
         } else if let errorMessage = model.errorMessage {
             Label(errorMessage, systemImage: "exclamationmark.triangle")
                 .foregroundStyle(.red)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-            Divider()
+            NativeThinDivider()
         }
     }
 }
