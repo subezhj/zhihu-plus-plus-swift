@@ -212,12 +212,11 @@ struct HomeChannelsNativeView: View {
     }
 
     private var homeTopTrailingControls: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             ForEach(HomeTopBarControl.visibleControls) { control in
                 homeTopBarButton(control)
             }
         }
-        .padding(.trailing, 2)
     }
 
     @ViewBuilder
@@ -225,15 +224,16 @@ struct HomeChannelsNativeView: View {
         switch control {
         case .creation:
             Button(action: onOpenCreation) {
-                HStack(spacing: 5) {
+                HStack(spacing: 4) {
                     Image(systemName: "square.and.pencil")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                     Text("想法")
                         .font(.subheadline.weight(.medium))
+                        .fixedSize(horizontal: true, vertical: false)
                 }
                 .foregroundStyle(Color.primary)
-                .padding(.horizontal, 12)
-                .frame(height: 36)
+                .padding(.horizontal, 10)
+                .frame(height: 34)
                 .liquidGlassCapsule(isProminent: false)
                 .contentShape(Capsule())
             }
@@ -246,14 +246,14 @@ struct HomeChannelsNativeView: View {
                 unreadCount: notificationUnreadCount
             )
             Button(action: onOpenNotifications) {
-                HStack(spacing: 5) {
+                HStack(spacing: 4) {
                     Image(systemName: "bell")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .overlay(alignment: .topTrailing) {
                             if presentation.showsDot {
                                 Circle()
                                     .fill(.red)
-                                    .frame(width: 8, height: 8)
+                                    .frame(width: 7, height: 7)
                                     .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 1.5))
                                     .offset(x: 2, y: -2)
                                     .accessibilityHidden(true)
@@ -261,18 +261,19 @@ struct HomeChannelsNativeView: View {
                         }
                     Text("通知")
                         .font(.subheadline.weight(.medium))
+                        .fixedSize(horizontal: true, vertical: false)
                     if notificationUnreadCount > 0 {
                         Text("\(notificationUnreadCount)")
                             .font(.caption2.bold())
                             .foregroundStyle(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
                             .background(Capsule().fill(.red))
                     }
                 }
                 .foregroundStyle(Color.primary)
-                .padding(.horizontal, 12)
-                .frame(height: 36)
+                .padding(.horizontal, 10)
+                .frame(height: 34)
                 .liquidGlassCapsule(isProminent: false)
                 .contentShape(Capsule())
             }

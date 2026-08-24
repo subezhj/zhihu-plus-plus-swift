@@ -161,7 +161,6 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                 if !ignoreToggle && !presentation.liquidGlassEnabled {
                     shape
                         .fill(Color.nativeSecondarySystemGroupedBackground)
-                        .animation(.linear(duration: 0.2), value: presentation.liquidGlassEnabled)
                 } else if isProminent {
                     ZStack {
                         shape
@@ -190,7 +189,6 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                             )
                     }
                     .compositingGroup()
-                    .animation(.easeInOut(duration: 0.3), value: colorScheme)
                 } else {
                     ZStack {
                         shape
@@ -227,7 +225,6 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                             )
                     }
                     .compositingGroup()
-                    .animation(.easeInOut(duration: 0.3), value: colorScheme)
                 }
             }
     }

@@ -643,6 +643,8 @@ private struct NativeFeedPaginationLoadingRow: View {
             Spacer(minLength: 0)
         }
         .frame(minHeight: 56)
+        .listRowBackground(Color.nativeSystemBackground)
+        .listRowSeparator(.hidden)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("feed_pagination_loading")
     }
