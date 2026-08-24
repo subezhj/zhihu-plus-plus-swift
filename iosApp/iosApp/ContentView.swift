@@ -29,6 +29,15 @@ struct AppHostView: View {
             tabAppearance.shadowColor = UIColor.separator.withAlphaComponent(0.15)
             UITabBar.appearance().standardAppearance = tabAppearance
             UITabBar.appearance().scrollEdgeAppearance = tabAppearance
+
+            // Configure system-wide list / scroll background to #191919 in dark mode
+            let dynamicDark = UIColor { traits in
+                traits.userInterfaceStyle == .dark
+                    ? UIColor(red: 25.0 / 255.0, green: 25.0 / 255.0, blue: 25.0 / 255.0, alpha: 1.0)
+                    : .systemBackground
+            }
+            UICollectionView.appearance().backgroundColor = dynamicDark
+            UITableView.appearance().backgroundColor = dynamicDark
         }
         .fullScreenCover(item: $router.presentedModal, onDismiss: hostModel.modalDidDismiss) { modal in
             switch modal {

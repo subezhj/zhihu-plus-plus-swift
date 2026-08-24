@@ -18,35 +18,57 @@ struct NativeCollectionsView: View {
 
     var body: some View {
         List {
-            if let error = store.errorMessage, !store.collections.isEmpty {
-                NativeInlineRetry(message: error) { Task { await store.loadMore() } }
-            }
-            ForEach(store.collections) { collection in
-                NavigationLink(value: NativeShellRoute.collectionContent(collection.id)) {
-                    if presentation.liquidGlassEnabled {
-                        collectionRow(collection)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 12)
-                            .liquidGlassCard(cornerRadius: 16, isProminent: false)
-                    } else {
-                        VStack(alignment: .leading, spacing: 0) {
+            if store.collections.isEmpty {
+                if store.isLoading {
+                    HStack {
+                        Spacer()
+                        ProgressView("正在加载收藏夹")
+                        Spacer()
+                    }
+                    .padding(.top, 40)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                } else if let error = store.errorMessage {
+                    NativeUnavailableState(title: "无法加载收藏夹", message: error, actionTitle: "重试") {
+                        Task { await store.refresh() }
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                } else {
+                    NativeUnavailableState(title: "还没有收藏夹", message: "收藏的内容会显示在这里")
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                }
+            } else {
+                if let error = store.errorMessage {
+                    NativeInlineRetry(message: error) { Task { await store.loadMore() } }
+                }
+                ForEach(store.collections) { collection in
+                    NavigationLink(value: NativeShellRoute.collectionContent(collection.id)) {
+                        if presentation.liquidGlassEnabled {
                             collectionRow(collection)
-                                .padding(.vertical, 10)
-                            NativeThinDivider()
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 12)
+                                .liquidGlassCard(cornerRadius: 16, isProminent: false)
+                        } else {
+                            VStack(alignment: .leading, spacing: 0) {
+                                collectionRow(collection)
+                                    .padding(.vertical, 10)
+                                NativeThinDivider()
+                            }
                         }
                     }
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
                 }
-                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
+                paginationFooter
             }
-            paginationFooter
         }
         .listStyle(.plain)
         .navigationTitle("我的收藏夹")
         .navigationBarTitleDisplayMode(.large)
         .refreshable { await store.refresh() }
-        .overlay { initialState }
         .task {
             if store.collections.isEmpty, !store.isLoading { await store.refresh() }
         }
@@ -58,8 +80,9 @@ struct NativeCollectionsView: View {
             Text(collection.title)
                 .font(.headline.weight(.semibold))
                 .foregroundStyle(.primary)
-            if !collection.description.isEmpty {
-                Text(collection.description)
+                .lineLimit(2)
+            if let description = collection.description, !description.isEmpty {
+                Text(description)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
@@ -76,18 +99,6 @@ struct NativeCollectionsView: View {
             HStack { Spacer(); ProgressView(); Spacer() }
         } else if !store.isEnd, !store.collections.isEmpty {
             Color.clear.frame(height: 1).task { await store.loadMore() }
-        }
-    }
-
-    @ViewBuilder private var initialState: some View {
-        if store.isLoading, store.collections.isEmpty {
-            ProgressView("正在加载收藏夹")
-        } else if let error = store.errorMessage, store.collections.isEmpty {
-            NativeUnavailableState(title: "无法加载收藏夹", message: error, actionTitle: "重试") {
-                Task { await store.refresh() }
-            }
-        } else if store.collections.isEmpty {
-            NativeUnavailableState(title: "还没有收藏夹", message: "收藏的内容会显示在这里")
         }
     }
 }
