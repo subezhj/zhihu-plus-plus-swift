@@ -396,6 +396,9 @@ private struct CommentLevelView: View {
                         .accessibilityIdentifier("comment_swipe_share_\(comment.id)")
                     }
                     .onAppear { store.loadNextIfNeeded(after: comment.id, level: level) }
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
             }
             pageFooter(page)
         }
@@ -607,7 +610,9 @@ private struct CommentRow: View {
             .foregroundStyle(.tint)
             .buttonStyle(.borderless)
         }
-        .padding(.vertical, 6)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .liquidGlassCard(cornerRadius: 16, isProminent: false)
         .contentShape(Rectangle())
     }
 

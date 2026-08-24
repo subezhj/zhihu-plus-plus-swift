@@ -24,9 +24,9 @@ struct AppHostView: View {
         }
         .onAppear {
             let appearance = UITabBarAppearance()
-            appearance.configureWithDefaultBackground()
+            appearance.configureWithTransparentBackground()
             appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
-            appearance.shadowColor = UIColor.separator.withAlphaComponent(0.2)
+            appearance.shadowColor = UIColor.separator.withAlphaComponent(0.15)
             UITabBar.appearance().standardAppearance = appearance
             UITabBar.appearance().scrollEdgeAppearance = appearance
         }

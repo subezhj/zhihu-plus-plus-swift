@@ -262,6 +262,9 @@ struct SearchNativeView: View {
 
         ForEach(visibleItems) { item in
             FeedItemRow(item: item, showsThumbnail: true, onOpen: onOpen)
+                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
         }
 
         if let error = store.resultErrorMessage {

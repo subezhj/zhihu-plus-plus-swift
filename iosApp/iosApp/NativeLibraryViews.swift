@@ -22,15 +22,26 @@ struct NativeCollectionsView: View {
             ForEach(store.collections) { collection in
                 NavigationLink(value: NativeShellRoute.collectionContent(collection.id)) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(collection.title).font(.headline)
+                        Text(collection.title)
+                            .font(.headline.weight(.semibold))
+                            .foregroundStyle(.primary)
                         if !collection.description.isEmpty {
-                            Text(collection.description).font(.subheadline).foregroundStyle(.secondary).lineLimit(2)
+                            Text(collection.description)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(2)
                         }
                         Text("\(collection.itemCount) 条收藏 · \(collection.likeCount) 个赞同")
-                            .font(.caption).foregroundStyle(.secondary)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .liquidGlassCard(cornerRadius: 16, isProminent: false)
                 }
+                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
             }
             paginationFooter
         }
