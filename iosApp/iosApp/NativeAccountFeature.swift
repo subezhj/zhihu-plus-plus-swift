@@ -385,6 +385,7 @@ struct NativeAccountView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
                     .disabled(
                         store.currentAccountID == account.id ||
                         store.switchingToAccountID != nil ||
@@ -404,6 +405,7 @@ struct NativeAccountView: View {
                 Button(action: actions.openLogin) {
                     Label("添加账号", systemImage: "person.crop.circle.badge.plus")
                 }
+                .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
                 .disabled(store.switchingToAccountID != nil || store.deletingAccountID != nil)
             } header: {
                 Text("账号管理")
@@ -432,23 +434,27 @@ struct NativeAccountView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
 
                 Button {
                     actions.openQrAuthorization()
                 } label: {
                     Label("扫描二维码授权登录", systemImage: "qrcode.viewfinder")
                 }
+                .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
 
                 Button(role: .destructive) {
                     confirmsSignOut = true
                 } label: {
                     Label("退出登录", systemImage: "rectangle.portrait.and.arrow.right")
                 }
+                .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
                 .disabled(store.isSigningOut)
             } else {
                 Button(action: actions.openLogin) {
                     Label("登录知乎", systemImage: "person.crop.circle.badge.plus")
                 }
+                .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
             }
 
             if case let .failed(message, _) = store.state {
@@ -457,6 +463,7 @@ struct NativeAccountView: View {
                     Button("重新读取", action: store.reloadFromKeychain)
                         .font(.footnote.weight(.semibold))
                 }
+                .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
             }
         }
     }
@@ -467,13 +474,16 @@ struct NativeAccountView: View {
                 NavigationLink(value: NativeShellRoute.collections(userToken: token)) {
                     Label("收藏夹", systemImage: "bookmark")
                 }
+                .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
             }
             NavigationLink(value: NativeShellRoute.history) {
                 Label("浏览历史", systemImage: "clock.arrow.circlepath")
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
             NavigationLink(value: NativeShellRoute.notifications) {
                 Label("通知", systemImage: "bell")
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
         }
     }
 
@@ -482,6 +492,7 @@ struct NativeAccountView: View {
             NavigationLink(value: NativeShellRoute.settings) {
                 Label("设置", systemImage: "gearshape")
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
         }
     }
 
@@ -494,9 +505,11 @@ struct NativeAccountView: View {
     private var aboutSection: some View {
         Section {
             LabeledContent("知乎++", value: appVersionString)
+                .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
             NavigationLink(value: NativeShellRoute.systemAndUpdate) {
                 Label("系统与更新", systemImage: "info.circle")
             }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
         } header: {
             Text("关于")
         } footer: {

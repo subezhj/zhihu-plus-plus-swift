@@ -341,16 +341,26 @@ struct NativeNotificationsView: View {
                 }
                 .pickerStyle(.segmented)
             }
+            .listRowBackground(Color.nativeSystemBackground)
+            .listRowSeparator(.hidden)
+
             if let error = store.errorMessage, !store.items.isEmpty {
                 NativeInlineRetry(message: error) { Task { await store.loadMore() } }
+                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowSeparator(.hidden)
             }
             ForEach(store.items) { item in
                 NativeNotificationRow(item: item, onOpenContent: onOpenContent)
+                    .listRowBackground(Color.nativeSystemBackground)
             }
             if store.isLoading, !store.items.isEmpty {
                 HStack { Spacer(); ProgressView(); Spacer() }
+                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowSeparator(.hidden)
             } else if !store.items.isEmpty {
                 Color.clear.frame(height: 1).task { await store.loadMore() }
+                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowSeparator(.hidden)
             }
         }
         .listStyle(.plain)

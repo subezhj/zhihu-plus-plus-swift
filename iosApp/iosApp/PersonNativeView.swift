@@ -31,6 +31,8 @@ struct PersonNativeView: View {
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .background(PersonScrollViewAccessor { listScrollView = $0 })
         .refreshable { await store.refreshVisiblePage() }
         .navigationTitle(store.navigationTitle)
@@ -65,6 +67,7 @@ struct PersonNativeView: View {
             }
         }
         .listRowSeparator(.hidden)
+        .listRowBackground(Color.nativeSystemBackground)
     }
 
     private func profileHeader(_ profile: PersonProfile) -> some View {
@@ -87,6 +90,7 @@ struct PersonNativeView: View {
         if let sort = store.sortByTab[store.selectedTab] {
             PersonSortControl(selection: sort, onSelect: store.changeSort)
                 .listRowSeparator(.hidden)
+                .listRowBackground(Color.nativeSystemBackground)
         }
 
         let page = store.visiblePage
@@ -94,6 +98,7 @@ struct PersonNativeView: View {
         case .idle where page.items.isEmpty, .loading where page.items.isEmpty:
             ForEach(0..<4, id: \.self) { _ in
                 PersonRowPlaceholder().redacted(reason: .placeholder)
+                    .listRowBackground(Color.nativeSystemBackground)
             }
         case let .failed(error) where page.items.isEmpty:
             PersonUnavailableContent(
@@ -104,6 +109,7 @@ struct PersonNativeView: View {
                 action: store.retryInitialPage
             )
             .listRowSeparator(.hidden)
+            .listRowBackground(Color.nativeSystemBackground)
         case .loaded where page.items.isEmpty:
             PersonUnavailableContent(
                 title: "暂无内容",
@@ -113,13 +119,16 @@ struct PersonNativeView: View {
                 action: nil
             )
             .listRowSeparator(.hidden)
+            .listRowBackground(Color.nativeSystemBackground)
         default:
             if case let .failed(error) = page.initialLoad {
                 InlinePersonFailure(message: error.message, retryTitle: "重新加载当前列表", retry: store.retryInitialPage)
+                    .listRowBackground(Color.nativeSystemBackground)
             }
             ForEach(page.items) { item in
                 PersonPageRow(item: item) { store.open(item) }
                     .id(item.id)
+                    .listRowBackground(Color.nativeSystemBackground)
                     .onAppear { store.loadNextPageIfNeeded(after: item.id) }
             }
             pageFooter(page)
@@ -133,15 +142,18 @@ struct PersonNativeView: View {
             HStack { Spacer(); ProgressView("正在加载更多"); Spacer() }
                 .font(.caption)
                 .listRowSeparator(.hidden)
+                .listRowBackground(Color.nativeSystemBackground)
         case let .failed(error):
             InlinePersonFailure(message: error.message, retryTitle: "重新加载更多内容", retry: store.retryNextPage)
                 .listRowSeparator(.hidden)
+                .listRowBackground(Color.nativeSystemBackground)
         case .idle where page.isEnd && !page.items.isEmpty:
             Text("已经到底了")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity)
                 .listRowSeparator(.hidden)
+                .listRowBackground(Color.nativeSystemBackground)
         default:
             EmptyView()
         }

@@ -7,9 +7,9 @@ struct PersonTabSelector: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             tabs
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(.ultraThinMaterial, in: Capsule())
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .liquidGlassCapsule()
                 .padding(.horizontal, 4)
         }
         .accessibilityIdentifier("person_main_tabs")
