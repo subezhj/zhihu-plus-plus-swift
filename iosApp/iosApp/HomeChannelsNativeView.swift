@@ -91,25 +91,18 @@ struct HomeChannelsNativeView: View {
     }
 
     var body: some View {
-        let refreshPresentations = currentRefreshPresentations
-        NativeChannelSwitcher(
-            channels: HomeChannel.allCases,
-            selection: $selectedChannelID,
-            isEnabled: isOperationallyVisible,
-            title: \.title,
-            systemImage: \.systemImage,
-            status: {
-                refreshPresentations.presentation(for: $0).statusText(
-                    now: refreshStatusNow
-                )
-            },
-            collapseProgress: selectedCollapseProgress
-        ) { channel in
-            channelContent(channel)
+        ZStack {
+            channelContent(selectedChannel)
+                .id(selectedChannelID)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.nativeSystemBackground.ignoresSafeArea())
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                homeTopLeadingChannelMenu
+            }
             ToolbarItemGroup(placement: .topBarTrailing) {
                 homeTopTrailingControls
             }
@@ -183,6 +176,39 @@ struct HomeChannelsNativeView: View {
                 onOpen: onOpenDaily
             )
         }
+    }
+
+    private var homeTopLeadingChannelMenu: some View {
+        Menu {
+            ForEach(HomeChannel.allCases) { channel in
+                Button {
+                    guard selectedChannelID != channel.rawValue else { return }
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        selectedChannelID = channel.rawValue
+                    }
+                    hapticFeedback(.selection)
+                } label: {
+                    Label(channel.title, systemImage: channel.systemImage)
+                }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: selectedChannel.systemImage)
+                    .font(.system(size: 14, weight: .semibold))
+                Text(selectedChannel.title)
+                    .font(.subheadline.weight(.semibold))
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(.secondary)
+            }
+            .foregroundStyle(Color.primary)
+            .padding(.horizontal, 12)
+            .frame(height: 36)
+            .liquidGlassCapsule(isProminent: true)
+            .contentShape(Capsule())
+        }
+        .accessibilityLabel("切换首页频道，当前为\(selectedChannel.title)")
+        .accessibilityIdentifier("home_channel_menu")
     }
 
     private var homeTopTrailingControls: some View {

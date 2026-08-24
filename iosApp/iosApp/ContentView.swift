@@ -189,6 +189,7 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                                 lineWidth: 0.5
                             )
                     }
+                    .compositingGroup()
                     .animation(.easeInOut(duration: 0.3), value: colorScheme)
                 } else {
                     ZStack {
@@ -225,6 +226,7 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                                 lineWidth: 0.5
                             )
                     }
+                    .compositingGroup()
                     .animation(.easeInOut(duration: 0.3), value: colorScheme)
                 }
             }
