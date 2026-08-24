@@ -36,6 +36,7 @@ struct NativeCollectionsView: View {
         }
         .listStyle(.plain)
         .navigationTitle("我的收藏夹")
+        .navigationBarTitleDisplayMode(.large)
         .refreshable { await store.refresh() }
         .overlay { initialState }
         .task {

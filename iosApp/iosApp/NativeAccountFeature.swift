@@ -320,11 +320,6 @@ struct NativeAccountView: View {
 
     var body: some View {
         List {
-            NativeRootLargeTitle(
-                "账号",
-                coordinateSpaceName: "account-root-scroll",
-                collapseProgress: $titleCollapseProgress
-            )
             accountSection
             accountManagementSection
             if let identity = store.identity {
@@ -334,16 +329,8 @@ struct NativeAccountView: View {
             aboutSection
         }
         .listStyle(.insetGrouped)
-        .coordinateSpace(name: "account-root-scroll")
-        .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            if NativeRootCompactTitle.shouldRender(collapseProgress: titleCollapseProgress) {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    NativeRootCompactTitle("账号", collapseProgress: titleCollapseProgress)
-                }
-            }
-        }
+        .navigationTitle("账号")
+        .navigationBarTitleDisplayMode(.large)
         .refreshable {
             if store.isSignedIn { await store.refresh() }
         }

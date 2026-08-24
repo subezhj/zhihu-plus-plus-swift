@@ -201,11 +201,7 @@ struct HomeChannelsNativeView: View {
                 Image(systemName: "square.and.pencil")
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(.primary)
-                    .frame(width: 36, height: 36)
             }
-            .buttonStyle(.plain)
-            .liquidGlassCircle()
-            .contentShape(Circle())
             .accessibilityLabel("创作")
             .accessibilityIdentifier("home_creation_entry")
 
@@ -217,7 +213,6 @@ struct HomeChannelsNativeView: View {
                 Image(systemName: "bell")
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(.primary)
-                    .frame(width: 36, height: 36)
                     .overlay(alignment: .topTrailing) {
                         if presentation.showsDot {
                             Circle()
@@ -229,9 +224,6 @@ struct HomeChannelsNativeView: View {
                         }
                     }
             }
-            .buttonStyle(.plain)
-            .liquidGlassCircle()
-            .contentShape(Circle())
             .accessibilityLabel(presentation.accessibilityLabel)
             .accessibilityValue(presentation.accessibilityValue)
             .accessibilityIdentifier("home_notifications_entry")

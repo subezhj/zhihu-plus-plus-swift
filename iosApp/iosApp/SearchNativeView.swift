@@ -88,10 +88,12 @@ struct SearchNativeView: View {
     }
 
     private var searchField: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             Image(systemName: "magnifyingglass")
+                .font(.system(size: 15))
                 .foregroundStyle(.secondary)
             TextField(searchPrompt, text: $store.queryText)
+                .font(.system(size: 16))
                 .focused($isSearchFieldFocused)
                 .accessibilityIdentifier("search_input")
                 .submitLabel(.search)
@@ -105,6 +107,7 @@ struct SearchNativeView: View {
                     store.queryText = ""
                 } label: {
                     Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 15))
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
@@ -112,9 +115,8 @@ struct SearchNativeView: View {
             }
         }
         .padding(.horizontal, 10)
-        .frame(minWidth: 260, maxWidth: .infinity)
-        .frame(height: 36)
-        .liquidGlassCapsule(isProminent: false)
+        .padding(.vertical, 7)
+        .background(Color(uiColor: .secondarySystemFill), in: Capsule())
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("search_field")
     }
