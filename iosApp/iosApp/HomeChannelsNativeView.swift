@@ -191,6 +191,7 @@ struct HomeChannelsNativeView: View {
                 homeTopBarButton(control)
             }
         }
+        .padding(.trailing, 2)
     }
 
     @ViewBuilder
@@ -198,11 +199,20 @@ struct HomeChannelsNativeView: View {
         switch control {
         case .creation:
             Button(action: onOpenCreation) {
-                Image(systemName: "square.and.pencil")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(.primary)
+                HStack(spacing: 5) {
+                    Image(systemName: "square.and.pencil")
+                        .font(.system(size: 15, weight: .semibold))
+                    Text("想法")
+                        .font(.subheadline.weight(.medium))
+                }
+                .foregroundStyle(Color.primary)
+                .padding(.horizontal, 12)
+                .frame(height: 36)
+                .liquidGlassCapsule(isProminent: false)
+                .contentShape(Capsule())
             }
-            .accessibilityLabel("创作")
+            .buttonStyle(.plain)
+            .accessibilityLabel("发想法")
             .accessibilityIdentifier("home_creation_entry")
 
         case .notifications:
@@ -210,20 +220,37 @@ struct HomeChannelsNativeView: View {
                 unreadCount: notificationUnreadCount
             )
             Button(action: onOpenNotifications) {
-                Image(systemName: "bell")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(.primary)
-                    .overlay(alignment: .topTrailing) {
-                        if presentation.showsDot {
-                            Circle()
-                                .fill(.red)
-                                .frame(width: 8, height: 8)
-                                .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 1.5))
-                                .offset(x: -1, y: 1)
-                                .accessibilityHidden(true)
+                HStack(spacing: 5) {
+                    Image(systemName: "bell")
+                        .font(.system(size: 15, weight: .semibold))
+                        .overlay(alignment: .topTrailing) {
+                            if presentation.showsDot {
+                                Circle()
+                                    .fill(.red)
+                                    .frame(width: 8, height: 8)
+                                    .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 1.5))
+                                    .offset(x: 2, y: -2)
+                                    .accessibilityHidden(true)
+                            }
                         }
+                    Text("通知")
+                        .font(.subheadline.weight(.medium))
+                    if notificationUnreadCount > 0 {
+                        Text("\(notificationUnreadCount)")
+                            .font(.caption2.bold())
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(.red))
                     }
+                }
+                .foregroundStyle(Color.primary)
+                .padding(.horizontal, 12)
+                .frame(height: 36)
+                .liquidGlassCapsule(isProminent: false)
+                .contentShape(Capsule())
             }
+            .buttonStyle(.plain)
             .accessibilityLabel(presentation.accessibilityLabel)
             .accessibilityValue(presentation.accessibilityValue)
             .accessibilityIdentifier("home_notifications_entry")

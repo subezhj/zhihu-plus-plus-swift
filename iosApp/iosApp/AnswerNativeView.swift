@@ -21,6 +21,7 @@ struct AnswerNativeView: View {
                 case .idle, .loading, .loaded:
                     ProgressView("正在加载正文")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.nativeSystemBackground.ignoresSafeArea())
                 }
             }
         }
@@ -345,6 +346,8 @@ private struct QACollectionsSheet: View {
                         }
                     case .idle, .loading, .loaded:
                         ProgressView("正在加载收藏夹")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(Color.nativeSystemBackground.ignoresSafeArea())
                     }
                 } else {
                     List(store.collections) { collection in

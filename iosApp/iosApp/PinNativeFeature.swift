@@ -433,11 +433,15 @@ struct PinNativeView: View {
                 }
             } else if store.isLoading {
                 ProgressView("正在加载想法")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.nativeSystemBackground.ignoresSafeArea())
             } else {
                 VStack(spacing: 12) {
                     Text(store.errorMessage ?? "想法加载失败").foregroundStyle(.secondary)
                     Button("重试") { Task { await store.load() } }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.nativeSystemBackground.ignoresSafeArea())
             }
         }
         .navigationTitle(store.detail.map { "\($0.author.displayName)的想法" } ?? "想法")

@@ -144,6 +144,7 @@ struct RiskControlView: View {
                 onSetupFailed: model.setupFailed
             )
         }
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .navigationTitle("安全验证")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

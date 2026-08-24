@@ -337,6 +337,7 @@ struct HomeNativeView: View {
                 if store.items.isEmpty, store.isLoading {
                     HStack { Spacer(); ProgressView("正在加载推荐"); Spacer() }
                         .listRowSeparator(.hidden)
+                        .listRowBackground(Color.nativeSystemBackground)
                 }
 
                 ForEach(visibleItems) { item in
@@ -483,6 +484,7 @@ struct FollowNativeView: View {
                 if store.moments.items.isEmpty, store.moments.isLoading {
                     HStack { Spacer(); ProgressView("正在加载关注内容"); Spacer() }
                         .listRowSeparator(.hidden)
+                        .listRowBackground(Color.nativeSystemBackground)
                 }
 
                 ForEach(visibleItems) { item in

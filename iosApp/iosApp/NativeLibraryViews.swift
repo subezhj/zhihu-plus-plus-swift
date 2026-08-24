@@ -27,7 +27,7 @@ struct NativeCollectionsView: View {
                     }
                     .padding(.top, 40)
                     .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+                    .listRowBackground(Color.nativeSystemBackground)
                 } else if let error = store.errorMessage {
                     NativeUnavailableState(title: "无法加载收藏夹", message: error, actionTitle: "重试") {
                         Task { await store.refresh() }
@@ -326,6 +326,8 @@ struct NativeSpecialView: View {
     @ViewBuilder private var initialState: some View {
         if store.isLoading, store.special == nil {
             ProgressView("正在加载专题")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.nativeSystemBackground.ignoresSafeArea())
         } else if let error = store.errorMessage, store.special == nil {
             NativeUnavailableState(
                 title: "无法加载专题",
@@ -388,6 +390,8 @@ struct NativeColumnView: View {
     @ViewBuilder private var initialState: some View {
         if store.isLoading, store.items.isEmpty {
             ProgressView("正在加载专栏")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.nativeSystemBackground.ignoresSafeArea())
         } else if let error = store.errorMessage, store.items.isEmpty {
             NativeUnavailableState(
                 title: "无法加载专栏",

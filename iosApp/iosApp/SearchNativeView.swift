@@ -117,9 +117,9 @@ struct SearchNativeView: View {
                 .accessibilityLabel("清空搜索内容")
             }
         }
-        .padding(.horizontal, 12)
-        .frame(minWidth: 260, maxWidth: .infinity)
-        .frame(height: 38)
+        .padding(.horizontal, 14)
+        .frame(minWidth: 320, maxWidth: .infinity)
+        .frame(height: 40)
         .liquidGlassCapsule(isProminent: false)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("search_field")
