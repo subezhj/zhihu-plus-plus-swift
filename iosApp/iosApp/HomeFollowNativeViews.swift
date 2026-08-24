@@ -325,7 +325,7 @@ struct HomeNativeView: View {
             List {
                 NativeRootLargeTitle(
                     "首页",
-                    displaysTitle: true,
+                    displaysTitle: false,
                     isActive: isActiveChannel,
                     isRefreshing: store.isRefreshing,
                     collapseProgress: $collapseProgress
@@ -469,7 +469,7 @@ struct FollowNativeView: View {
                 NativeRootLargeTitle(
                     "首页",
                     coordinateSpaceName: followCoordinateSpaceName,
-                    displaysTitle: true,
+                    displaysTitle: false,
                     isActive: isActiveChannel,
                     isRefreshing: store.isMomentsRefreshing,
                     collapseProgress: $collapseProgress
@@ -584,6 +584,7 @@ struct FollowNativeView: View {
                                     }
                                     Text(user.displayName)
                                         .font(.caption)
+                                        .foregroundStyle(.primary)
                                         .lineLimit(1)
                                         .frame(width: 64)
                                 }
@@ -594,13 +595,17 @@ struct FollowNativeView: View {
                                 : user.displayName)
                         }
                     }
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 8)
                 }
+                .listRowBackground(Color.nativeSystemBackground)
+                .listRowSeparator(.hidden)
                 .nativeChannelSwipeExclusion()
             }
         } else if let error = store.recentUsersErrorMessage {
             Section("最近动态") {
                 FeedRetryRow(message: error) { Task { await store.reloadRecentUsers() } }
+                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowSeparator(.hidden)
             }
         }
     }

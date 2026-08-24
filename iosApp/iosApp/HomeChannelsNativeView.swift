@@ -107,8 +107,8 @@ struct HomeChannelsNativeView: View {
         ) { channel in
             channelContent(channel)
         }
-        .navigationTitle("首页")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 homeTopTrailingControls

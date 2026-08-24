@@ -405,7 +405,7 @@ struct DailyNativeView: View {
                 NativeRootLargeTitle(
                     "首页",
                     coordinateSpaceName: "daily-root-scroll",
-                    displaysTitle: true,
+                    displaysTitle: false,
                     isActive: isActiveChannel,
                     isRefreshing: store.isRefreshing,
                     collapseProgress: $collapseProgress
