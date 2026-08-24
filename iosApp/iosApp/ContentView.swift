@@ -114,3 +114,106 @@ private struct NativeAppLockGate: View {
         .accessibilityIdentifier("native_app_lock_gate")
     }
 }
+
+// MARK: - Global Liquid Glass System
+
+public struct LiquidGlassModifier<S: Shape>: ViewModifier {
+    let shape: S
+    let isProminent: Bool
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    public init(shape: S, isProminent: Bool = false) {
+        self.shape = shape
+        self.isProminent = isProminent
+    }
+
+    public func body(content: Content) -> some View {
+        content
+            .background {
+                if isProminent {
+                    shape
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.primary.opacity(colorScheme == .dark ? 0.95 : 0.88),
+                                    Color.primary.opacity(colorScheme == .dark ? 0.82 : 0.75)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .overlay(
+                            shape
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [
+                                            Color.white.opacity(colorScheme == .dark ? 0.45 : 0.3),
+                                            Color.white.opacity(0.08)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 0.75
+                                )
+                        )
+                        .shadow(
+                            color: Color.black.opacity(colorScheme == .dark ? 0.4 : 0.18),
+                            radius: 8,
+                            x: 0,
+                            y: 3
+                        )
+                } else {
+                    shape
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            shape
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            Color.white.opacity(colorScheme == .dark ? 0.22 : 0.55),
+                                            Color.white.opacity(colorScheme == .dark ? 0.05 : 0.15)
+                                        ],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                        )
+                        .overlay(
+                            shape
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [
+                                            Color.white.opacity(colorScheme == .dark ? 0.55 : 0.75),
+                                            Color.primary.opacity(0.1)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 0.75
+                                )
+                        )
+                        .shadow(
+                            color: Color.black.opacity(colorScheme == .dark ? 0.35 : 0.12),
+                            radius: 6,
+                            x: 0,
+                            y: 2.5
+                        )
+                }
+            }
+    }
+}
+
+public extension View {
+    func liquidGlass<S: Shape>(in shape: S, isProminent: Bool = false) -> some View {
+        modifier(LiquidGlassModifier(shape: shape, isProminent: isProminent))
+    }
+
+    func liquidGlassCapsule(isProminent: Bool = false) -> some View {
+        modifier(LiquidGlassModifier(shape: Capsule(), isProminent: isProminent))
+    }
+
+    func liquidGlassCircle(isProminent: Bool = false) -> some View {
+        modifier(LiquidGlassModifier(shape: Circle(), isProminent: isProminent))
+    }
+}

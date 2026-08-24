@@ -245,15 +245,7 @@ private struct QuestionActionBar: View {
     var body: some View {
         actions
             .padding(7)
-            .background {
-                Capsule()
-                    .fill(.ultraThinMaterial)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
-                    )
-                    .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 3)
-            }
+            .liquidGlassCapsule()
             .padding(.horizontal, 16)
             .padding(.vertical, 7)
     }

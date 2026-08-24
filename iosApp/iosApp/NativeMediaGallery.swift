@@ -270,29 +270,13 @@ private struct NativeMediaControlButton: View {
 
 private struct NativeMediaControlSurface: ViewModifier {
     func body(content: Content) -> some View {
-        content.background {
-            Circle()
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    Circle()
-                        .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
-                )
-                .shadow(color: Color.black.opacity(0.15), radius: 6, x: 0, y: 3)
-        }
+        content.liquidGlassCircle()
     }
 }
 
 private struct NativeMediaIndicatorSurface: ViewModifier {
     func body(content: Content) -> some View {
-        content.background {
-            Capsule()
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    Capsule()
-                        .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
-                )
-                .shadow(color: Color.black.opacity(0.15), radius: 6, x: 0, y: 3)
-        }
+        content.liquidGlassCapsule()
     }
 }
 
