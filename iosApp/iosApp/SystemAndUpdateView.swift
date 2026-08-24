@@ -68,6 +68,14 @@ struct SystemAndUpdateView: View {
     var body: some View {
         List {
             Section {
+                LabeledContent("版本", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.3.1")
+                LabeledContent("构建编号 (CI Run)", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1")
+                LabeledContent("Bundle ID", value: Bundle.main.bundleIdentifier ?? "—")
+            } header: {
+                Text("当前构建信息")
+            }
+
+            Section {
                 ForEach(SystemExternalLink.projectLinks, content: linkButton)
             } header: {
                 Text("项目与许可")

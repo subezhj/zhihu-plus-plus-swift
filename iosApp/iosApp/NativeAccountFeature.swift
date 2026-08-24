@@ -496,9 +496,15 @@ struct NativeAccountView: View {
         }
     }
 
+    private var appVersionString: String {
+        let shortVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.3.1"
+        let buildNumber = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
+        return "v\(shortVersion) (Build \(buildNumber))"
+    }
+
     private var aboutSection: some View {
         Section {
-            LabeledContent("知乎++", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—")
+            LabeledContent("知乎++", value: appVersionString)
             NavigationLink(value: NativeShellRoute.systemAndUpdate) {
                 Label("系统与更新", systemImage: "info.circle")
             }
