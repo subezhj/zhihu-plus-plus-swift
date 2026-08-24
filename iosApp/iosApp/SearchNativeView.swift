@@ -209,7 +209,6 @@ struct SearchNativeView: View {
                     .buttonStyle(.plain)
                     .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
                 }
-            } header: {
 
                 if store.isRefreshingSuggestions {
                     HStack {
@@ -225,6 +224,7 @@ struct SearchNativeView: View {
             } header: {
                 HStack {
                     Text("热搜")
+                        .font(.subheadline.weight(.medium))
                     Spacer()
                     Button {
                         Task { await store.refreshSuggestions() }
@@ -236,6 +236,7 @@ struct SearchNativeView: View {
                     .textCase(nil)
                     .accessibilityLabel("刷新热搜")
                 }
+                .padding(.top, 4)
             }
         }
 

@@ -48,5 +48,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ZhihuPlusPlus-SideStore-IPA-v0.3.1-b${{ github.run_number }}
-          path: build/iosApp/sidestore/ZhihuPlusPlus-SideStore.ipa
+          path: build/iosApp/sidestore/ZhihuPlusPlus-SideStore-v0.3.1-b${{ github.run_number }}.ipa
           if-no-files-found: error
