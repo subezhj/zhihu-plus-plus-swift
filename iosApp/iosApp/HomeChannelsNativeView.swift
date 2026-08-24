@@ -198,9 +198,9 @@ struct HomeChannelsNativeView: View {
         case .creation:
             Button(action: onOpenCreation) {
                 Image(systemName: "square.and.pencil")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(.primary)
-                    .frame(width: 40, height: 40)
+                    .frame(width: 36, height: 36)
             }
             .buttonStyle(.plain)
             .background(.ultraThinMaterial, in: Circle())
@@ -214,16 +214,16 @@ struct HomeChannelsNativeView: View {
             )
             Button(action: onOpenNotifications) {
                 Image(systemName: "bell")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(.primary)
-                    .frame(width: 40, height: 40)
+                    .frame(width: 36, height: 36)
                     .overlay(alignment: .topTrailing) {
                         if presentation.showsDot {
                             Circle()
                                 .fill(.red)
-                                .frame(width: 9, height: 9)
-                                .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 2))
-                                .offset(x: -2, y: 2)
+                                .frame(width: 8, height: 8)
+                                .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 1.5))
+                                .offset(x: -1, y: 1)
                                 .accessibilityHidden(true)
                         }
                     }

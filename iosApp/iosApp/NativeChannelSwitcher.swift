@@ -600,7 +600,7 @@ private struct NativeChannelPillButtonStyle: ButtonStyle {
         configuration.label
             .foregroundStyle(isSelected ? Color(uiColor: .systemBackground) : Color.primary)
             .padding(.horizontal, isSelected ? 16 : 0)
-            .frame(minWidth: isSelected ? 124 : 78, minHeight: 44)
+            .frame(minWidth: isSelected ? 116 : 74, minHeight: 38)
             .background(
                 isSelected ? Color.primary.opacity(0.9) : Color.secondary.opacity(0.1),
                 in: Capsule()
