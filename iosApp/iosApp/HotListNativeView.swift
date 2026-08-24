@@ -42,6 +42,7 @@ struct HotListNativeView: View {
                         Spacer()
                     }
                     .listRowSeparator(.hidden)
+                    .listRowBackground(Color.nativeSystemBackground)
                 }
 
                 ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in
@@ -63,6 +64,8 @@ struct HotListNativeView: View {
                     FeedRetryRow(message: errorMessage) {
                         Task { await store.retry() }
                     }
+                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowSeparator(.hidden)
                 } else if store.canLoadNextPage {
                     let taskID = NativeChannelTaskIdentity(
                         isActive: isActiveChannel,
@@ -74,6 +77,7 @@ struct HotListNativeView: View {
                         Spacer()
                     }
                     .listRowSeparator(.hidden)
+                    .listRowBackground(Color.nativeSystemBackground)
                     .task(id: taskID) {
                         guard taskID.isActive,
                               taskID.value == store.nextPageLoadID
@@ -83,6 +87,8 @@ struct HotListNativeView: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(Color.nativeSystemBackground.ignoresSafeArea())
             .nativeHomeFeedListLayout()
             .coordinateSpace(name: "hot-root-scroll")
             .nativeHomeFeedScrollTracking(

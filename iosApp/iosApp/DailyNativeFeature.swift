@@ -415,6 +415,7 @@ struct DailyNativeView: View {
                 if store.sections.isEmpty, store.isLoading {
                     HStack { Spacer(); ProgressView("正在加载日报"); Spacer() }
                         .listRowSeparator(.hidden)
+                        .listRowBackground(Color.nativeSystemBackground)
                 }
                 ForEach(store.sections) { section in
                     Section(formatted(section.date)) {
@@ -457,6 +458,8 @@ struct DailyNativeView: View {
                         supplementalLoadTask?.cancel()
                         supplementalLoadTask = Task { await store.loadLatest() }
                     }
+                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowSeparator(.hidden)
                 } else if !store.sections.isEmpty {
                     let taskID = NativeChannelTaskIdentity(
                         isActive: isActiveChannel,
@@ -464,6 +467,7 @@ struct DailyNativeView: View {
                     )
                     HStack { Spacer(); ProgressView(); Spacer() }
                         .listRowSeparator(.hidden)
+                        .listRowBackground(Color.nativeSystemBackground)
                         .task(id: taskID) {
                             guard taskID.isActive,
                                   taskID.value == store.nextPageLoadID
@@ -472,9 +476,13 @@ struct DailyNativeView: View {
                         }
                 } else if !store.isLoading {
                     Text("暂无日报内容").foregroundStyle(.secondary)
+                        .listRowBackground(Color.nativeSystemBackground)
+                        .listRowSeparator(.hidden)
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(Color.nativeSystemBackground.ignoresSafeArea())
             .nativeHomeFeedListLayout()
             .coordinateSpace(name: "daily-root-scroll")
             .nativeHomeFeedScrollTracking(

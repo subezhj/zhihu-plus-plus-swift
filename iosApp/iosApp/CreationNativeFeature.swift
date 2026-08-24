@@ -550,7 +550,18 @@ struct WriteAnswerNativeView: View {
                 .disabled(!store.canSubmit)
             }
         }
-        .overlay { if store.isLoadingExisting { ProgressView("正在加载已有回答") } }
+        .overlay {
+            if store.isLoadingExisting {
+                VStack {
+                    Spacer()
+                    ProgressView("正在加载已有回答")
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.nativeSystemBackground.ignoresSafeArea())
+            }
+        }
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .alert("保存成功", isPresented: $showsSavedConfirmation) { Button("好") {} } message: { Text("草稿已保存") }
         .alert("操作失败", isPresented: errorBinding) { Button("好") {} } message: { Text(store.errorMessage ?? "未知错误") }
         .onChange(of: store.systemIntent) { intent in
@@ -617,6 +628,7 @@ struct WritePinNativeView: View {
         }
         .alert("保存成功", isPresented: $showsSavedConfirmation) { Button("好") {} } message: { Text("草稿已保存") }
         .alert("操作失败", isPresented: errorBinding) { Button("好") {} } message: { Text(store.errorMessage ?? "未知错误") }
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .onChange(of: store.systemIntent) { intent in
             guard let intent else { return }
             onSystemIntent(intent) {

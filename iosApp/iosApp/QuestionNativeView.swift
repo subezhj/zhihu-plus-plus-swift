@@ -16,12 +16,20 @@ struct QuestionNativeView: View {
                     QAErrorState(message: message, actionTitle: "重试") {
                         Task { await store.refresh() }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.nativeSystemBackground.ignoresSafeArea())
                 case .idle, .loading, .loaded:
-                    ProgressView("正在加载问题")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    VStack {
+                        Spacer()
+                        ProgressView("正在加载问题")
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.nativeSystemBackground.ignoresSafeArea())
                 }
             }
         }
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .navigationTitle("问题")
         .navigationBarTitleDisplayMode(.inline)
         .task { await store.loadIfNeeded() }
@@ -112,6 +120,7 @@ struct QuestionNativeView: View {
                 .padding(.vertical, 6)
                 .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 14, trailing: 16))
                 .listRowSeparator(.hidden)
+                .listRowBackground(Color.nativeSystemBackground)
 
                 Section("\(question.answerCount) 个回答") {
                     ForEach(store.answers) { answer in
@@ -121,6 +130,7 @@ struct QuestionNativeView: View {
                             QAAnswerPreviewRow(answer: answer)
                         }
                         .buttonStyle(.plain)
+                        .listRowBackground(Color.nativeSystemBackground)
                         .task {
                             if answer.id == store.answers.last?.id { await store.loadMore() }
                         }
@@ -129,16 +139,27 @@ struct QuestionNativeView: View {
                     switch store.nextPage {
                     case .loading:
                         HStack { Spacer(); ProgressView(); Spacer() }
+                            .listRowBackground(Color.nativeSystemBackground)
+                            .listRowSeparator(.hidden)
                     case let .failed(message):
                         Button("加载更多失败，点此重试") { Task { await store.loadMore() } }
                             .foregroundStyle(.red)
                             .accessibilityHint(message)
+                            .listRowBackground(Color.nativeSystemBackground)
+                            .listRowSeparator(.hidden)
                     case .idle:
-                        if store.answers.isEmpty { Text("还没有回答").foregroundStyle(.secondary) }
+                        if store.answers.isEmpty {
+                            Text("还没有回答")
+                                .foregroundStyle(.secondary)
+                                .listRowBackground(Color.nativeSystemBackground)
+                                .listRowSeparator(.hidden)
+                        }
                     }
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(Color.nativeSystemBackground.ignoresSafeArea())
             .refreshable { await store.refresh() }
             .safeAreaInset(edge: .bottom) {
                 QuestionActionBar(
@@ -244,27 +265,33 @@ private struct QuestionActionBar: View {
 
     var body: some View {
         actions
-            .padding(7)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
             .liquidGlassCapsule()
             .padding(.horizontal, 16)
-            .padding(.vertical, 7)
+            .padding(.vertical, 10)
     }
 
     private var actions: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 8) {
             Button(action: onFollow) {
                 Label(question.isFollowing ? "已关注" : "关注", systemImage: question.isFollowing ? "checkmark" : "plus")
+                    .padding(.vertical, 4)
             }
             .disabled(followInFlight)
             Button(action: onWrite) {
                 Label("写回答", systemImage: "square.and.pencil")
+                    .padding(.vertical, 4)
+                    .padding(.horizontal, 4)
             }
             Spacer(minLength: 4)
             Button(action: onComments) {
                 Label("\(question.commentCount)", systemImage: "bubble.left")
+                    .padding(.vertical, 4)
             }
             Button(action: onShare) {
                 Image(systemName: "square.and.arrow.up").accessibilityLabel("分享问题")
+                    .padding(.vertical, 4)
             }
         }
     }

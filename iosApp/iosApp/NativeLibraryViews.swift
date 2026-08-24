@@ -205,6 +205,8 @@ struct NativeHistoryView: View {
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .navigationTitle("历史记录")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -221,7 +223,13 @@ struct NativeHistoryView: View {
             }
         }
         .refreshable { await store.refresh() }
-        .overlay { initialState }
+        .overlay {
+            if store.items.isEmpty {
+                initialState
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.nativeSystemBackground.ignoresSafeArea())
+            }
+        }
         .task {
             if store.items.isEmpty, !store.isLoading { await store.refresh() }
         }
@@ -240,7 +248,11 @@ struct NativeHistoryView: View {
 
     @ViewBuilder private var initialState: some View {
         if store.isLoading, store.items.isEmpty {
-            ProgressView("正在加载历史记录")
+            VStack {
+                Spacer()
+                ProgressView("正在加载历史记录")
+                Spacer()
+            }
         } else if let error = store.errorMessage, store.items.isEmpty {
             NativeUnavailableState(title: "无法加载历史记录", message: error, actionTitle: "重试") {
                 Task { await store.refresh() }
