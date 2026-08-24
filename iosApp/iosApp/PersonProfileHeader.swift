@@ -132,8 +132,16 @@ struct PersonProfileHeader: View {
     @ViewBuilder
     private var actions: some View {
         HStack(spacing: 12) {
-            followButton.buttonStyle(.borderedProminent)
-            blockButton.buttonStyle(.bordered)
+            followButton
+                .buttonStyle(.plain)
+                .padding(.horizontal, 16)
+                .frame(minHeight: 38)
+                .liquidGlassCapsule(isProminent: !profile.isFollowing)
+            blockButton
+                .buttonStyle(.plain)
+                .padding(.horizontal, 16)
+                .frame(minHeight: 38)
+                .liquidGlassCapsule(isProminent: false)
         }
     }
 

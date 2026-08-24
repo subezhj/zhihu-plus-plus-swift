@@ -31,12 +31,15 @@ jobs:
           ./iosApp/scripts/preflight.sh || true
 
       - name: Build SideStore IPA
+        env:
+          BUILD_VERSION: ${{ github.run_number }}
+          MARKETING_VERSION: "0.3.1"
         run: |
           ./iosApp/scripts/build-sidestore-ipa.sh
 
       - name: Upload SideStore IPA Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ZhihuPlusPlus-SideStore-IPA
+          name: ZhihuPlusPlus-SideStore-IPA-v0.3.1-b${{ github.run_number }}
           path: build/iosApp/sidestore/ZhihuPlusPlus-SideStore.ipa
           if-no-files-found: error
