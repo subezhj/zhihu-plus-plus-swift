@@ -39,13 +39,13 @@ struct AppHostView: View {
             UICollectionView.appearance().backgroundColor = dynamicDark
             UITableView.appearance().backgroundColor = dynamicDark
             
-            // Configure grouped table / form background to #191919 and cell card background
-            let dynamicGroupedDark = UIColor { traits in
+            // Configure grouped table / form card background to #282828 in dark mode
+            let dynamicCardDark = UIColor { traits in
                 traits.userInterfaceStyle == .dark
-                    ? UIColor(red: 25.0 / 255.0, green: 25.0 / 255.0, blue: 25.0 / 255.0, alpha: 1.0)
-                    : .systemGroupedBackground
+                    ? UIColor(red: 40.0 / 255.0, green: 40.0 / 255.0, blue: 40.0 / 255.0, alpha: 1.0)
+                    : .secondarySystemGroupedBackground
             }
-            UITableViewCell.appearance().backgroundColor = .clear
+            UITableViewCell.appearance().backgroundColor = dynamicCardDark
         }
         .fullScreenCover(item: $router.presentedModal, onDismiss: hostModel.modalDidDismiss) { modal in
             switch modal {
