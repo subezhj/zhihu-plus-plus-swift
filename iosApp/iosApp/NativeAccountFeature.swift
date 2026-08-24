@@ -329,6 +329,8 @@ struct NativeAccountView: View {
             aboutSection
         }
         .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .background(Color.nativeSystemBackground)
         .navigationTitle("账号")
         .navigationBarTitleDisplayMode(.large)
         .refreshable {

@@ -66,6 +66,8 @@ struct NativeCollectionsView: View {
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.nativeSystemBackground)
         .navigationTitle("我的收藏夹")
         .navigationBarTitleDisplayMode(.large)
         .refreshable { await store.refresh() }
@@ -137,6 +139,8 @@ struct NativeCollectionContentView: View {
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.nativeSystemBackground)
         .navigationTitle(store.collection?.title ?? "收藏夹")
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await store.refresh() }

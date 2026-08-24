@@ -286,6 +286,7 @@ private struct CommentLevelView: View {
             pageContent
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
         .background(Color.nativeSystemBackground)
         .coordinateSpace(name: coordinateSpaceName)

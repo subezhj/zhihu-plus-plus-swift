@@ -212,6 +212,8 @@ struct NativeSettingsView: View {
                 Text("仅记录脱敏后的性能元数据，不记录账号凭据、正文、评论或搜索词。每次启动或重新开启会创建新会话，单份最多 15 MB，保留最近 5 份。")
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.nativeSystemBackground)
         .navigationTitle("设置")
         .navigationBarTitleDisplayMode(.inline)
         .task { await performanceDiagnostics.refreshLogs() }

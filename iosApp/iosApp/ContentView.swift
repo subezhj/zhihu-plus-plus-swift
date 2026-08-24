@@ -38,6 +38,14 @@ struct AppHostView: View {
             }
             UICollectionView.appearance().backgroundColor = dynamicDark
             UITableView.appearance().backgroundColor = dynamicDark
+            
+            // Configure grouped table / form background to #191919 and cell card background
+            let dynamicGroupedDark = UIColor { traits in
+                traits.userInterfaceStyle == .dark
+                    ? UIColor(red: 25.0 / 255.0, green: 25.0 / 255.0, blue: 25.0 / 255.0, alpha: 1.0)
+                    : .systemGroupedBackground
+            }
+            UITableViewCell.appearance().backgroundColor = .clear
         }
         .fullScreenCover(item: $router.presentedModal, onDismiss: hostModel.modalDidDismiss) { modal in
             switch modal {
@@ -250,13 +258,13 @@ public extension Color {
 
     static let nativeSecondarySystemBackground = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 36.0 / 255.0, green: 36.0 / 255.0, blue: 36.0 / 255.0, alpha: 1.0)
+            ? UIColor(red: 40.0 / 255.0, green: 40.0 / 255.0, blue: 40.0 / 255.0, alpha: 1.0)
             : .secondarySystemBackground
     })
 
     static let nativeSecondarySystemGroupedBackground = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 36.0 / 255.0, green: 36.0 / 255.0, blue: 36.0 / 255.0, alpha: 1.0)
+            ? UIColor(red: 40.0 / 255.0, green: 40.0 / 255.0, blue: 40.0 / 255.0, alpha: 1.0)
             : .secondarySystemGroupedBackground
     })
 }

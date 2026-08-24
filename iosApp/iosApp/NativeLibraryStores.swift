@@ -32,8 +32,13 @@ final class NativeCollectionsStore: ObservableObject {
             isEnd = page.paging.isEnd
         } catch is CancellationError {
             return
+        } catch let urlError as URLError where urlError.code == .cancelled {
+            return
         } catch {
             guard revision == current else { return }
+            if (error as NSError).domain == NSURLErrorDomain && (error as NSError).code == NSURLErrorCancelled {
+                return
+            }
             errorMessage = error.localizedDescription
         }
     }
@@ -53,8 +58,13 @@ final class NativeCollectionsStore: ObservableObject {
             errorMessage = nil
         } catch is CancellationError {
             return
+        } catch let urlError as URLError where urlError.code == .cancelled {
+            return
         } catch {
             guard revision == current else { return }
+            if (error as NSError).domain == NSURLErrorDomain && (error as NSError).code == NSURLErrorCancelled {
+                return
+            }
             errorMessage = error.localizedDescription
         }
     }

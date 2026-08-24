@@ -39,6 +39,8 @@ struct SearchNativeView: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(Color.nativeSystemBackground)
             .refreshable {
                 if store.submittedQuery.isEmpty {
                     await store.refreshSuggestions()
