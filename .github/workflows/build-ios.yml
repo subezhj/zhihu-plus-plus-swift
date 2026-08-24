@@ -1,0 +1,42 @@
+name: Build iOS SideStore IPA
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Unsigned IPA
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          xcodebuild -version
+
+      - name: Run Preflight Check
+        run: |
+          chmod +x iosApp/scripts/*.sh
+          ./iosApp/scripts/preflight.sh || true
+
+      - name: Build SideStore IPA
+        run: |
+          ./iosApp/scripts/build-sidestore-ipa.sh
+
+      - name: Upload SideStore IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZhihuPlusPlus-SideStore-IPA
+          path: build/iosApp/sidestore/ZhihuPlusPlus-SideStore.ipa
+          if-no-files-found: error
