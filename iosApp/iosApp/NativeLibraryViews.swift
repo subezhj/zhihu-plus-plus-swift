@@ -53,7 +53,7 @@ struct NativeCollectionsView: View {
     }
 
     @ViewBuilder
-    private func collectionRow(_ collection: NativeCollectionSummary) -> some View {
+    private func collectionRow(_ collection: NativeLibraryCollection) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(collection.title)
                 .font(.headline.weight(.semibold))
