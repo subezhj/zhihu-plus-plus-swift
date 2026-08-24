@@ -182,7 +182,7 @@ private struct CommentReplySheetView: View {
             .contentShape(Rectangle())
             .simultaneousGesture(edgeDismissGesture(containerWidth: geometry.size.width))
         }
-        .background(Color(uiColor: .systemBackground).ignoresSafeArea())
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .modifier(CommentSheetPresentationModifier())
         .accessibilityIdentifier("comment_reply_sheet")
         .onDisappear(perform: close)
@@ -287,7 +287,7 @@ private struct CommentLevelView: View {
         }
         .listStyle(.plain)
         .scrollDismissesKeyboard(.interactively)
-        .background(Color(uiColor: .systemBackground))
+        .background(Color.nativeSystemBackground)
         .coordinateSpace(name: coordinateSpaceName)
         .background(CommentScrollViewAccessor { scrollView = $0 })
         .onPreferenceChange(CommentRowOffsetPreference.self) { updateAnchor($0) }

@@ -29,14 +29,6 @@ struct AppHostView: View {
             tabAppearance.shadowColor = UIColor.separator.withAlphaComponent(0.15)
             UITabBar.appearance().standardAppearance = tabAppearance
             UITabBar.appearance().scrollEdgeAppearance = tabAppearance
-
-            let navAppearance = UINavigationBarAppearance()
-            navAppearance.configureWithTransparentBackground()
-            navAppearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
-            navAppearance.shadowColor = UIColor.separator.withAlphaComponent(0.15)
-            UINavigationBar.appearance().standardAppearance = navAppearance
-            UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
-            UINavigationBar.appearance().compactAppearance = navAppearance
         }
         .fullScreenCover(item: $router.presentedModal, onDismiss: hostModel.modalDidDismiss) { modal in
             switch modal {
@@ -142,7 +134,7 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
             .background {
                 if !ignoreToggle && !presentation.liquidGlassEnabled {
                     shape
-                        .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                        .fill(Color.nativeSecondarySystemGroupedBackground)
                 } else if isProminent {
                     ZStack {
                         shape
@@ -236,4 +228,26 @@ public struct NativeThinDivider: View {
             .frame(maxWidth: .infinity)
             .frame(height: 0.5)
     }
+}
+
+// MARK: - Global Theme Colors
+
+public extension Color {
+    static let nativeSystemBackground = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 25.0 / 255.0, green: 25.0 / 255.0, blue: 25.0 / 255.0, alpha: 1.0)
+            : .systemBackground
+    })
+
+    static let nativeSecondarySystemBackground = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 36.0 / 255.0, green: 36.0 / 255.0, blue: 36.0 / 255.0, alpha: 1.0)
+            : .secondarySystemBackground
+    })
+
+    static let nativeSecondarySystemGroupedBackground = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 36.0 / 255.0, green: 36.0 / 255.0, blue: 36.0 / 255.0, alpha: 1.0)
+            : .secondarySystemGroupedBackground
+    })
 }

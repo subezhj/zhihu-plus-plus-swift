@@ -56,7 +56,7 @@ struct SearchNativeView: View {
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(uiColor: .systemBackground))
+                .background(Color.nativeSystemBackground)
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("正在搜索")
             }
