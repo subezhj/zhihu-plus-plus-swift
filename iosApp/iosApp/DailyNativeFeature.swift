@@ -420,29 +420,37 @@ struct DailyNativeView: View {
                         .listRowBackground(Color.nativeSystemBackground)
                 }
                 ForEach(store.sections) { section in
-                    Section(formatted(section.date)) {
-                        ForEach(section.stories) { story in
-                            Button {
-                                navigationTask?.cancel()
-                                navigationTask = Task {
-                                    let resolution = await store.destination(for: story)
-                                    guard !Task.isCancelled else { return }
-                                    switch resolution {
-                                    case let .destination(destination):
-                                        onOpen(destination)
-                                    case let .failure(failure):
-                                        resolutionFailure = failure
-                                    }
+                    Text(formatted(section.date))
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                        .padding(.bottom, 2)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.nativeSystemBackground)
+
+                    ForEach(section.stories) { story in
+                        Button {
+                            navigationTask?.cancel()
+                            navigationTask = Task {
+                                let resolution = await store.destination(for: story)
+                                guard !Task.isCancelled else { return }
+                                switch resolution {
+                                case let .destination(destination):
+                                    onOpen(destination)
+                                case let .failure(failure):
+                                    resolutionFailure = failure
                                 }
-                            } label: {
-                                dailyStoryContent(story)
-                                    .nativeFeedCard(cornerRadius: 14)
                             }
-                            .buttonStyle(.plain)
-                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
+                        } label: {
+                            dailyStoryContent(story)
+                                .nativeFeedCard(cornerRadius: 14)
                         }
+                        .buttonStyle(.plain)
+                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
                     }
                 }
                 if let error = store.errorMessage {

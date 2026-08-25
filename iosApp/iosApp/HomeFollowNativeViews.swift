@@ -552,7 +552,13 @@ struct FollowNativeView: View {
     @ViewBuilder
     private var recentUsers: some View {
         if !store.recentUsers.isEmpty {
-            Section("最近动态") {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("最近动态")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 4)
+
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 16) {
                         ForEach(store.recentUsers) { user in
@@ -586,18 +592,19 @@ struct FollowNativeView: View {
                                 : user.displayName)
                         }
                     }
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 6)
                 }
-                .listRowBackground(Color.nativeSystemBackground)
-                .listRowSeparator(.hidden)
                 .nativeChannelSwipeExclusion()
             }
+            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 6, trailing: 0))
+            .listRowBackground(Color.nativeSystemBackground)
+            .listRowSeparator(.hidden)
         } else if let error = store.recentUsersErrorMessage {
-            Section("最近动态") {
-                FeedRetryRow(message: error) { Task { await store.reloadRecentUsers() } }
-                    .listRowBackground(Color.nativeSystemBackground)
-                    .listRowSeparator(.hidden)
-            }
+            FeedRetryRow(message: error) { Task { await store.reloadRecentUsers() } }
+                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                .listRowBackground(Color.nativeSystemBackground)
+                .listRowSeparator(.hidden)
         }
     }
 

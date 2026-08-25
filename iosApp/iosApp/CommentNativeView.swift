@@ -96,18 +96,6 @@ private struct CommentThreadContainer: View {
                 close: closeReplies
             )
         }
-        .fullScreenCover(
-            item: Binding(
-                get: { store.galleryDestination },
-                set: { store.galleryBindingChanged(to: $0) }
-            )
-        ) { destination in
-            NativeMediaGallery(
-                urls: destination.urls,
-                initialIndex: destination.initialIndex,
-                accessibilityPrefix: "comment_media"
-            )
-        }
         .alert(
             item: Binding(
                 get: { store.message },
@@ -178,18 +166,6 @@ private struct CommentReplySheetView: View {
         }
         .background(Color.nativeSystemBackground.ignoresSafeArea())
         .modifier(CommentSheetPresentationModifier())
-        .fullScreenCover(
-            item: Binding(
-                get: { store.galleryDestination },
-                set: { store.galleryBindingChanged(to: $0) }
-            )
-        ) { destination in
-            NativeMediaGallery(
-                urls: destination.urls,
-                initialIndex: destination.initialIndex,
-                accessibilityPrefix: "comment_media"
-            )
-        }
         .accessibilityIdentifier("comment_reply_sheet")
         .onDisappear(perform: close)
     }
@@ -268,6 +244,18 @@ private struct CommentLevelView: View {
         .accessibilityIdentifier(level == .root ? "comment_root" : "comment_direct_replies")
         .sheet(item: $posterDocument) { document in
             NativeContentPosterShareView(document: document)
+        }
+        .fullScreenCover(
+            item: Binding(
+                get: { store.galleryDestination },
+                set: { store.galleryBindingChanged(to: $0) }
+            )
+        ) { destination in
+            NativeMediaGallery(
+                urls: destination.urls,
+                initialIndex: destination.initialIndex,
+                accessibilityPrefix: "comment_media"
+            )
         }
     }
 
