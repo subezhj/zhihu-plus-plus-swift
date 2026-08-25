@@ -127,15 +127,8 @@ struct QuestionNativeView: View {
                         Button {
                             onNavigate(.answer(store.answerRoute(for: answer)))
                         } label: {
-                            if contentPresentation.liquidGlassEnabled {
-                                QAAnswerPreviewRow(answer: answer)
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 12)
-                                    .liquidGlassCard(cornerRadius: 16, isProminent: false)
-                            } else {
-                                QAAnswerPreviewRow(answer: answer)
-                                    .nativeFeedCard(cornerRadius: 14)
-                            }
+                            QAAnswerPreviewRow(answer: answer)
+                                .nativeFeedCard(cornerRadius: 14)
                         }
                         .buttonStyle(.plain)
                         .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))

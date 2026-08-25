@@ -183,28 +183,15 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                             .fill(Color.nativeSecondarySystemGroupedBackground)
 
                         shape
-                            .fill(.ultraThinMaterial)
+                            .fill(.ultraThinMaterial.opacity(0.85))
 
-                        // Real-time specular sheen
-                        shape
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color.white.opacity(colorScheme == .dark ? 0.12 : 0.45),
-                                        Color.white.opacity(colorScheme == .dark ? 0.02 : 0.08)
-                                    ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-
-                        // Apple standard 3D Glass rim edge stroke
+                        // Lightweight subtle specular rim stroke (Apple standard)
                         shape
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        Color.white.opacity(colorScheme == .dark ? 0.35 : 0.65),
-                                        Color.white.opacity(colorScheme == .dark ? 0.08 : 0.2)
+                                        Color.white.opacity(colorScheme == .dark ? 0.3 : 0.5),
+                                        Color.white.opacity(colorScheme == .dark ? 0.05 : 0.1)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -212,7 +199,6 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                                 lineWidth: 0.5
                             )
                     }
-                    .compositingGroup()
                 }
             }
     }
@@ -235,13 +221,58 @@ public extension View {
         modifier(LiquidGlassModifier(shape: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous), isProminent: isProminent, ignoreToggle: false))
     }
 
+    @ViewBuilder
     func nativeFeedCard(cornerRadius: CGFloat = 14) -> some View {
-        padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(Color.nativeSecondarySystemGroupedBackground)
-            )
+        modifier(NativeFeedCardModifier(cornerRadius: cornerRadius))
+    }
+}
+
+private struct NativeFeedCardModifier: ViewModifier {
+    let cornerRadius: CGFloat
+    @Environment(\.nativeContentPresentation) private var presentation
+    @Environment(\.colorScheme) private var colorScheme
+
+    func body(content: Content) -> some View {
+        switch presentation.feedCardStyle {
+        case .standard:
+            content
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(Color.nativeSecondarySystemGroupedBackground)
+                )
+        case .lightLiquidGlass:
+            content
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .background(
+                    ZStack {
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .fill(Color.nativeSecondarySystemGroupedBackground)
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .fill(.ultraThinMaterial.opacity(0.85))
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(colorScheme == .dark ? 0.25 : 0.45),
+                                        Color.white.opacity(0.05)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 0.5
+                            )
+                    }
+                )
+        case .plain:
+            VStack(alignment: .leading, spacing: 0) {
+                content
+                    .padding(.vertical, 10)
+                NativeThinDivider()
+            }
+        }
     }
 }
 

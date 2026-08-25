@@ -46,7 +46,12 @@ struct NativeSettingsView: View {
                         .tag(theme)
                     }
                 }
-                Toggle("液态玻璃视觉效果", isOn: liquidGlassBinding)
+                Picker("信息流卡片风格", selection: feedCardStyleBinding) {
+                    ForEach(NativeFeedCardStyle.allCases) { style in
+                        Text(style.title).tag(style)
+                    }
+                }
+                Toggle("轻度液态玻璃视觉效果 (实验性)", isOn: liquidGlassBinding)
             }
             .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
 
@@ -235,6 +240,10 @@ struct NativeSettingsView: View {
 
     private var accentThemeBinding: Binding<NativeAccentTheme> {
         Binding(get: { preferences.accentTheme }, set: preferences.setAccentTheme)
+    }
+
+    private var feedCardStyleBinding: Binding<NativeFeedCardStyle> {
+        Binding(get: { preferences.feedCardStyle }, set: preferences.setFeedCardStyle)
     }
 
     private var liquidGlassBinding: Binding<Bool> {

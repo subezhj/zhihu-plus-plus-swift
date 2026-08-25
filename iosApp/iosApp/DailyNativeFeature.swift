@@ -435,15 +435,8 @@ struct DailyNativeView: View {
                                     }
                                 }
                             } label: {
-                                if presentation.liquidGlassEnabled {
-                                    dailyStoryContent(story)
-                                        .padding(.horizontal, 14)
-                                        .padding(.vertical, 12)
-                                        .liquidGlassCard(cornerRadius: 16, isProminent: false)
-                                } else {
-                                    dailyStoryContent(story)
-                                        .nativeFeedCard(cornerRadius: 14)
-                                }
+                                dailyStoryContent(story)
+                                    .nativeFeedCard(cornerRadius: 14)
                             }
                             .buttonStyle(.plain)
                             .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))

@@ -195,11 +195,15 @@ struct NativeRootLargeTitle: View {
             }
         }
             .background {
-                GeometryReader { geometry in
-                    Color.clear.preference(
-                        key: NativeRootTitleOffsetKey.self,
-                        value: geometry.frame(in: .named(coordinateSpaceName)).minY
-                    )
+                if #available(iOS 18.0, *) {
+                    EmptyView()
+                } else {
+                    GeometryReader { geometry in
+                        Color.clear.preference(
+                            key: NativeRootTitleOffsetKey.self,
+                            value: geometry.frame(in: .named(coordinateSpaceName)).minY
+                        )
+                    }
                 }
             }
             .onPreferenceChange(NativeRootTitleOffsetKey.self) { minY in

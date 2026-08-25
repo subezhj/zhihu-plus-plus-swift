@@ -23,15 +23,8 @@ struct FeedItemRow: View {
         Button {
             onOpen(item.route)
         } label: {
-            if presentation.liquidGlassEnabled {
-                rowContent
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 12)
-                    .liquidGlassCard(cornerRadius: 16, isProminent: false)
-            } else {
-                rowContent
-                    .nativeFeedCard(cornerRadius: 14)
-            }
+            rowContent
+                .nativeFeedCard(cornerRadius: 14)
         }
         .buttonStyle(.plain)
     }

@@ -45,15 +45,8 @@ struct NativeCollectionsView: View {
                 }
                 ForEach(store.collections) { collection in
                     NavigationLink(value: NativeShellRoute.collectionContent(collection.id)) {
-                        if presentation.liquidGlassEnabled {
-                            collectionRow(collection)
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 12)
-                                .liquidGlassCard(cornerRadius: 16, isProminent: false)
-                        } else {
-                            collectionRow(collection)
-                                .nativeFeedCard(cornerRadius: 14)
-                        }
+                        collectionRow(collection)
+                            .nativeFeedCard(cornerRadius: 14)
                     }
                     .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                     .listRowSeparator(.hidden)
@@ -139,20 +132,8 @@ struct NativeCollectionContentView: View {
             ForEach(store.items) { item in
                 if let destination = item.destination {
                     Button { onOpenContent(destination) } label: {
-                        if presentation.liquidGlassEnabled {
-                            NativeLibraryItemContent(item: item)
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 12)
-                                .liquidGlassCard(cornerRadius: 16, isProminent: false)
-                        } else {
-                            NativeLibraryItemContent(item: item)
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 12)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .fill(Color.nativeSecondarySystemGroupedBackground)
-                                )
-                        }
+                        NativeLibraryItemContent(item: item)
+                            .nativeFeedCard(cornerRadius: 14)
                     }
                     .buttonStyle(.plain)
                     .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
@@ -160,12 +141,7 @@ struct NativeCollectionContentView: View {
                     .listRowBackground(Color.clear)
                 } else {
                     NativeLibraryItemContent(item: item)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 12)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(Color.nativeSecondarySystemGroupedBackground)
-                        )
+                        .nativeFeedCard(cornerRadius: 14)
                         .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
@@ -405,20 +381,8 @@ struct NativeColumnView: View {
             ForEach(store.items) { item in
                 if let destination = item.destination {
                     Button { onOpenContent(destination) } label: {
-                        if presentation.liquidGlassEnabled {
-                            NativeLibraryItemContent(item: item)
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 12)
-                                .liquidGlassCard(cornerRadius: 16, isProminent: false)
-                        } else {
-                            NativeLibraryItemContent(item: item)
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 12)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .fill(Color.nativeSecondarySystemGroupedBackground)
-                                )
-                        }
+                        NativeLibraryItemContent(item: item)
+                            .nativeFeedCard(cornerRadius: 14)
                     }
                     .buttonStyle(.plain)
                     .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
@@ -426,12 +390,7 @@ struct NativeColumnView: View {
                     .listRowBackground(Color.clear)
                 } else {
                     NativeLibraryItemContent(item: item)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 12)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(Color.nativeSecondarySystemGroupedBackground)
-                        )
+                        .nativeFeedCard(cornerRadius: 14)
                         .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)

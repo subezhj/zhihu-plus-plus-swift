@@ -138,6 +138,22 @@ enum NativeFeedDensity: String, CaseIterable, Identifiable {
     }
 }
 
+enum NativeFeedCardStyle: String, CaseIterable, Identifiable {
+    case standard = "STANDARD"
+    case lightLiquidGlass = "LIGHT_LIQUID_GLASS"
+    case plain = "PLAIN"
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .standard: return "常规卡片边框（推荐）"
+        case .lightLiquidGlass: return "轻度液态玻璃（实验性）"
+        case .plain: return "无边框平铺"
+        }
+    }
+}
+
 enum NativeDefaultShareAction: String, CaseIterable, Identifiable {
     case ask
     case systemShare = "share"
@@ -176,6 +192,7 @@ struct NativeContentPresentationPreferences: Equatable {
     var feedExcerptLines = 2
     var showsFeedThumbnails = true
     var liquidGlassEnabled = true
+    var feedCardStyle = NativeFeedCardStyle.standard
 
     var fontScale: CGFloat { CGFloat(fontSizePercent) / 100 }
 
@@ -235,6 +252,7 @@ final class NativeShellPreferences: ObservableObject {
         static let feedExcerptLines = "nativeFeedExcerptLines"
         static let showFeedThumbnail = "showFeedThumbnail"
         static let liquidGlassEnabled = "nativeLiquidGlassEnabled"
+        static let feedCardStyle = "nativeFeedCardStyle"
         static let homeRecommendationSource = "homeRecommendationSource"
         static let homeRefreshTargetItemCount = "homeRefreshTargetItemCount"
         static let showSearchHotSearch = "showSearchHotSearch"
@@ -263,6 +281,7 @@ final class NativeShellPreferences: ObservableObject {
     @Published private(set) var homeRecommendationSource: HomeRecommendationSource
     @Published private(set) var homeRefreshTargetItemCount: Int
     @Published private(set) var liquidGlassEnabled: Bool
+    @Published private(set) var feedCardStyle: NativeFeedCardStyle
     @Published private(set) var showsSearchHotSearch: Bool
     @Published private(set) var showsSearchHistory: Bool
     @Published private(set) var topLevelReselectEnabled: Bool
@@ -279,7 +298,8 @@ final class NativeShellPreferences: ObservableObject {
             feedDensity: feedDensity,
             feedExcerptLines: feedExcerptLines,
             showsFeedThumbnails: showsFeedThumbnails,
-            liquidGlassEnabled: liquidGlassEnabled
+            liquidGlassEnabled: liquidGlassEnabled,
+            feedCardStyle: feedCardStyle
         )
     }
 
@@ -366,6 +386,8 @@ final class NativeShellPreferences: ObservableObject {
             : defaults.integer(forKey: Key.feedExcerptLines), to: 1 ... 5)
         showsFeedThumbnails = Self.bool(defaults, key: Key.showFeedThumbnail, defaultValue: true)
         liquidGlassEnabled = Self.bool(defaults, key: Key.liquidGlassEnabled, defaultValue: true)
+        feedCardStyle = defaults.string(forKey: Key.feedCardStyle)
+            .flatMap(NativeFeedCardStyle.init(rawValue:)) ?? .standard
         homeRecommendationSource = defaults.string(forKey: Key.homeRecommendationSource)
             .flatMap(HomeRecommendationSource.init(rawValue:)) ?? .app
         homeRefreshTargetItemCount = Self.clamp(
@@ -390,6 +412,12 @@ final class NativeShellPreferences: ObservableObject {
         guard accentTheme != theme else { return }
         accentTheme = theme
         defaults.set(theme.rawValue, forKey: Key.accentTheme)
+    }
+
+    func setFeedCardStyle(_ style: NativeFeedCardStyle) {
+        guard feedCardStyle != style else { return }
+        feedCardStyle = style
+        defaults.set(style.rawValue, forKey: Key.feedCardStyle)
     }
 
     func setLiquidGlassEnabled(_ enabled: Bool) {
