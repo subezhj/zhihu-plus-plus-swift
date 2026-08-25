@@ -185,7 +185,7 @@ struct QuestionNativeView: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .frame(maxWidth: .infinity)
-                    .background(Color.nativeSystemGroupedBackground)
+                    .background(Color.clear)
                     .textCase(nil)
                 }
             }

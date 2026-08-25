@@ -86,11 +86,11 @@ struct NativeCollectionsView: View {
     @ViewBuilder private var paginationFooter: some View {
         if store.isLoading, !store.collections.isEmpty {
             HStack { Spacer(); ProgressView(); Spacer() }
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
                 .listRowSeparator(.hidden)
         } else if !store.isEnd, !store.collections.isEmpty {
             Color.clear.frame(height: 1).task { await store.loadMore() }
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
                 .listRowSeparator(.hidden)
         }
     }
@@ -117,7 +117,7 @@ struct NativeCollectionContentView: View {
                 Section {
                     Text("\(collection.itemCount) 条收藏 · \(collection.likeCount) 个赞同 · \(collection.commentCount) 条评论")
                         .font(.subheadline).foregroundStyle(.secondary)
-                        .listRowBackground(Color.nativeSystemBackground)
+                        .listRowBackground(Color.nativeSystemGroupedBackground)
                         .listRowSeparator(.hidden)
                 }
             }

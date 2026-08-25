@@ -602,12 +602,12 @@ struct FollowNativeView: View {
                 .nativeChannelSwipeExclusion()
             }
             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 6, trailing: 0))
-            .listRowBackground(Color.nativeSystemBackground)
+            .listRowBackground(Color.nativeSystemGroupedBackground)
             .listRowSeparator(.hidden)
         } else if let error = store.recentUsersErrorMessage {
             FeedRetryRow(message: error) { Task { await store.reloadRecentUsers() } }
                 .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
                 .listRowSeparator(.hidden)
         }
     }
@@ -643,7 +643,7 @@ private struct NativeFeedPaginationLoadingRow: View {
             Spacer(minLength: 0)
         }
         .frame(minHeight: 56)
-        .listRowBackground(Color.nativeSystemBackground)
+        .listRowBackground(Color.nativeSystemGroupedBackground)
         .listRowSeparator(.hidden)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("feed_pagination_loading")
