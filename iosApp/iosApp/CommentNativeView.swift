@@ -463,7 +463,7 @@ private struct CommentRow: View {
                     HStack(spacing: 5) {
                         Button(comment.author.displayName) { store.openAuthor(commentID: comment.id) }
                             .buttonStyle(.plain)
-                            .font(.headline)
+                            .font(NativeTypography.authorName(scale: presentation.fontScale))
 
                         if let reply = comment.replyToAuthor {
                             HStack(spacing: 3) {
@@ -471,7 +471,7 @@ private struct CommentRow: View {
                                     .font(.system(size: 9))
                                     .foregroundStyle(.tertiary)
                                 Text(reply.displayName)
-                                    .font(.subheadline.weight(.medium))
+                                    .font(NativeTypography.footnote(scale: presentation.fontScale))
                                     .foregroundStyle(.secondary)
                             }
                             .onTapGesture {
@@ -480,7 +480,7 @@ private struct CommentRow: View {
                         }
                     }
                     Text(CommentDateFormatter.string(seconds: comment.createdTimeSeconds))
-                        .font(.caption)
+                        .font(NativeTypography.caption(scale: presentation.fontScale))
                         .foregroundStyle(.secondary)
                 }
             }
@@ -817,11 +817,11 @@ private struct CommentComposerBackground: View {
 private struct CommentRichText: View {
     let html: String
     @Environment(\.nativeContentPresentation) private var contentPresentation
-    @ScaledMetric(relativeTo: .body) private var bodyPointSize: CGFloat = 17
+    @ScaledMetric(relativeTo: .body) private var bodyPointSize: CGFloat = 15
 
     var body: some View {
         let pointSize = bodyPointSize * contentPresentation.fontScale
-        let bodyFont = Font.system(size: pointSize)
+        let bodyFont = NativeTypography.commentBody(scale: contentPresentation.fontScale)
         Text(CommentAttributedText.value(from: html, bodyFont: bodyFont))
             .font(bodyFont)
             .lineSpacing(contentPresentation.extraLineSpacing(for: pointSize))

@@ -48,7 +48,7 @@ struct QuestionNativeView: View {
             List {
                 VStack(alignment: .leading, spacing: 18) {
                     Text(question.title)
-                        .font(.title2.bold())
+                        .font(NativeTypography.pageTitle(scale: contentPresentation.fontScale))
                         .textSelection(.enabled)
                         .fixedSize(horizontal: false, vertical: true)
 
@@ -278,11 +278,11 @@ private struct QAAnswerPreviewRow: View {
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(answer.author.displayName)
-                        .font(.subheadline.weight(.semibold))
+                        .font(NativeTypography.authorName(scale: presentation.fontScale))
                         .foregroundStyle(.primary)
                     if !answer.author.headline.isEmpty {
                         Text(answer.author.headline)
-                            .font(.caption)
+                            .font(NativeTypography.footnote(scale: presentation.fontScale))
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
@@ -293,7 +293,7 @@ private struct QAAnswerPreviewRow: View {
             if !answer.excerpt.isEmpty {
                 let renderedPointSize = 15.0 * presentation.fontScale
                 Text(answer.excerpt)
-                    .font(.system(size: renderedPointSize))
+                    .font(NativeTypography.feedExcerpt(scale: presentation.fontScale))
                     .foregroundStyle(.secondary)
                     .lineSpacing(presentation.extraLineSpacing(for: renderedPointSize) * 0.45)
                     .lineLimit(presentation.feedExcerptLines)
@@ -301,7 +301,7 @@ private struct QAAnswerPreviewRow: View {
 
             HStack(spacing: 6) {
                 Text("\(answer.voteUpCount) 赞同 · \(answer.commentCount) 评论")
-                    .font(.caption)
+                    .font(NativeTypography.caption(scale: presentation.fontScale))
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
                 Spacer(minLength: 0)

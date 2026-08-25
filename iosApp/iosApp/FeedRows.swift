@@ -34,14 +34,14 @@ struct FeedItemRow: View {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(item.title)
-                        .font(.headline.weight(.semibold))
+                        .font(NativeTypography.feedTitle(scale: presentation.fontScale))
                         .foregroundStyle(.primary)
                         .lineLimit(2)
 
                     if let summary = item.summary, !summary.isEmpty {
                         let renderedPointSize = summaryPointSize * presentation.fontScale
                         Text(summary)
-                            .font(.system(size: renderedPointSize))
+                            .font(NativeTypography.feedExcerpt(scale: presentation.fontScale))
                             .foregroundStyle(.secondary)
                             .lineSpacing(presentation.extraLineSpacing(for: renderedPointSize) * 0.45)
                             .lineLimit(presentation.feedExcerptLines)

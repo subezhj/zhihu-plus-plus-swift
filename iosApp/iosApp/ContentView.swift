@@ -334,3 +334,53 @@ public extension Color {
             : UIColor(red: 252.0 / 255.0, green: 252.0 / 255.0, blue: 252.0 / 255.0, alpha: 1.0)
     })
 }
+
+// MARK: - Global Typography System
+
+public enum NativeTypography {
+    /// 页面主标题 / 问题大标题 (20pt Bold)
+    public static func pageTitle(scale: CGFloat = 1.0) -> Font {
+        .system(size: 20 * scale, weight: .bold)
+    }
+
+    /// 信息流卡片 / 列表标题 (17pt SemiBold)
+    public static func feedTitle(scale: CGFloat = 1.0) -> Font {
+        .system(size: 17 * scale, weight: .semibold)
+    }
+
+    /// 正文主体 / 阅读内容 (16pt Regular)
+    public static func body(scale: CGFloat = 1.0) -> Font {
+        .system(size: 16 * scale, weight: .regular)
+    }
+
+    /// 卡片摘要 / 评论正文 (15pt Regular)
+    public static func feedExcerpt(scale: CGFloat = 1.0) -> Font {
+        .system(size: 15 * scale, weight: .regular)
+    }
+
+    /// 评论正文 (15pt Regular)
+    public static func commentBody(scale: CGFloat = 1.0) -> Font {
+        .system(size: 15 * scale, weight: .regular)
+    }
+
+    /// 作者名称 / 次级标题 / 强调标签 (14pt Medium)
+    public static func authorName(scale: CGFloat = 1.0) -> Font {
+        .system(size: 14 * scale, weight: .medium)
+    }
+
+    /// 次级元数据 / 作者签名 / 辅助说明 (13pt Regular)
+    public static func footnote(scale: CGFloat = 1.0) -> Font {
+        .system(size: 13 * scale, weight: .regular)
+    }
+
+    /// 标注信息 / 发布时间 / IP 属地 / 徽章 (12pt Regular)
+    public static func caption(scale: CGFloat = 1.0) -> Font {
+        .system(size: 12 * scale, weight: .regular)
+    }
+
+    /// 微型标注 / 交互数字角标 (11pt MonospacedDigit)
+    public static func caption2(scale: CGFloat = 1.0) -> Font {
+        .system(size: 11 * scale, weight: .regular).monospacedDigit()
+    }
+}
+
