@@ -7,7 +7,7 @@ struct FeedItemRow: View {
     @EnvironmentObject private var questionAuthorBlocklist: QuestionAuthorBlocklistStore
     @Environment(\.nativeContentPresentation) private var presentation
     @Environment(\.nativeHapticFeedback) private var hapticFeedback
-    @ScaledMetric(relativeTo: .subheadline) private var summaryPointSize: CGFloat = 15
+    @ScaledMetric(relativeTo: .subheadline) private var summaryPointSize: CGFloat = 13.5
     @ScaledMetric(relativeTo: .body) private var wideThumbnailHeight: CGFloat = 96
 
     var body: some View {

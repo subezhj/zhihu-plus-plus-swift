@@ -338,49 +338,49 @@ public extension Color {
 // MARK: - Global Typography System
 
 public enum NativeTypography {
-    /// 页面主标题 / 问题大标题 (20pt Bold)
+    /// 页面主标题 / 问题大标题 (19pt Bold)
     public static func pageTitle(scale: CGFloat = 1.0) -> Font {
-        .system(size: 20 * scale, weight: .bold)
+        .system(size: 19 * scale, weight: .bold)
     }
 
-    /// 信息流卡片 / 列表标题 (17pt SemiBold)
+    /// 信息流卡片 / 列表标题 (15.5pt SemiBold - 精致紧凑，比内容略大且加粗)
     public static func feedTitle(scale: CGFloat = 1.0) -> Font {
-        .system(size: 17 * scale, weight: .semibold)
+        .system(size: 15.5 * scale, weight: .semibold)
     }
 
-    /// 正文主体 / 阅读内容 (16pt Regular)
+    /// 正文主体 / 阅读内容 (15.5pt Regular)
     public static func body(scale: CGFloat = 1.0) -> Font {
-        .system(size: 16 * scale, weight: .regular)
+        .system(size: 15.5 * scale, weight: .regular)
     }
 
-    /// 卡片摘要 / 评论正文 (15pt Regular)
+    /// 卡片摘要 (13.5pt Regular - 紧凑舒适)
     public static func feedExcerpt(scale: CGFloat = 1.0) -> Font {
-        .system(size: 15 * scale, weight: .regular)
+        .system(size: 13.5 * scale, weight: .regular)
     }
 
-    /// 评论正文 (15pt Regular)
+    /// 评论正文 (14pt Regular)
     public static func commentBody(scale: CGFloat = 1.0) -> Font {
-        .system(size: 15 * scale, weight: .regular)
+        .system(size: 14 * scale, weight: .regular)
     }
 
-    /// 作者名称 / 次级标题 / 强调标签 (14pt Medium)
+    /// 用户名 / 作者名称 / 强调标签 (13.5pt Medium - 卡片与评论保持一致)
     public static func authorName(scale: CGFloat = 1.0) -> Font {
-        .system(size: 14 * scale, weight: .medium)
+        .system(size: 13.5 * scale, weight: .medium)
     }
 
-    /// 次级元数据 / 作者签名 / 辅助说明 (13pt Regular)
+    /// 次级元数据 / 作者签名 / 辅助说明 (12.5pt Regular)
     public static func footnote(scale: CGFloat = 1.0) -> Font {
-        .system(size: 13 * scale, weight: .regular)
+        .system(size: 12.5 * scale, weight: .regular)
     }
 
-    /// 标注信息 / 发布时间 / IP 属地 / 徽章 (12pt Regular)
+    /// 标注信息 / 发布时间 / IP 属地 / 互动计数 (11.5pt Regular)
     public static func caption(scale: CGFloat = 1.0) -> Font {
-        .system(size: 12 * scale, weight: .regular)
+        .system(size: 11.5 * scale, weight: .regular)
     }
 
-    /// 微型标注 / 交互数字角标 (11pt MonospacedDigit)
+    /// 微型标注 / 交互数字角标 (10.5pt MonospacedDigit)
     public static func caption2(scale: CGFloat = 1.0) -> Font {
-        .system(size: 11 * scale, weight: .regular).monospacedDigit()
+        .system(size: 10.5 * scale, weight: .regular).monospacedDigit()
     }
 }
 

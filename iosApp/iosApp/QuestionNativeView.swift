@@ -291,7 +291,7 @@ private struct QAAnswerPreviewRow: View {
             }
 
             if !answer.excerpt.isEmpty {
-                let renderedPointSize = 15.0 * presentation.fontScale
+                let renderedPointSize = 13.5 * presentation.fontScale
                 Text(answer.excerpt)
                     .font(NativeTypography.feedExcerpt(scale: presentation.fontScale))
                     .foregroundStyle(.secondary)
