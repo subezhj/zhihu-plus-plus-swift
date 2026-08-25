@@ -127,29 +127,52 @@ struct QuestionNativeView: View {
                 .listRowBackground(Color.nativeSystemBackground)
 
                 Section {
-                    ForEach(store.answers) { answer in
-                        Button {
-                            onNavigate(.answer(store.answerRoute(for: answer)))
-                        } label: {
-                            QAAnswerPreviewRow(answer: answer)
-                                .nativeFeedCard(cornerRadius: 14)
+                    if store.answers.isEmpty && store.nextPage == .loading {
+                        ForEach(0..<4, id: \.self) { _ in
+                            VStack(alignment: .leading, spacing: 10) {
+                                HStack(spacing: 9) {
+                                    Circle().frame(width: 30, height: 30)
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        RoundedRectangle(cornerRadius: 4).frame(width: 90, height: 14)
+                                        RoundedRectangle(cornerRadius: 3).frame(width: 130, height: 10)
+                                    }
+                                }
+                                RoundedRectangle(cornerRadius: 4).frame(height: 16)
+                                RoundedRectangle(cornerRadius: 4).frame(height: 16)
+                                RoundedRectangle(cornerRadius: 3).frame(width: 100, height: 12)
+                            }
+                            .foregroundStyle(.secondary.opacity(0.3))
+                            .nativeFeedCard(cornerRadius: 14)
+                            .redacted(reason: .placeholder)
+                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
                         }
-                        .buttonStyle(.plain)
-                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                        .task {
-                            if answer.id == store.answers.last?.id { await store.loadMore() }
+                    } else {
+                        ForEach(store.answers) { answer in
+                            Button {
+                                onNavigate(.answer(store.answerRoute(for: answer)))
+                            } label: {
+                                QAAnswerPreviewRow(answer: answer)
+                                    .nativeFeedCard(cornerRadius: 14)
+                            }
+                            .buttonStyle(.plain)
+                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .task {
+                                if answer.id == store.answers.last?.id { await store.loadMore() }
+                            }
                         }
                     }
 
                     switch store.nextPage {
-                    case .loading:
+                    case .loading where !store.answers.isEmpty:
                         HStack { Spacer(); ProgressView(); Spacer() }
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
                     case let .failed(message):
-                        Button("加载更多失败，点此重试") { Task { await store.loadMore() } }
+                        Button("加载回答失败，点此重试") { Task { await store.loadMore() } }
                             .foregroundStyle(.red)
                             .accessibilityHint(message)
                             .listRowBackground(Color.clear)
@@ -161,6 +184,8 @@ struct QuestionNativeView: View {
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                         }
+                    default:
+                        EmptyView()
                     }
                 }
             }
@@ -199,7 +224,11 @@ struct QuestionNativeView: View {
     private var sortBinding: Binding<QuestionAnswerSort> {
         Binding(
             get: { store.sort },
-            set: { value in Task { await store.selectSort(value) } }
+            set: { value in
+                withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
+                    Task { await store.selectSort(value) }
+                }
+            }
         )
     }
 
