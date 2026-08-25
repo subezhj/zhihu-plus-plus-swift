@@ -187,15 +187,36 @@ enum NativeContentPosterRenderer {
             appIcon: NativeContentPosterBranding.appIcon(),
             showsHeader: showsHeader
         )
+        let width: CGFloat = 414
         let content = NativeContentPosterView(prepared: prepared)
-            .frame(width: 414)
+            .frame(width: width)
             .fixedSize(horizontal: false, vertical: true)
-        let renderer = ImageRenderer(content: content)
-        renderer.proposedSize = ProposedViewSize(width: 414, height: nil)
-        renderer.scale = UIScreen.main.scale >= 3 ? 3 : 2
-        renderer.isOpaque = true
-        guard let image = renderer.uiImage else {
-            throw NativeContentPosterError.renderFailed
+
+        let hostingController = UIHostingController(rootView: content)
+        hostingController.view.backgroundColor = .white
+        hostingController.overrideUserInterfaceStyle = .light
+
+        let targetSize = CGSize(width: width, height: UIView.layoutFittingCompressedSize.height)
+        hostingController.view.bounds = CGRect(origin: .zero, size: targetSize)
+        let fittingSize = hostingController.view.systemLayoutSizeFitting(
+            CGSize(width: width, height: UIView.noIntrinsicMetric),
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        )
+        let finalHeight = max(100, ceil(fittingSize.height))
+        let finalSize = CGSize(width: width, height: finalHeight)
+        hostingController.view.bounds = CGRect(origin: .zero, size: finalSize)
+        hostingController.view.layoutIfNeeded()
+
+        let scale: CGFloat = finalHeight > 5000 ? 1.5 : 2.0
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = scale
+        format.opaque = true
+        let uigraphicsRenderer = UIGraphicsImageRenderer(size: finalSize, format: format)
+        let image = uigraphicsRenderer.image { ctx in
+            UIColor.white.setFill()
+            ctx.fill(CGRect(origin: .zero, size: finalSize))
+            hostingController.view.layer.render(in: ctx.cgContext)
         }
         return image
     }

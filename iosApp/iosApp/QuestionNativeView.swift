@@ -114,12 +114,6 @@ struct QuestionNativeView: View {
                     }
 
                     QAQuestionStats(question: question)
-                    Picker("回答排序", selection: sortBinding) {
-                        ForEach(QuestionAnswerSort.allCases) { sort in
-                            Text(sort.title).tag(sort)
-                        }
-                    }
-                    .pickerStyle(.segmented)
                 }
                 .padding(.vertical, 6)
                 .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 14, trailing: 16))
@@ -181,6 +175,18 @@ struct QuestionNativeView: View {
                     default:
                         EmptyView()
                     }
+                } header: {
+                    Picker("回答排序", selection: sortBinding) {
+                        ForEach(QuestionAnswerSort.allCases) { sort in
+                            Text(sort.title).tag(sort)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.nativeSystemBackground)
+                    .textCase(nil)
                 }
             }
             .listStyle(.plain)

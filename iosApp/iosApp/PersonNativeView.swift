@@ -27,6 +27,8 @@ struct PersonNativeView: View {
                         )
                     }
                 }
+                .frame(maxWidth: .infinity)
+                .background(Color.nativeSystemGroupedBackground)
                 .textCase(nil)
             }
         }

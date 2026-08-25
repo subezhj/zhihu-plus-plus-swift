@@ -488,11 +488,11 @@ private struct BlockedQuestionAuthorsView: View {
                         store.unblock(memberID: author.memberID)
                     }
                 }
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
             }
         }
         .scrollContentBackground(.hidden)
-        .background(Color.nativeSystemBackground.ignoresSafeArea())
+        .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .navigationTitle("已屏蔽的提问者")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -521,7 +521,7 @@ struct NativeNotificationSettingsView: View {
             .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
         }
         .scrollContentBackground(.hidden)
-        .background(Color.nativeSystemBackground.ignoresSafeArea())
+        .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .navigationTitle("通知设置")
         .navigationBarTitleDisplayMode(.inline)
     }

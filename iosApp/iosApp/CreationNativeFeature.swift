@@ -629,17 +629,33 @@ struct WritePinNativeView: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
-            TextField("标题（可选）", text: $store.title)
-                .font(.title2.bold())
-                .textFieldStyle(.plain)
-                .padding(.horizontal)
-            NativeThinDivider().padding(.horizontal)
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 6) {
+                TextField("标题（可选）", text: $store.title)
+                    .font(.title3.weight(.bold))
+                    .textFieldStyle(.plain)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 14)
+            .padding(.bottom, 12)
+
+            Divider()
+                .padding(.horizontal, 16)
+
             TextEditor(text: $store.text)
+                .font(.body)
                 .overlay(alignment: .topLeading) {
-                    if store.text.isEmpty { Text("分享你此刻的想法…").foregroundStyle(.secondary).padding(8) }
+                    if store.text.isEmpty {
+                        Text("分享你此刻的想法…")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 8)
+                            .allowsHitTesting(false)
+                    }
                 }
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
         }
         .navigationTitle("发想法")
         .navigationBarTitleDisplayMode(.inline)
