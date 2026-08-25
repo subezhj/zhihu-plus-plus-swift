@@ -441,11 +441,8 @@ struct DailyNativeView: View {
                                         .padding(.vertical, 12)
                                         .liquidGlassCard(cornerRadius: 16, isProminent: false)
                                 } else {
-                                    VStack(alignment: .leading, spacing: 0) {
-                                        dailyStoryContent(story)
-                                            .padding(.vertical, 10)
-                                        NativeThinDivider()
-                                    }
+                                    dailyStoryContent(story)
+                                        .nativeFeedCard(cornerRadius: 14)
                                 }
                             }
                             .buttonStyle(.plain)

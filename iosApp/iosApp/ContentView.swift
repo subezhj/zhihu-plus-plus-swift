@@ -234,6 +234,15 @@ public extension View {
     func liquidGlassCard(cornerRadius: CGFloat = 16, isProminent: Bool = false) -> some View {
         modifier(LiquidGlassModifier(shape: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous), isProminent: isProminent, ignoreToggle: false))
     }
+
+    func nativeFeedCard(cornerRadius: CGFloat = 14) -> some View {
+        padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(Color.nativeSecondarySystemGroupedBackground)
+            )
+    }
 }
 
 // MARK: - Standard Ultra-Thin Divider

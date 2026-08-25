@@ -351,15 +351,17 @@ struct NativeNotificationsView: View {
             }
             ForEach(store.items) { item in
                 NativeNotificationRow(item: item, onOpenContent: onOpenContent)
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
             }
             if store.isLoading, !store.items.isEmpty {
                 HStack { Spacer(); ProgressView(); Spacer() }
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
             } else if !store.items.isEmpty {
                 Color.clear.frame(height: 1).task { await store.loadMore() }
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
             }
         }
@@ -425,13 +427,33 @@ private struct NativeNotificationRow: View {
     let item: NativeNotificationItem
     let onOpenContent: (NativeContentDestination) -> Void
 
+    @Environment(\.nativeContentPresentation) private var presentation
+
     var body: some View {
         Group {
             if let destination = item.destination {
-                Button { onOpenContent(destination) } label: { rowContent }
-                    .buttonStyle(.plain)
+                Button { onOpenContent(destination) } label: {
+                    if presentation.liquidGlassEnabled {
+                        rowContent
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 12)
+                            .liquidGlassCard(cornerRadius: 16, isProminent: false)
+                    } else {
+                        rowContent
+                            .nativeFeedCard(cornerRadius: 14)
+                    }
+                }
+                .buttonStyle(.plain)
             } else {
-                rowContent
+                if presentation.liquidGlassEnabled {
+                    rowContent
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .liquidGlassCard(cornerRadius: 16, isProminent: false)
+                } else {
+                    rowContent
+                        .nativeFeedCard(cornerRadius: 14)
+                }
             }
         }
     }

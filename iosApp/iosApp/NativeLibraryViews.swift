@@ -51,11 +51,8 @@ struct NativeCollectionsView: View {
                                 .padding(.vertical, 12)
                                 .liquidGlassCard(cornerRadius: 16, isProminent: false)
                         } else {
-                            VStack(alignment: .leading, spacing: 0) {
-                                collectionRow(collection)
-                                    .padding(.vertical, 10)
-                                NativeThinDivider()
-                            }
+                            collectionRow(collection)
+                                .nativeFeedCard(cornerRadius: 14)
                         }
                     }
                     .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
@@ -230,14 +227,16 @@ struct NativeHistoryView: View {
             }
             ForEach(store.items) { item in
                 NativeHistoryRow(item: item, onOpenContent: onOpenContent)
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
             }
             if store.canLoadMore {
                 NativePaginationFooter(
                     isLoading: store.isLoadingMore,
                     accessibilityIdentifier: "native_history_pagination_footer"
                 )
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
                 .task { await store.loadMore() }
             }
@@ -750,13 +749,33 @@ private struct NativeHistoryRow: View {
     let item: NativeHistoryItem
     let onOpenContent: (NativeContentDestination) -> Void
 
+    @Environment(\.nativeContentPresentation) private var presentation
+
     var body: some View {
         Group {
             if let destination = item.destination {
-                Button { onOpenContent(destination) } label: { rowContent }
-                    .buttonStyle(.plain)
+                Button { onOpenContent(destination) } label: {
+                    if presentation.liquidGlassEnabled {
+                        rowContent
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 12)
+                            .liquidGlassCard(cornerRadius: 16, isProminent: false)
+                    } else {
+                        rowContent
+                            .nativeFeedCard(cornerRadius: 14)
+                    }
+                }
+                .buttonStyle(.plain)
             } else {
-                rowContent
+                if presentation.liquidGlassEnabled {
+                    rowContent
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .liquidGlassCard(cornerRadius: 16, isProminent: false)
+                } else {
+                    rowContent
+                        .nativeFeedCard(cornerRadius: 14)
+                }
             }
         }
     }

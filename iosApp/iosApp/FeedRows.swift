@@ -29,11 +29,8 @@ struct FeedItemRow: View {
                     .padding(.vertical, 12)
                     .liquidGlassCard(cornerRadius: 16, isProminent: false)
             } else {
-                VStack(alignment: .leading, spacing: 0) {
-                    rowContent
-                        .padding(.vertical, 12)
-                    NativeThinDivider()
-                }
+                rowContent
+                    .nativeFeedCard(cornerRadius: 14)
             }
         }
         .buttonStyle(.plain)
