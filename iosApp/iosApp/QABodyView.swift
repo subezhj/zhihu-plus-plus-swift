@@ -457,11 +457,11 @@ private struct QANativeVideoPlayer: View {
             videoID: video.videoID,
             contentType: contentType,
             title: "视频",
-            playbackURL: nil,
             thumbnailURL: video.thumbnailURL,
+            playbackURL: nil,
             webURL: nil
         )
-        let repository = URLSessionNativeVideoRepository(client: .shared)
+        let repository = URLSessionNativeVideoRepository()
         do {
             let resolvedURL = try await repository.resolvePlaybackURL(for: route)
             guard !Task.isCancelled else { return }
