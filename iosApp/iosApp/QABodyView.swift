@@ -480,12 +480,42 @@ private struct QANativeVideoPlayer: View {
 private struct FullScreenVideoPlayerContainer: View {
     let player: AVPlayer
     let dismiss: () -> Void
+    @State private var isLandscape = false
 
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
             NativeInlineVideoPlayer(player: player, showsPlaybackControls: true)
                 .ignoresSafeArea()
+
+            VStack {
+                HStack {
+                    Button(action: dismiss) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 36, height: 36)
+                            .background(.black.opacity(0.55), in: Circle())
+                    }
+                    .padding(.leading, 16)
+                    .padding(.top, 16)
+                    .accessibilityLabel("退出全屏")
+
+                    Spacer()
+
+                    Button(action: toggleOrientation) {
+                        Image(systemName: isLandscape ? "iphone.portrait" : "iphone.landscape")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 36, height: 36)
+                            .background(.black.opacity(0.55), in: Circle())
+                    }
+                    .padding(.trailing, 16)
+                    .padding(.top, 16)
+                    .accessibilityLabel(isLandscape ? "切换竖屏" : "切换横屏")
+                }
+                Spacer()
+            }
         }
         .onAppear {
             player.play()
@@ -493,6 +523,11 @@ private struct FullScreenVideoPlayerContainer: View {
         .onDisappear {
             requestDeviceOrientation(.portrait)
         }
+    }
+
+    private func toggleOrientation() {
+        isLandscape.toggle()
+        requestDeviceOrientation(isLandscape ? .landscapeRight : .portrait)
     }
 
     private func requestDeviceOrientation(_ mask: UIInterfaceOrientationMask) {
@@ -557,6 +592,7 @@ struct NativeVideoPlayerScreen: View {
     @State private var player: AVPlayer?
     @State private var isLoading = true
     @State private var errorMessage: String?
+    @State private var isLandscape = false
 
     var body: some View {
         VStack(spacing: 18) {
@@ -613,11 +649,25 @@ struct NativeVideoPlayerScreen: View {
         .padding(16)
         .navigationTitle(route.title)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: toggleOrientation) {
+                    Image(systemName: isLandscape ? "iphone.portrait" : "iphone.landscape")
+                        .font(.system(size: 14, weight: .semibold))
+                }
+                .accessibilityLabel(isLandscape ? "切换竖屏" : "切换横屏")
+            }
+        }
         .task(id: route) { await load() }
         .onDisappear {
             player?.pause()
             requestDeviceOrientation(.portrait)
         }
+    }
+
+    private func toggleOrientation() {
+        isLandscape.toggle()
+        requestDeviceOrientation(isLandscape ? .landscapeRight : .portrait)
     }
 
     private func requestDeviceOrientation(_ mask: UIInterfaceOrientationMask) {
