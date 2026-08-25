@@ -430,6 +430,7 @@ private struct CommentRow: View {
     }
 
     @Environment(\.nativeContentPresentation) private var presentation
+    @Environment(\.nativeHapticFeedback) private var hapticFeedback
 
     var body: some View {
         rowContent
