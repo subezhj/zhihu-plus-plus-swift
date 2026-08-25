@@ -128,6 +128,11 @@ struct PersonProfileHeader: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
             .liquidGlassCapsule(isProminent: isSelected, ignoreToggle: true)
+            .overlay(
+                Capsule()
+                    .stroke(Color.primary.opacity(isSelected ? 0 : 0.08), lineWidth: 0.5)
+            )
+            .shadow(color: Color.black.opacity(isSelected ? 0.15 : 0.04), radius: isSelected ? 4 : 2, x: 0, y: isSelected ? 2 : 1)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -142,11 +147,21 @@ struct PersonProfileHeader: View {
                 .padding(.horizontal, 16)
                 .frame(minHeight: 38)
                 .liquidGlassCapsule(isProminent: !profile.isFollowing)
+                .overlay(
+                    Capsule()
+                        .stroke(Color.primary.opacity(profile.isFollowing ? 0.08 : 0), lineWidth: 0.5)
+                )
+                .shadow(color: Color.black.opacity(!profile.isFollowing ? 0.15 : 0.04), radius: !profile.isFollowing ? 4 : 2, x: 0, y: !profile.isFollowing ? 2 : 1)
             blockButton
                 .buttonStyle(.plain)
                 .padding(.horizontal, 16)
                 .frame(minHeight: 38)
                 .liquidGlassCapsule(isProminent: false)
+                .overlay(
+                    Capsule()
+                        .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+                )
+                .shadow(color: Color.black.opacity(0.04), radius: 2, x: 0, y: 1)
         }
     }
 

@@ -60,6 +60,11 @@ private struct PersonGlassTabButtonStyle: ButtonStyle {
             .padding(.horizontal, 14)
             .frame(minHeight: 38)
             .liquidGlassCapsule(isProminent: isSelected, ignoreToggle: true)
+            .overlay(
+                Capsule()
+                    .stroke(Color.primary.opacity(isSelected ? 0 : 0.08), lineWidth: 0.5)
+            )
+            .shadow(color: Color.black.opacity(isSelected ? 0.15 : 0.04), radius: isSelected ? 4 : 2, x: 0, y: isSelected ? 2 : 1)
             .opacity(configuration.isPressed ? 0.78 : 1)
     }
 }

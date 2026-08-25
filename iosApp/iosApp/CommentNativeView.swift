@@ -500,21 +500,9 @@ private struct CommentRow: View {
     @Environment(\.nativeContentPresentation) private var presentation
 
     var body: some View {
-        Group {
-            if presentation.liquidGlassEnabled {
-                rowContent
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 12)
-                    .liquidGlassCard(cornerRadius: 16, isProminent: false)
-            } else {
-                VStack(alignment: .leading, spacing: 0) {
-                    rowContent
-                        .padding(.vertical, 10)
-                    NativeThinDivider()
-                }
-            }
-        }
-        .contextMenu {
+        rowContent
+            .nativeFeedCard(cornerRadius: 14)
+            .contextMenu {
             Button(action: beginReply) {
                 Label("回复 @\(comment.author.displayName)", systemImage: "arrowshape.turn.up.left")
             }
@@ -725,17 +713,19 @@ private struct CommentComposerBar: View {
 
     private var activeComposer: some View {
         VStack(spacing: 6) {
-            if let target = store.activeReplyTargetName {
-                HStack {
-                    Text("回复 \(target)").font(.subheadline).foregroundStyle(.secondary)
-                    Spacer()
-                    Button("取消") { dismissComposer() }
-                        .font(.subheadline.weight(.medium))
-                }
-                .padding(.horizontal, 12)
-                .padding(.top, 10)
-                .padding(.bottom, 4)
+            HStack {
+                Text(store.activeReplyTargetName.map { "回复 \($0)" } ?? (level == .root ? "发表新评论" : "发表新回复"))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("取消") { dismissComposer() }
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(Color.accentColor)
             }
+            .padding(.horizontal, 14)
+            .padding(.top, 10)
+            .padding(.bottom, 2)
+
             if let imageData = store.draft.imageData, let image = UIImage(data: imageData) {
                 HStack {
                     Image(uiImage: image)
