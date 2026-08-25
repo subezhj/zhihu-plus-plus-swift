@@ -35,7 +35,7 @@ struct HotListNativeView: View {
                 )
                 .id(NativeHomeHeaderLayoutPolicy.scrollAnchor(for: .hot))
                 .listRowSeparator(.hidden)
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
 
                 if store.items.isEmpty, store.isLoading {
                     HStack {
@@ -44,7 +44,7 @@ struct HotListNativeView: View {
                         Spacer()
                     }
                     .listRowSeparator(.hidden)
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.nativeSystemGroupedBackground)
                 }
 
                 ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in
@@ -66,7 +66,7 @@ struct HotListNativeView: View {
                     FeedRetryRow(message: errorMessage) {
                         Task { await store.retry() }
                     }
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.nativeSystemGroupedBackground)
                     .listRowSeparator(.hidden)
                 } else if store.canLoadNextPage {
                     let taskID = NativeChannelTaskIdentity(
@@ -79,7 +79,7 @@ struct HotListNativeView: View {
                         Spacer()
                     }
                     .listRowSeparator(.hidden)
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.nativeSystemGroupedBackground)
                     .task(id: taskID) {
                         guard taskID.isActive,
                               taskID.value == store.nextPageLoadID
@@ -90,7 +90,7 @@ struct HotListNativeView: View {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-            .background(Color.nativeSystemBackground.ignoresSafeArea())
+            .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
             .nativeHomeFeedListLayout()
             .coordinateSpace(name: "hot-root-scroll")
             .nativeHomeFeedScrollTracking(

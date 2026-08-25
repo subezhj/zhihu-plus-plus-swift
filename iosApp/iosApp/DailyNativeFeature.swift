@@ -412,12 +412,12 @@ struct DailyNativeView: View {
                 )
                 .id(NativeHomeHeaderLayoutPolicy.scrollAnchor(for: .daily))
                 .listRowSeparator(.hidden)
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
 
                 if store.sections.isEmpty, store.isLoading {
                     HStack { Spacer(); ProgressView("正在加载日报"); Spacer() }
                         .listRowSeparator(.hidden)
-                        .listRowBackground(Color.nativeSystemBackground)
+                        .listRowBackground(Color.nativeSystemGroupedBackground)
                 }
                 ForEach(store.sections) { section in
                     Text(formatted(section.date))
@@ -428,7 +428,7 @@ struct DailyNativeView: View {
                         .padding(.bottom, 2)
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                         .listRowSeparator(.hidden)
-                        .listRowBackground(Color.nativeSystemBackground)
+                        .listRowBackground(Color.nativeSystemGroupedBackground)
 
                     ForEach(section.stories) { story in
                         Button {
@@ -458,7 +458,7 @@ struct DailyNativeView: View {
                         supplementalLoadTask?.cancel()
                         supplementalLoadTask = Task { await store.loadLatest() }
                     }
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.nativeSystemGroupedBackground)
                     .listRowSeparator(.hidden)
                 } else if !store.sections.isEmpty {
                     let taskID = NativeChannelTaskIdentity(
@@ -467,7 +467,7 @@ struct DailyNativeView: View {
                     )
                     HStack { Spacer(); ProgressView(); Spacer() }
                         .listRowSeparator(.hidden)
-                        .listRowBackground(Color.nativeSystemBackground)
+                        .listRowBackground(Color.nativeSystemGroupedBackground)
                         .task(id: taskID) {
                             guard taskID.isActive,
                                   taskID.value == store.nextPageLoadID
@@ -476,13 +476,13 @@ struct DailyNativeView: View {
                         }
                 } else if !store.isLoading {
                     Text("暂无日报内容").foregroundStyle(.secondary)
-                        .listRowBackground(Color.nativeSystemBackground)
+                        .listRowBackground(Color.nativeSystemGroupedBackground)
                         .listRowSeparator(.hidden)
                 }
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-            .background(Color.nativeSystemBackground.ignoresSafeArea())
+            .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
             .nativeHomeFeedListLayout()
             .coordinateSpace(name: "daily-root-scroll")
             .nativeHomeFeedScrollTracking(

@@ -95,7 +95,7 @@ struct HomeChannelsNativeView: View {
             channelContent(selectedChannel)
                 .id(selectedChannelID)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.nativeSystemBackground.ignoresSafeArea())
+                .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)

@@ -331,12 +331,12 @@ struct HomeNativeView: View {
                 )
                 .id(NativeHomeHeaderLayoutPolicy.scrollAnchor(for: .recommendation))
                 .listRowSeparator(.hidden)
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
 
                 if store.items.isEmpty, store.isLoading {
                     HStack { Spacer(); ProgressView("正在加载推荐"); Spacer() }
                         .listRowSeparator(.hidden)
-                        .listRowBackground(Color.nativeSystemBackground)
+                        .listRowBackground(Color.nativeSystemGroupedBackground)
                 }
 
                 ForEach(visibleItems) { item in
@@ -365,6 +365,8 @@ struct HomeNativeView: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
             .nativeHomeFeedListLayout()
             .coordinateSpace(name: "home-root-scroll")
             .nativeHomeFeedScrollTracking(
@@ -471,14 +473,14 @@ struct FollowNativeView: View {
                 )
                     .id(NativeHomeHeaderLayoutPolicy.scrollAnchor(for: .following))
                     .listRowSeparator(.hidden)
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.nativeSystemGroupedBackground)
 
                 recentUsers
 
                 if store.moments.items.isEmpty, store.moments.isLoading {
                     HStack { Spacer(); ProgressView("正在加载关注内容"); Spacer() }
                         .listRowSeparator(.hidden)
-                        .listRowBackground(Color.nativeSystemBackground)
+                        .listRowBackground(Color.nativeSystemGroupedBackground)
                 }
 
                 ForEach(visibleItems) { item in
@@ -506,6 +508,8 @@ struct FollowNativeView: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
             .nativeHomeFeedListLayout()
             .coordinateSpace(name: followCoordinateSpaceName)
             .nativeHomeFeedScrollTracking(
