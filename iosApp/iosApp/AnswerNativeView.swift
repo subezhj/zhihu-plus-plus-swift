@@ -143,13 +143,13 @@ struct AnswerNativeView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.top, 8)
+                .padding(.bottom, 68)
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
         }
         .background(Color.nativeSystemBackground.ignoresSafeArea())
-        .safeAreaInset(edge: .bottom) {
+        .overlay(alignment: .bottom) {
             AnswerActionBar(
                 content: content,
                 voteInFlight: store.isVoteMutationInFlight,

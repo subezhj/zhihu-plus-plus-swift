@@ -352,23 +352,18 @@ struct HomeNativeView: View {
                     .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
+                    .onAppear {
+                        if item.id == visibleItems.last?.id, store.canLoadMore {
+                            Task { await store.loadMore() }
+                        }
+                    }
                 }
 
                 if let message = store.errorMessage {
                     FeedRetryRow(message: message) { Task { await store.retry() } }
                 } else if store.hasNextPage {
-                    let taskID = NativeChannelTaskIdentity(
-                        isActive: isActiveChannel,
-                        value: store.nextPageLoadID
-                    )
                     NativeFeedPaginationLoadingRow(title: "正在加载更多推荐")
                         .listRowSeparator(.hidden)
-                        .task(id: taskID) {
-                            guard taskID.isActive,
-                                  taskID.value == store.nextPageLoadID
-                            else { return }
-                            await store.loadMore()
-                        }
                 } else if visibleItems.isEmpty, !store.isLoading {
                     Label("暂无推荐", systemImage: "sparkles")
                         .foregroundStyle(.secondary)
@@ -496,6 +491,11 @@ struct FollowNativeView: View {
                         .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
+                        .onAppear {
+                            if item.id == visibleItems.last?.id, store.moments.canLoadMore {
+                                Task { await store.loadMore(section: .moments) }
+                            }
+                        }
                 }
 
                 if let message = store.moments.errorMessage {
@@ -503,18 +503,8 @@ struct FollowNativeView: View {
                         Task { await store.retry(section: .moments) }
                     }
                 } else if store.moments.hasNextPage {
-                    let taskID = NativeChannelTaskIdentity(
-                        isActive: isActiveChannel,
-                        value: store.moments.nextPageLoadID
-                    )
                     NativeFeedPaginationLoadingRow(title: "正在加载更多关注内容")
                         .listRowSeparator(.hidden)
-                        .task(id: taskID) {
-                            guard taskID.isActive,
-                                  taskID.value == store.moments.nextPageLoadID
-                            else { return }
-                            await store.loadMore(section: .moments)
-                        }
                 } else if visibleItems.isEmpty, !store.moments.isLoading {
                     Label("暂无关注内容", systemImage: "person.2")
                         .foregroundStyle(.secondary)
