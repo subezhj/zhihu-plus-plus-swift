@@ -332,7 +332,7 @@ struct NativeAccountView: View {
         .scrollContentBackground(.hidden)
         .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .navigationTitle("账号")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .refreshable {
             if store.isSignedIn { await store.refresh() }
         }

@@ -57,9 +57,9 @@ struct NativeCollectionsView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .background(Color.nativeSystemBackground)
-        .navigationTitle("我的收藏夹")
-        .navigationBarTitleDisplayMode(.large)
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
+        .navigationTitle("我的收藏")
+        .navigationBarTitleDisplayMode(.inline)
         .refreshable { await store.refresh() }
         .task {
             if store.collections.isEmpty, !store.isLoading { await store.refresh() }
