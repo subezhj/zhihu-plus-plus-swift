@@ -55,7 +55,7 @@ actor URLSessionNativeVideoRepository: NativeVideoRepository {
     private let client: ZhihuAPIClient
     private let decoder: JSONDecoder
 
-    init(client: ZhihuAPIClient = ZhihuAPIClient()) {
+    init(client: ZhihuAPIClient = ZhihuAPIClient(accountStore: KeychainAccountStore())) {
         self.client = client
         decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
