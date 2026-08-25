@@ -260,8 +260,86 @@ private struct QAListDisplayRow: Identifiable {
     let runs: [QAInlineRun]
 }
 
+private final class NativeBodyImageMemoryCache {
+    static let shared = NativeBodyImageMemoryCache()
+    private let cache = NSCache<NSURL, UIImage>()
+
+    private init() {
+        cache.countLimit = 150
+        cache.totalCostLimit = 60 * 1024 * 1024 // 60 MB
+    }
+
+    func image(for url: URL) -> UIImage? {
+        cache.object(forKey: url as NSURL)
+    }
+
+    func store(_ image: UIImage, for url: URL) {
+        let cost = Int(image.size.width * image.size.height * 4)
+        cache.setObject(image, forKey: url as NSURL, cost: cost)
+    }
+}
+
+private enum NativeImageDownsampler {
+    static func downsample(data: Data, maxPixelSize: CGFloat = 1600) -> UIImage? {
+        let options = [kCGImageSourceShouldCache: false] as CFDictionary
+        guard let source = CGImageSourceCreateWithData(data as CFData, options) else {
+            return UIImage(data: data)
+        }
+        let downsampleOptions = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixelSize
+        ] as [CFString: Any] as CFDictionary
+
+        guard let downsampledImage = CGImageSourceCreateThumbnailAtIndex(source, 0, downsampleOptions) else {
+            return UIImage(data: data)
+        }
+        return UIImage(cgImage: downsampledImage)
+    }
+}
+
+@MainActor
+private final class NativeStaticImageLoader: ObservableObject {
+    @Published private(set) var image: UIImage?
+    @Published private(set) var didFail = false
+    private var loadedURL: URL?
+
+    func load(_ url: URL) async {
+        if let cached = NativeBodyImageMemoryCache.shared.image(for: url) {
+            self.image = cached
+            self.didFail = false
+            return
+        }
+        guard loadedURL != url || image == nil else { return }
+        loadedURL = url
+        image = nil
+        didFail = false
+
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            try Task.checkCancellation()
+            guard let response = response as? HTTPURLResponse,
+                  (200..<300).contains(response.statusCode),
+                  let decoded = await Task.detached(priority: .userInitiated, operation: {
+                      NativeImageDownsampler.downsample(data: data)
+                  }).value
+            else { throw URLError(.cannotDecodeContentData) }
+
+            guard loadedURL == url else { return }
+            NativeBodyImageMemoryCache.shared.store(decoded, for: url)
+            self.image = decoded
+        } catch is CancellationError {
+        } catch {
+            guard loadedURL == url else { return }
+            self.didFail = true
+        }
+    }
+}
+
 private struct QABodyRemoteImage: View {
     let image: QAImageDTO
+    @StateObject private var staticLoader = NativeStaticImageLoader()
 
     var body: some View {
         Group {
@@ -281,23 +359,28 @@ private struct QABodyRemoteImage: View {
         if NativeRemoteMediaPolicy.isAnimatedImage(image.url) {
             NativeAnimatedRemoteImage(url: image.url)
         } else {
-            AsyncImage(url: image.url) { phase in
-                switch phase {
-                case let .success(value):
-                    value.resizable().scaledToFit()
-                case .failure:
+            Group {
+                if let uiImage = staticLoader.image {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFit()
+                } else if staticLoader.didFail {
                     VStack(spacing: 8) {
                         Image(systemName: "photo.badge.exclamationmark")
                         Text("图片加载失败").font(.caption)
                     }
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                case .empty:
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                @unknown default:
-                    EmptyView()
+                } else {
+                    ZStack {
+                        Color(uiColor: .secondarySystemBackground).opacity(0.3)
+                        ProgressView()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
+            }
+            .task(id: image.url) {
+                await staticLoader.load(image.url)
             }
         }
     }
@@ -418,6 +501,8 @@ private struct QANativeVideoPlayer: View {
                         .foregroundStyle(.white)
                 }
                 .padding(10)
+            }
+
             if player != nil {
                 VStack {
                     Spacer()
