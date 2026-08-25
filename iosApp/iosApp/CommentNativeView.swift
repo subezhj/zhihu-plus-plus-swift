@@ -234,9 +234,7 @@ private struct CommentLevelView: View {
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
         .background(Color.nativeSystemBackground)
-        .coordinateSpace(name: coordinateSpaceName)
         .background(CommentScrollViewAccessor { scrollView = $0 })
-        .onPreferenceChange(CommentRowOffsetPreference.self) { updateAnchor($0) }
         .onChange(of: store.scrollToStartLevel) { target in
             guard target == level else { return }
             DispatchQueue.main.async {
@@ -324,7 +322,6 @@ private struct CommentLevelView: View {
                     onShare: { presentSharePoster(for: comment) }
                 )
                     .id(comment.id)
-                    .background(CommentRowOffsetReader(commentID: comment.id, coordinateSpaceName: coordinateSpaceName))
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                         Button {
                             store.beginReply(to: comment.id, level: level)
@@ -410,17 +407,7 @@ private struct CommentLevelView: View {
         }
     }
 
-    private func updateAnchor(_ offsets: [String: CGFloat]) {
-        guard !offsets.isEmpty else { return }
-        let first = offsets.filter { $0.value >= 0 }.min(by: { $0.value < $1.value })
-            ?? offsets.max(by: { $0.value < $1.value })
-        guard let first else { return }
-        store.updateAnchor(
-            CommentScrollAnchor(commentID: first.key, offsetFromViewportTopPoints: first.value),
-            for: level
-        )
     }
-
 }
 
 private struct CommentRow: View {
@@ -1077,24 +1064,3 @@ private struct CommentScrollViewAccessor: UIViewRepresentable {
     }
 }
 
-private struct CommentRowOffsetPreference: PreferenceKey {
-    static var defaultValue: [String: CGFloat] = [:]
-
-    static func reduce(value: inout [String: CGFloat], nextValue: () -> [String: CGFloat]) {
-        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
-    }
-}
-
-private struct CommentRowOffsetReader: View {
-    let commentID: String
-    let coordinateSpaceName: String
-
-    var body: some View {
-        GeometryReader { geometry in
-            Color.clear.preference(
-                key: CommentRowOffsetPreference.self,
-                value: [commentID: geometry.frame(in: .named(coordinateSpaceName)).minY]
-            )
-        }
-    }
-}
