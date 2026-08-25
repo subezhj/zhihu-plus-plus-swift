@@ -136,13 +136,13 @@ struct NativeCollectionContentView: View {
                             .nativeFeedCard(cornerRadius: 14)
                     }
                     .buttonStyle(.plain)
-                    .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                 } else {
                     NativeLibraryItemContent(item: item)
                         .nativeFeedCard(cornerRadius: 14)
-                        .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
                 }
@@ -385,13 +385,13 @@ struct NativeColumnView: View {
                             .nativeFeedCard(cornerRadius: 14)
                     }
                     .buttonStyle(.plain)
-                    .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                 } else {
                     NativeLibraryItemContent(item: item)
                         .nativeFeedCard(cornerRadius: 14)
-                        .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
                 }

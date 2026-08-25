@@ -142,7 +142,7 @@ struct PersonNativeView: View {
             ForEach(page.items) { item in
                 PersonPageRow(item: item) { store.open(item) }
                     .id(item.id)
-                    .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.nativeSystemGroupedBackground)
                     .onAppear { store.loadNextPageIfNeeded(after: item.id) }

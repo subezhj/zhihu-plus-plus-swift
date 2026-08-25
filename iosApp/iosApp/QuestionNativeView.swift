@@ -126,7 +126,7 @@ struct QuestionNativeView: View {
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.nativeSystemBackground)
 
-                Section("\(question.answerCount) 个回答") {
+                Section {
                     ForEach(store.answers) { answer in
                         Button {
                             onNavigate(.answer(store.answerRoute(for: answer)))
@@ -135,7 +135,7 @@ struct QuestionNativeView: View {
                                 .nativeFeedCard(cornerRadius: 14)
                         }
                         .buttonStyle(.plain)
-                        .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
                         .task {
@@ -257,7 +257,6 @@ private struct QAAnswerPreviewRow: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        .padding(.vertical, 5)
         .contentShape(Rectangle())
     }
 }
