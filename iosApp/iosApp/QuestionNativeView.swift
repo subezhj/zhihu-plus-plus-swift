@@ -17,7 +17,7 @@ struct QuestionNativeView: View {
                         Task { await store.refresh() }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.nativeSystemBackground.ignoresSafeArea())
+                    .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
                 case .idle, .loading, .loaded:
                     VStack {
                         Spacer()
@@ -25,11 +25,11 @@ struct QuestionNativeView: View {
                         Spacer()
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.nativeSystemBackground.ignoresSafeArea())
+                    .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
                 }
             }
         }
-        .background(Color.nativeSystemBackground.ignoresSafeArea())
+        .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .navigationTitle(store.question?.title.isEmpty == false ? (store.question?.title ?? "问题") : "问题")
         .navigationBarTitleDisplayMode(.inline)
         .task { await store.loadIfNeeded() }
@@ -118,7 +118,7 @@ struct QuestionNativeView: View {
                 .padding(.vertical, 6)
                 .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 14, trailing: 16))
                 .listRowSeparator(.hidden)
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
 
                 Section {
                     if store.answers.isEmpty && store.nextPage == .loading {
@@ -185,13 +185,13 @@ struct QuestionNativeView: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .frame(maxWidth: .infinity)
-                    .background(Color.nativeSystemBackground)
+                    .background(Color.nativeSystemGroupedBackground)
                     .textCase(nil)
                 }
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-            .background(Color.nativeSystemBackground.ignoresSafeArea())
+            .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
             .refreshable { await store.refresh() }
             .safeAreaInset(edge: .bottom) {
                 QuestionActionBar(

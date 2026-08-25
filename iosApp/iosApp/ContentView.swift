@@ -302,24 +302,28 @@ public struct NativeThinDivider: View {
 // MARK: - Global Theme Colors
 
 public extension Color {
+    /// 基础内容背景（如回答正文阅读器）：浅色为 #FFFFFF (.systemBackground)，深色为深灰 (#191919)
     static let nativeSystemBackground = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
             ? UIColor(red: 25.0 / 255.0, green: 25.0 / 255.0, blue: 25.0 / 255.0, alpha: 1.0)
             : .systemBackground
     })
 
+    /// 信息流列表/分组底色（如推荐页、个人主页、问题列表底色）：浅色为系统分组底色 #F0EFF4 (.systemGroupedBackground)，深色为 #191919
     static let nativeSystemGroupedBackground = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
             ? UIColor(red: 25.0 / 255.0, green: 25.0 / 255.0, blue: 25.0 / 255.0, alpha: 1.0)
             : .systemGroupedBackground
     })
 
+    /// 次级背景（用于分组内卡片）：浅色为 #FFFFFF (.secondarySystemGroupedBackground)，深色为 #282828
     static let nativeSecondarySystemBackground = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
             ? UIColor(red: 40.0 / 255.0, green: 40.0 / 255.0, blue: 40.0 / 255.0, alpha: 1.0)
             : .secondarySystemBackground
     })
 
+    /// 信息流卡片容器标准背景：浅色为纯白卡片 #FFFFFF (.secondarySystemGroupedBackground)，深色为暗色卡片 (#282828)
     static let nativeSecondarySystemGroupedBackground = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
             ? UIColor(red: 40.0 / 255.0, green: 40.0 / 255.0, blue: 40.0 / 255.0, alpha: 1.0)
