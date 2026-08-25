@@ -425,8 +425,12 @@ struct NativeAccountView: View {
                     HStack(spacing: 14) {
                         NativeAccountAvatar(identity: identity, diameter: 58)
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(identity.name).font(.headline).foregroundStyle(.primary)
-                            Text("查看个人主页").font(.subheadline).foregroundStyle(.secondary)
+                            Text(identity.name)
+                                .font(NativeTypography.feedTitle())
+                                .foregroundStyle(.primary)
+                            Text("查看个人主页")
+                                .font(NativeTypography.feedExcerpt())
+                                .foregroundStyle(.secondary)
                         }
                         Spacer()
                         Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary)

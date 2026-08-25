@@ -494,7 +494,7 @@ private struct NativeChannelSelector<Channel: Identifiable & Hashable>: View {
 
                         if isSelected {
                             Text(title(channel))
-                                .font(.subheadline.weight(.semibold))
+                                .font(NativeTypography.feedTitle())
                         }
                     }
                 }
