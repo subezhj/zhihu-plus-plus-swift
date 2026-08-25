@@ -268,10 +268,15 @@ private struct QuestionActionBar: View {
 
     var body: some View {
         actions
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 12)
             .padding(.vertical, 7)
             .liquidGlassCapsule(ignoreToggle: true)
-            .padding(.horizontal, 20)
+            .overlay(
+                Capsule()
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+            )
+            .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 3)
+            .padding(.horizontal, 16)
             .padding(.vertical, 6)
     }
 
@@ -293,9 +298,14 @@ private struct QuestionActionBar: View {
                         .font(.subheadline.weight(.semibold))
                 }
                 .foregroundStyle(Color.white)
-                .padding(.horizontal, 12)
+                .padding(.horizontal, 14)
                 .frame(minHeight: 38)
                 .liquidGlassCapsule(isProminent: true, ignoreToggle: true)
+                .overlay(
+                    Capsule()
+                        .stroke(Color.white.opacity(0.3), lineWidth: 0.5)
+                )
+                .shadow(color: Color.black.opacity(0.18), radius: 5, x: 0, y: 2)
                 .contentShape(Capsule())
             }
             .buttonStyle(.plain)

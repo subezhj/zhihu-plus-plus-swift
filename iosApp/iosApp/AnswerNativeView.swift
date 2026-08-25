@@ -304,19 +304,22 @@ private struct AnswerActionBar: View {
 
     var body: some View {
         actions
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 12)
             .padding(.vertical, 7)
             .liquidGlassCapsule(ignoreToggle: true)
-            .padding(.horizontal, 20)
+            .overlay(
+                Capsule()
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+            )
+            .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 3)
+            .padding(.horizontal, 16)
             .padding(.vertical, 6)
     }
 
     private var actions: some View {
-        HStack(spacing: 4) {
-            action("hand.thumbsup", count: content.voteUpCount, selected: content.voteState == .up, action: onVoteUp)
-                .disabled(voteInFlight)
-            action("hand.thumbsdown", label: "反对", selected: content.voteState == .down, action: onVoteDown)
-                .disabled(voteInFlight || content.route.kind == .article)
+        HStack(spacing: 8) {
+            voteUpButton
+            voteDownButton
             action(
                 content.favoriteState == .favorited ? "star.fill" : "star",
                 count: content.favoriteCount,
@@ -324,6 +327,57 @@ private struct AnswerActionBar: View {
                 action: onFavorite
             )
             action("bubble.left", count: content.commentCount, selected: false, action: onComments)
+        }
+    }
+
+    private var voteUpButton: some View {
+        let isSelected = content.voteState == .up
+        return Button(action: onVoteUp) {
+            HStack(spacing: 4) {
+                Image(systemName: isSelected ? "hand.thumbsup.fill" : "hand.thumbsup")
+                    .font(.system(size: 15, weight: .semibold))
+                Text(content.voteUpCount > 0 ? "\(content.voteUpCount)" : "赞同")
+                    .font(.subheadline.weight(.medium).monospacedDigit())
+            }
+            .foregroundStyle(isSelected ? Color.white : Color.primary)
+            .padding(.horizontal, 12)
+            .frame(minHeight: 38)
+            .liquidGlassCapsule(isProminent: isSelected, ignoreToggle: true)
+            .overlay(
+                Capsule()
+                    .stroke(isSelected ? Color.white.opacity(0.3) : Color.primary.opacity(0.08), lineWidth: 0.5)
+            )
+            .shadow(color: Color.black.opacity(isSelected ? 0.15 : 0.03), radius: isSelected ? 4 : 2, x: 0, y: isSelected ? 2 : 1)
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(voteInFlight)
+        .accessibilityLabel("赞同 \(content.voteUpCount)")
+    }
+
+    @ViewBuilder
+    private var voteDownButton: some View {
+        if content.route.kind != .article {
+            let isSelected = content.voteState == .down
+            Button(action: onVoteDown) {
+                HStack(spacing: 4) {
+                    Image(systemName: isSelected ? "hand.thumbsdown.fill" : "hand.thumbsdown")
+                        .font(.system(size: 15, weight: .semibold))
+                }
+                .foregroundStyle(isSelected ? Color.white : Color.primary)
+                .padding(.horizontal, 12)
+                .frame(minHeight: 38)
+                .liquidGlassCapsule(isProminent: isSelected, ignoreToggle: true)
+                .overlay(
+                    Capsule()
+                        .stroke(isSelected ? Color.white.opacity(0.3) : Color.primary.opacity(0.08), lineWidth: 0.5)
+                )
+                .shadow(color: Color.black.opacity(isSelected ? 0.15 : 0.03), radius: isSelected ? 4 : 2, x: 0, y: isSelected ? 2 : 1)
+                .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .disabled(voteInFlight)
+            .accessibilityLabel("反对")
         }
     }
 
@@ -336,16 +390,16 @@ private struct AnswerActionBar: View {
     ) -> some View {
         Button(action: action) {
             VStack(spacing: 2) {
-                Image(systemName: systemName).font(.system(size: 20, weight: selected ? .semibold : .regular))
+                Image(systemName: systemName).font(.system(size: 19, weight: selected ? .semibold : .regular))
                 Text(label ?? count.map(String.init) ?? "")
                     .font(.caption2.monospacedDigit())
                     .lineLimit(1)
             }
-            .frame(maxWidth: .infinity, minHeight: 44)
+            .frame(minWidth: 44, minHeight: 40)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .foregroundStyle(selected ? Color.accentColor : Color(uiColor: .label))
+        .foregroundStyle(selected ? Color.accentColor : Color.primary)
     }
 }
 
