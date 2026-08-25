@@ -418,6 +418,26 @@ private struct QANativeVideoPlayer: View {
                         .foregroundStyle(.white)
                 }
                 .padding(10)
+            if player != nil {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button {
+                            isFullScreenPresented = true
+                        } label: {
+                            Image(systemName: "arrow.up.left.and.arrow.down.right")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundStyle(.white)
+                                .frame(width: 32, height: 32)
+                                .background(.black.opacity(0.6), in: Circle())
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.trailing, 10)
+                        .padding(.bottom, 10)
+                        .accessibilityLabel("全屏与横屏播放")
+                    }
+                }
             }
         }
         .aspectRatio(16 / 9, contentMode: .fit)
@@ -494,27 +514,32 @@ private struct FullScreenVideoPlayerContainer: View {
                         Image(systemName: "xmark")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(.white)
-                            .frame(width: 36, height: 36)
+                            .frame(width: 38, height: 38)
                             .background(.black.opacity(0.55), in: Circle())
                     }
-                    .padding(.leading, 16)
-                    .padding(.top, 16)
+                    .padding(.leading, 20)
+                    .padding(.top, 20)
                     .accessibilityLabel("退出全屏")
 
+                    Spacer()
+                }
+
+                Spacer()
+
+                HStack {
                     Spacer()
 
                     Button(action: toggleOrientation) {
                         Image(systemName: isLandscape ? "iphone.portrait" : "iphone.landscape")
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.system(size: 17, weight: .semibold))
                             .foregroundStyle(.white)
-                            .frame(width: 36, height: 36)
-                            .background(.black.opacity(0.55), in: Circle())
+                            .frame(width: 44, height: 44)
+                            .background(.black.opacity(0.6), in: Circle())
                     }
-                    .padding(.trailing, 16)
-                    .padding(.top, 16)
+                    .padding(.trailing, 24)
+                    .padding(.bottom, 28)
                     .accessibilityLabel(isLandscape ? "切换竖屏" : "切换横屏")
                 }
-                Spacer()
             }
         }
         .onAppear {
