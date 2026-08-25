@@ -58,14 +58,9 @@ struct AppHostView: View {
             navAppearance.titleTextAttributes = [.foregroundColor: UIColor.label]
             navAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
 
-            let scrollEdgeAppearance = UINavigationBarAppearance()
-            scrollEdgeAppearance.configureWithTransparentBackground()
-            scrollEdgeAppearance.titleTextAttributes = [.foregroundColor: UIColor.label]
-            scrollEdgeAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
-
             UINavigationBar.appearance().standardAppearance = navAppearance
             UINavigationBar.appearance().compactAppearance = navAppearance
-            UINavigationBar.appearance().scrollEdgeAppearance = scrollEdgeAppearance
+            UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
             UINavigationBar.appearance().compactScrollEdgeAppearance = navAppearance
         }
         .fullScreenCover(item: $router.presentedModal, onDismiss: hostModel.modalDidDismiss) { modal in
