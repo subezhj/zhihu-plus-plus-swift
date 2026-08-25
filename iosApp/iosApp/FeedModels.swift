@@ -213,6 +213,7 @@ struct FeedItemDTO: Codable, Identifiable, Hashable, Sendable {
     let title: String
     let summary: String?
     let details: String
+    let formattedMetrics: String
     let sourceLabel: String?
     let author: FeedAuthorDTO?
     /// The author who asked the question. For answer cards this deliberately
@@ -230,6 +231,7 @@ struct FeedItemDTO: Codable, Identifiable, Hashable, Sendable {
         title: String,
         summary: String?,
         details: String,
+        formattedMetrics: String? = nil,
         sourceLabel: String?,
         author: FeedAuthorDTO?,
         questionAuthor: FeedAuthorDTO? = nil,
@@ -244,6 +246,7 @@ struct FeedItemDTO: Codable, Identifiable, Hashable, Sendable {
         self.title = title
         self.summary = summary
         self.details = details
+        self.formattedMetrics = formattedMetrics ?? FeedItemMetadataFormatter.metricsText(kind: kind, details: details)
         self.sourceLabel = sourceLabel
         self.author = author
         self.questionAuthor = questionAuthor

@@ -214,15 +214,11 @@ private struct FeedItemMetadataRow: View {
                 FeedItemAuthorLabel(author: author)
             }
 
-            let metrics = FeedItemMetadataFormatter.metricsText(
-                kind: item.kind,
-                details: item.details
-            )
-            if !metrics.isEmpty {
+            if !item.formattedMetrics.isEmpty {
                 if item.author != nil {
                     metadataSeparator
                 }
-                Text(metrics)
+                Text(item.formattedMetrics)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
