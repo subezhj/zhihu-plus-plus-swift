@@ -155,8 +155,8 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                             .fill(
                                 LinearGradient(
                                     colors: [
-                                        Color.primary.opacity(colorScheme == .dark ? 0.95 : 0.88),
-                                        Color.primary.opacity(colorScheme == .dark ? 0.82 : 0.75)
+                                        Color.accentColor.opacity(colorScheme == .dark ? 0.95 : 0.90),
+                                        Color.accentColor.opacity(colorScheme == .dark ? 0.80 : 0.75)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -167,8 +167,8 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        Color.white.opacity(colorScheme == .dark ? 0.5 : 0.35),
-                                        Color.white.opacity(0.1)
+                                        Color.white.opacity(colorScheme == .dark ? 0.5 : 0.4),
+                                        Color.white.opacity(0.15)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing

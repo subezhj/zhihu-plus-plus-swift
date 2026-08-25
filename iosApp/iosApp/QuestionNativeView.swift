@@ -289,7 +289,7 @@ private struct QuestionActionBar: View {
                     Text("写回答")
                         .font(.subheadline.weight(.semibold))
                 }
-                .foregroundStyle(Color.primary)
+                .foregroundStyle(Color.white)
                 .padding(.horizontal, 12)
                 .frame(minHeight: 38)
                 .liquidGlassCapsule(isProminent: true, ignoreToggle: true)
