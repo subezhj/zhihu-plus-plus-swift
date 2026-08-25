@@ -160,13 +160,12 @@ struct QABodyView: View {
                 }
             }
         case let .video(_, video):
-            if video.playbackURL != nil {
-                QANativeVideoPlayer(video: video)
-            } else {
-                QAVideoAttachmentView(video: video) {
-                    onNavigate(.video(videoRoute(video)))
-                }
-            }
+            let route = videoRoute(video)
+            QANativeVideoPlayer(
+                video: video,
+                contentID: route.contentID,
+                contentType: route.contentType
+            )
         case .divider:
             NativeThinDivider()
         }
@@ -327,9 +326,9 @@ enum QARichTextFormatter {
     }
 }
 
-private struct FullScreenVideoPlayerView: UIViewControllerRepresentable {
+private struct NativeInlineVideoPlayer: UIViewControllerRepresentable {
     let player: AVPlayer
-    let showsPlaybackControls: Bool
+    var showsPlaybackControls: Bool = true
 
     func makeUIViewController(context: Context) -> AVPlayerViewController {
         let controller = AVPlayerViewController()
@@ -337,6 +336,7 @@ private struct FullScreenVideoPlayerView: UIViewControllerRepresentable {
         controller.showsPlaybackControls = showsPlaybackControls
         controller.allowsPictureInPicturePlayback = true
         controller.videoGravity = .resizeAspect
+        controller.updatesNowPlayingInfoCenter = false
         return controller
     }
 
@@ -349,45 +349,83 @@ private struct FullScreenVideoPlayerView: UIViewControllerRepresentable {
 
 private struct QANativeVideoPlayer: View {
     let video: QAAttachmentVideoDTO
+    var contentID: Int64 = 0
+    var contentType: NativeVideoContentType = .answer
     @State private var player: AVPlayer?
+    @State private var isLoading = false
+    @State private var errorMessage: String?
     @State private var isFullScreenPresented = false
 
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
+        ZStack {
             Color.black
             if let player {
-                VideoPlayer(player: player)
+                NativeInlineVideoPlayer(player: player)
             } else if let thumbnailURL = video.thumbnailURL {
-                AsyncImage(url: thumbnailURL) { image in
-                    image.resizable().scaledToFit()
-                } placeholder: {
-                    ProgressView().tint(.white)
+                AsyncImage(url: thumbnailURL) { phase in
+                    switch phase {
+                    case let .success(image):
+                        image.resizable().scaledToFit()
+                    case .failure:
+                        Color.black
+                            .overlay(Image(systemName: "video.slash").foregroundStyle(.secondary))
+                    case .empty:
+                        Color.black
+                    @unknown default:
+                        Color.black
+                    }
+                }
+                .overlay {
+                    if isLoading {
+                        ProgressView().tint(.white)
+                    } else {
+                        Button {
+                            Task { await playInline() }
+                        } label: {
+                            Image(systemName: "play.circle.fill")
+                                .font(.system(size: 52))
+                                .foregroundStyle(.white, .black.opacity(0.4))
+                                .shadow(color: .black.opacity(0.35), radius: 8)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             } else {
-                ProgressView().tint(.white)
+                if isLoading {
+                    ProgressView().tint(.white)
+                } else {
+                    Button {
+                        Task { await playInline() }
+                    } label: {
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 52))
+                            .foregroundStyle(.white, .black.opacity(0.4))
+                    }
+                    .buttonStyle(.plain)
+                }
             }
 
-            if let player {
-                HStack(spacing: 8) {
-                    Button {
-                        isFullScreenPresented = true
-                    } label: {
-                        Image(systemName: "viewfinder")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .padding(8)
-                            .background(.black.opacity(0.65), in: Circle())
-                    }
-                    .accessibilityLabel("全屏播放")
+            if let errorMessage {
+                VStack(spacing: 8) {
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(.black.opacity(0.7), in: Capsule())
+                    Button("重试") { Task { await playInline() } }
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.white)
                 }
-                .padding(8)
+                .padding(10)
             }
         }
         .aspectRatio(16 / 9, contentMode: .fit)
         .clipShape(RoundedRectangle(cornerRadius: 14))
-        .onAppear {
-            guard player == nil, let playbackURL = video.playbackURL else { return }
-            player = AVPlayer(url: playbackURL)
+        .task {
+            if let playbackURL = video.playbackURL {
+                player = AVPlayer(url: playbackURL)
+            }
         }
         .onDisappear { player?.pause() }
         .fullScreenCover(isPresented: $isFullScreenPresented) {
@@ -399,6 +437,44 @@ private struct QANativeVideoPlayer: View {
         }
         .accessibilityLabel("视频播放器")
     }
+
+    @MainActor
+    private func playInline() async {
+        if let playbackURL = video.playbackURL {
+            let player = AVPlayer(url: playbackURL)
+            self.player = player
+            player.play()
+            return
+        }
+        guard video.videoID > 0 else {
+            errorMessage = "视频信息无效"
+            return
+        }
+        isLoading = true
+        errorMessage = nil
+        let route = NativeVideoRouteDTO(
+            contentID: contentID,
+            videoID: video.videoID,
+            contentType: contentType,
+            title: "视频",
+            playbackURL: nil,
+            thumbnailURL: video.thumbnailURL,
+            webURL: nil
+        )
+        let repository = URLSessionNativeVideoRepository(client: .shared)
+        do {
+            let resolvedURL = try await repository.resolvePlaybackURL(for: route)
+            guard !Task.isCancelled else { return }
+            let player = AVPlayer(url: resolvedURL)
+            self.player = player
+            isLoading = false
+            player.play()
+        } catch {
+            guard !error.isNativeRequestCancellation else { return }
+            isLoading = false
+            errorMessage = error.localizedDescription
+        }
+    }
 }
 
 private struct FullScreenVideoPlayerContainer: View {
@@ -406,54 +482,16 @@ private struct FullScreenVideoPlayerContainer: View {
     let dismiss: () -> Void
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
+        ZStack {
             Color.black.ignoresSafeArea()
-            FullScreenVideoPlayerView(player: player, showsPlaybackControls: true)
+            NativeInlineVideoPlayer(player: player, showsPlaybackControls: true)
                 .ignoresSafeArea()
-
-            HStack {
-                Button {
-                    requestDeviceOrientation(.portrait)
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(.white.opacity(0.85), .black.opacity(0.5))
-                        .padding(16)
-                }
-                .accessibilityLabel("关闭全屏")
-
-                Spacer()
-
-                Button {
-                    toggleOrientation()
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "rotate.right.fill")
-                        Text("旋转横屏")
-                    }
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(.black.opacity(0.6), in: Capsule())
-                    .padding(16)
-                }
-                .accessibilityLabel("旋转屏幕")
-            }
         }
         .onAppear {
             player.play()
         }
-    }
-
-    private func toggleOrientation() {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-        let currentOrientation = windowScene.interfaceOrientation
-        if currentOrientation.isLandscape {
+        .onDisappear {
             requestDeviceOrientation(.portrait)
-        } else {
-            requestDeviceOrientation(.landscapeRight)
         }
     }
 
@@ -519,14 +557,13 @@ struct NativeVideoPlayerScreen: View {
     @State private var player: AVPlayer?
     @State private var isLoading = true
     @State private var errorMessage: String?
-    @State private var isFullScreenPresented = false
 
     var body: some View {
         VStack(spacing: 18) {
-            ZStack(alignment: .bottomTrailing) {
+            ZStack {
                 Color.black
                 if let player {
-                    VideoPlayer(player: player)
+                    NativeInlineVideoPlayer(player: player, showsPlaybackControls: true)
                 } else if let thumbnailURL = route.thumbnailURL {
                     AsyncImage(url: thumbnailURL) { phase in
                         switch phase {
@@ -545,33 +582,6 @@ struct NativeVideoPlayerScreen: View {
                     ProgressView("正在载入视频")
                         .tint(.white)
                         .foregroundStyle(.white)
-                }
-
-                if let player {
-                    HStack(spacing: 8) {
-                        Button {
-                            toggleOrientation()
-                        } label: {
-                            Image(systemName: "rotate.right")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(.white)
-                                .padding(8)
-                                .background(.black.opacity(0.65), in: Circle())
-                        }
-                        .accessibilityLabel("横屏旋转")
-
-                        Button {
-                            isFullScreenPresented = true
-                        } label: {
-                            Image(systemName: "viewfinder")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(.white)
-                                .padding(8)
-                                .background(.black.opacity(0.65), in: Circle())
-                        }
-                        .accessibilityLabel("全屏播放")
-                    }
-                    .padding(10)
                 }
             }
             .aspectRatio(16 / 9, contentMode: .fit)
@@ -607,23 +617,6 @@ struct NativeVideoPlayerScreen: View {
         .onDisappear {
             player?.pause()
             requestDeviceOrientation(.portrait)
-        }
-        .fullScreenCover(isPresented: $isFullScreenPresented) {
-            if let player {
-                FullScreenVideoPlayerContainer(player: player) {
-                    isFullScreenPresented = false
-                }
-            }
-        }
-    }
-
-    private func toggleOrientation() {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-        let currentOrientation = windowScene.interfaceOrientation
-        if currentOrientation.isLandscape {
-            requestDeviceOrientation(.portrait)
-        } else {
-            requestDeviceOrientation(.landscapeRight)
         }
     }
 
