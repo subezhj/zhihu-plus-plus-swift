@@ -509,4 +509,45 @@ public struct NativeEmptyPlaceholder: View {
     }
 }
 
+public struct NativeUnavailableState: View {
+    public let title: String
+    public let message: String
+    public var actionTitle: String?
+    public var action: (() -> Void)?
+
+    public init(title: String, message: String, actionTitle: String? = nil, action: (() -> Void)? = nil) {
+        self.title = title
+        self.message = message
+        self.actionTitle = actionTitle
+        self.action = action
+    }
+
+    public var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "tray")
+                .font(.system(size: 38, weight: .light))
+                .foregroundStyle(.secondary.opacity(0.6))
+            Text(title)
+                .font(NativeTypography.feedTitle())
+                .foregroundStyle(.primary)
+            Text(message)
+                .font(NativeTypography.feedExcerpt())
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+            if let actionTitle, let action {
+                Button(actionTitle, action: action)
+                    .font(NativeTypography.feedTitle())
+                    .buttonStyle(.borderedProminent)
+                    .padding(.top, 4)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(28)
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
+    }
+}
+
+
+
 
