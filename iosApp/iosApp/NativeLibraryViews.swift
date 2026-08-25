@@ -680,16 +680,16 @@ private struct NativeLibraryItemContent: View {
             }
             VStack(alignment: .leading, spacing: 5) {
                 Text(item.title)
-                    .font(NativeTypography.feedTitle(scale: presentation.fontScale))
+                    .font(NativeTypography.feedTitle(scale: presentation.feedFontScale))
                     .foregroundStyle(.primary)
                 if !item.summary.isEmpty {
                     Text(item.summary)
-                        .font(NativeTypography.feedExcerpt(scale: presentation.fontScale))
+                        .font(NativeTypography.feedExcerpt(scale: presentation.feedFontScale))
                         .foregroundStyle(.secondary)
                         .lineLimit(3)
                 }
                 Text(item.detail)
-                    .font(NativeTypography.caption(scale: presentation.fontScale))
+                    .font(NativeTypography.caption(scale: presentation.feedFontScale))
                     .foregroundStyle(.secondary)
             }
         }
@@ -742,16 +742,16 @@ private struct NativeHistoryRow: View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 5) {
                 Text(item.title)
-                    .font(NativeTypography.feedTitle(scale: presentation.fontScale))
+                    .font(NativeTypography.feedTitle(scale: presentation.feedFontScale))
                     .foregroundStyle(.primary)
                 if !item.summary.isEmpty {
                     Text(item.summary)
-                        .font(NativeTypography.feedExcerpt(scale: presentation.fontScale))
+                        .font(NativeTypography.feedExcerpt(scale: presentation.feedFontScale))
                         .foregroundStyle(.secondary)
                         .lineLimit(3)
                 }
                 Text([item.authorName, item.detail].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
-                    .font(NativeTypography.caption(scale: presentation.fontScale))
+                    .font(NativeTypography.caption(scale: presentation.feedFontScale))
                     .foregroundStyle(.secondary)
             }
             Spacer(minLength: 4)

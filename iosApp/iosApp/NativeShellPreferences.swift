@@ -186,6 +186,7 @@ enum NativeExternalPageOpeningMode: String, CaseIterable, Identifiable {
 
 struct NativeContentPresentationPreferences: Equatable {
     var fontSizePercent = 100
+    var feedFontSizePercent = 100
     var lineHeightPercent = 160
     var blockSpacingPercent = 100
     var feedDensity = NativeFeedDensity.standard
@@ -195,6 +196,7 @@ struct NativeContentPresentationPreferences: Equatable {
     var feedCardStyle = NativeFeedCardStyle.standard
 
     var fontScale: CGFloat { CGFloat(fontSizePercent) / 100 }
+    var feedFontScale: CGFloat { CGFloat(feedFontSizePercent) / 100 }
 
     func extraLineSpacing(for pointSize: CGFloat) -> CGFloat {
         max(0, pointSize * (CGFloat(lineHeightPercent) / 100 - 1))
@@ -246,6 +248,7 @@ final class NativeShellPreferences: ObservableObject {
         static let startTab = "startDestination"
         static let autoHideTabBar = "autoHideBottomBar"
         static let contentFontSize = "contentFontSize"
+        static let feedFontSize = "feedFontSize"
         static let contentLineHeight = "contentLineHeight"
         static let contentBlockSpacing = "contentBlockSpacing"
         static let feedDensity = "nativeFeedDensity"
@@ -273,6 +276,7 @@ final class NativeShellPreferences: ObservableObject {
     @Published private(set) var startTab: NativeAppTab
     @Published private(set) var autoHideTabBar: Bool
     @Published private(set) var contentFontSizePercent: Int
+    @Published private(set) var feedFontSizePercent: Int
     @Published private(set) var contentLineHeightPercent: Int
     @Published private(set) var contentBlockSpacingPercent: Int
     @Published private(set) var feedDensity: NativeFeedDensity
@@ -293,6 +297,7 @@ final class NativeShellPreferences: ObservableObject {
     var contentPresentation: NativeContentPresentationPreferences {
         NativeContentPresentationPreferences(
             fontSizePercent: contentFontSizePercent,
+            feedFontSizePercent: feedFontSizePercent,
             lineHeightPercent: contentLineHeightPercent,
             blockSpacingPercent: contentBlockSpacingPercent,
             feedDensity: feedDensity,
@@ -373,6 +378,9 @@ final class NativeShellPreferences: ObservableObject {
         contentFontSizePercent = Self.clamp(defaults.object(forKey: Key.contentFontSize) == nil
             ? 100
             : defaults.integer(forKey: Key.contentFontSize), to: 80 ... 150)
+        feedFontSizePercent = Self.clamp(defaults.object(forKey: Key.feedFontSize) == nil
+            ? 100
+            : defaults.integer(forKey: Key.feedFontSize), to: 80 ... 150)
         contentLineHeightPercent = Self.clamp(defaults.object(forKey: Key.contentLineHeight) == nil
             ? 160
             : defaults.integer(forKey: Key.contentLineHeight), to: 100 ... 300)
@@ -443,6 +451,13 @@ final class NativeShellPreferences: ObservableObject {
         guard contentFontSizePercent != value else { return }
         contentFontSizePercent = value
         defaults.set(value, forKey: Key.contentFontSize)
+    }
+
+    func setFeedFontSizePercent(_ value: Int) {
+        let value = Self.clamp(value, to: 80 ... 150)
+        guard feedFontSizePercent != value else { return }
+        feedFontSizePercent = value
+        defaults.set(value, forKey: Key.feedFontSize)
     }
 
     func setContentLineHeightPercent(_ value: Int) {

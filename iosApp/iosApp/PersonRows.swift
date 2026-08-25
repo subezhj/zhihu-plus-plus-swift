@@ -88,17 +88,17 @@ struct PersonPageRow: View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
-                    .font(NativeTypography.feedTitle(scale: presentation.fontScale))
+                    .font(NativeTypography.feedTitle(scale: presentation.feedFontScale))
                     .foregroundStyle(.primary)
                     .fixedSize(horizontal: false, vertical: true)
                 if let summary, !summary.isEmpty {
                     Text(summary)
-                        .font(NativeTypography.feedExcerpt(scale: presentation.fontScale))
+                        .font(NativeTypography.feedExcerpt(scale: presentation.feedFontScale))
                         .foregroundStyle(.secondary)
                         .lineLimit(3)
                 }
                 Text(metadata)
-                    .font(NativeTypography.caption(scale: presentation.fontScale))
+                    .font(NativeTypography.caption(scale: presentation.feedFontScale))
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
             }
@@ -140,11 +140,11 @@ struct PersonPageRow: View {
             .clipShape(Circle())
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(NativeTypography.authorName(scale: presentation.fontScale))
+                    .font(NativeTypography.authorName(scale: presentation.feedFontScale))
                     .foregroundStyle(.primary)
                 if let subtitle, !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(NativeTypography.footnote(scale: presentation.fontScale))
+                        .font(NativeTypography.footnote(scale: presentation.feedFontScale))
                         .foregroundStyle(.secondary)
                         .lineLimit(3)
                 }

@@ -34,15 +34,15 @@ struct FeedItemRow: View {
             HStack(alignment: .top, spacing: 10) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(item.title)
-                        .font(NativeTypography.feedTitle(scale: presentation.fontScale))
+                        .font(NativeTypography.feedTitle(scale: presentation.feedFontScale))
                         .foregroundStyle(.primary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
 
                     if let summary = item.summary, !summary.isEmpty {
-                        let renderedPointSize = summaryPointSize * presentation.fontScale
+                        let renderedPointSize = summaryPointSize * presentation.feedFontScale
                         Text(summary)
-                            .font(NativeTypography.feedExcerpt(scale: presentation.fontScale))
+                            .font(NativeTypography.feedExcerpt(scale: presentation.feedFontScale))
                             .foregroundStyle(.secondary)
                             .lineSpacing(presentation.extraLineSpacing(for: renderedPointSize) * 0.45)
                             .lineLimit(presentation.feedExcerptLines)
@@ -221,7 +221,7 @@ private struct FeedItemMetadataRow: View {
                     metadataSeparator
                 }
                 Text(item.formattedMetrics)
-                    .font(NativeTypography.caption(scale: presentation.fontScale))
+                    .font(NativeTypography.caption(scale: presentation.feedFontScale))
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
                     .lineLimit(1)
@@ -235,7 +235,7 @@ private struct FeedItemMetadataRow: View {
 
     private var metadataSeparator: some View {
         Text("·")
-            .font(NativeTypography.caption(scale: presentation.fontScale))
+            .font(NativeTypography.caption(scale: presentation.feedFontScale))
             .foregroundStyle(.tertiary)
     }
 }
@@ -254,7 +254,7 @@ private struct FeedItemAuthorLabel: View {
                     ZStack {
                         Color.secondary.opacity(0.12)
                         Text(String(author.displayName.prefix(1)))
-                            .font(NativeTypography.caption2(scale: presentation.fontScale))
+                            .font(NativeTypography.caption2(scale: presentation.feedFontScale))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -263,7 +263,7 @@ private struct FeedItemAuthorLabel: View {
             .clipShape(Circle())
 
             Text(author.displayName)
-                .font(NativeTypography.authorName(scale: presentation.fontScale))
+                .font(NativeTypography.authorName(scale: presentation.feedFontScale))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .truncationMode(.tail)

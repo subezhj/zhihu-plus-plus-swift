@@ -105,6 +105,13 @@ struct NativeSettingsView: View {
                         Text(density.title).tag(density)
                     }
                 }
+                settingSlider(
+                    title: "卡片字号",
+                    value: feedFontSizeBinding,
+                    range: 80 ... 150,
+                    step: 5,
+                    valueText: "\(preferences.feedFontSizePercent)%"
+                )
                 Stepper(value: feedExcerptLinesBinding, in: 1 ... 5) {
                     LabeledContent("正文摘要", value: "\(preferences.feedExcerptLines) 行")
                 }
@@ -258,6 +265,13 @@ struct NativeSettingsView: View {
         Binding(
             get: { Double(preferences.contentFontSizePercent) },
             set: { preferences.setContentFontSizePercent(Int($0.rounded())) }
+        )
+    }
+
+    private var feedFontSizeBinding: Binding<Double> {
+        Binding(
+            get: { Double(preferences.feedFontSizePercent) },
+            set: { preferences.setFeedFontSizePercent(Int($0.rounded())) }
         )
     }
 

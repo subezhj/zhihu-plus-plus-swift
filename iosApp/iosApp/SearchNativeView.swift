@@ -40,7 +40,7 @@ struct SearchNativeView: View {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-            .background(Color.nativeSystemBackground)
+            .background(Color.nativeSystemGroupedBackground)
             .refreshable {
                 if store.submittedQuery.isEmpty {
                     await store.refreshSuggestions()
@@ -58,12 +58,12 @@ struct SearchNativeView: View {
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.nativeSystemBackground)
+                .background(Color.nativeSystemGroupedBackground)
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("正在搜索")
             }
         }
-        .background(Color.nativeSystemBackground.ignoresSafeArea())
+        .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: store.queryText) { value in
             if value.isEmpty, !store.submittedQuery.isEmpty {
@@ -165,25 +165,34 @@ struct SearchNativeView: View {
                         Task { await store.submitQuery(row.query) }
                     } label: {
                         Label(row.query, systemImage: "clock.arrow.circlepath")
+                            .font(NativeTypography.feedTitle())
                             .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.nativeSystemGroupedBackground)
                     .listRowSeparator(.hidden)
                 }
             } header: {
                 HStack {
                     Text("搜索历史")
-                        .font(.subheadline.weight(.medium))
+                        .font(NativeTypography.feedTitle())
+                        .foregroundStyle(.primary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.secondary.opacity(0.08), in: Capsule())
                     Spacer()
                     Button("清空") { store.clearHistory() }
-                        .font(.footnote)
+                        .font(NativeTypography.feedTitle())
+                        .foregroundStyle(Color.accentColor)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.secondary.opacity(0.08), in: Capsule())
                         .textCase(nil)
                 }
                 .padding(.top, 4)
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
             }
         }
 
@@ -195,16 +204,16 @@ struct SearchNativeView: View {
                     } label: {
                         HStack(spacing: 14) {
                             Text("\(index + 1)")
-                                .font(.subheadline.weight(.semibold).monospacedDigit())
+                                .font(NativeTypography.feedTitle().weight(.bold).monospacedDigit())
                                 .foregroundStyle(index < 3 ? Color.accentColor : Color.secondary)
                                 .frame(minWidth: 20, alignment: .leading)
                             Text(suggestion.query)
-                                .font(.body)
+                                .font(NativeTypography.feedTitle())
                                 .foregroundStyle(.primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             if let popularity = suggestion.popularityText {
                                 Text(popularity)
-                                    .font(.caption2)
+                                    .font(NativeTypography.caption())
                                     .foregroundStyle(.secondary.opacity(0.8))
                             }
                         }
@@ -214,7 +223,7 @@ struct SearchNativeView: View {
                     }
                     .buttonStyle(.plain)
                     .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.nativeSystemGroupedBackground)
                     .listRowSeparator(.hidden)
                 }
 
@@ -224,32 +233,43 @@ struct SearchNativeView: View {
                         ProgressView()
                         Spacer()
                     }
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.nativeSystemGroupedBackground)
                     .listRowSeparator(.hidden)
                 } else if let error = store.suggestionErrorMessage {
                     FeedRetryRow(message: error) {
                         Task { await store.refreshSuggestions() }
                     }
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.nativeSystemGroupedBackground)
                     .listRowSeparator(.hidden)
                 }
             } header: {
                 HStack {
                     Text("热搜")
-                        .font(.subheadline.weight(.medium))
+                        .font(NativeTypography.feedTitle())
+                        .foregroundStyle(.primary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.secondary.opacity(0.08), in: Capsule())
                     Spacer()
                     Button {
                         Task { await store.refreshSuggestions() }
                     } label: {
-                        Label("刷新", systemImage: "arrow.clockwise")
-                            .labelStyle(.iconOnly)
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.clockwise")
+                            Text("刷新")
+                        }
+                        .font(NativeTypography.feedTitle())
+                        .foregroundStyle(Color.accentColor)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.secondary.opacity(0.08), in: Capsule())
                     }
                     .disabled(store.isRefreshingSuggestions)
                     .textCase(nil)
                     .accessibilityLabel("刷新热搜")
                 }
                 .padding(.top, 4)
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
             }
         }
 
@@ -257,14 +277,16 @@ struct SearchNativeView: View {
             Text(store.route.isMemberRestricted
                  ? "输入关键词搜索 \(store.memberDisplayName) 的创作"
                  : "请输入搜索内容")
+                .font(NativeTypography.feedTitle())
                 .foregroundStyle(.secondary)
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
                 .listRowSeparator(.hidden)
         } else if store.showsHistory, store.history.isEmpty,
                   (!store.showsHotSearch || (!store.isRefreshingSuggestions && store.suggestions.isEmpty && store.suggestionErrorMessage == nil)) {
             Text("暂无搜索历史，输入关键词搜索后会保存在这里")
+                .font(NativeTypography.feedExcerpt())
                 .foregroundStyle(.secondary)
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
                 .listRowSeparator(.hidden)
         }
     }
