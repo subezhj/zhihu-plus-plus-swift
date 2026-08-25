@@ -396,23 +396,12 @@ private struct PersonUnavailableContent: View {
 
     @ViewBuilder
     var body: some View {
-        if #available(iOS 17, *) {
-            ContentUnavailableView {
-                Label(title, systemImage: systemImage)
-            } description: {
-                Text(message)
-            } actions: {
-                if let actionTitle, let action { Button(actionTitle, action: action) }
-            }
-        } else {
-            VStack(spacing: 10) {
-                Image(systemName: systemImage).font(.largeTitle).foregroundStyle(.secondary)
-                Text(title).font(.headline)
-                Text(message).font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                if let actionTitle, let action { Button(actionTitle, action: action).buttonStyle(.bordered) }
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 32)
+        ContentUnavailableView {
+            Label(title, systemImage: systemImage)
+        } description: {
+            Text(message)
+        } actions: {
+            if let actionTitle, let action { Button(actionTitle, action: action) }
         }
     }
 }
@@ -467,11 +456,7 @@ private struct PersonAvatarPreview: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("关闭") { dismiss() } }
                 ToolbarItem(placement: .primaryAction) {
-                    if #available(iOS 16, *) {
-                        ShareLink(item: url) { Image(systemName: "square.and.arrow.up") }
-                    } else {
-                        PersonLegacyShareButton(url: url)
-                    }
+                    ShareLink(item: url) { Image(systemName: "square.and.arrow.up") }
                 }
             }
         }
@@ -483,7 +468,7 @@ private struct PersonBadgeSheet: View {
     let badges: [PersonOfficialBadge]
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List(badges) { badge in
                 VStack(alignment: .leading, spacing: 6) {
                     Text(badge.title).font(.headline)
@@ -496,15 +481,6 @@ private struct PersonBadgeSheet: View {
             }
             .navigationTitle("认证信息")
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("关闭") { dismiss() } } }
-        }
-    }
-}
-
-private struct PersonLegacyShareButton: View {
-    let url: URL
-    var body: some View {
-        ShareLink(item: url) {
-            Image(systemName: "square.and.arrow.up")
         }
     }
 }

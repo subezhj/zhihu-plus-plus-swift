@@ -1,6 +1,6 @@
 import SwiftUI
 
-@available(iOS 16.0, *)
+
 struct NativeCollectionsView: View {
     @StateObject private var store: NativeCollectionsStore
     let onOpenContent: (NativeContentDestination) -> Void

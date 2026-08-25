@@ -15,7 +15,7 @@ enum SideStoreUpdateSource {
     }()
 }
 
-@available(iOS 16.0, *)
+
 struct NativeSettingsView: View {
     @ObservedObject var preferences: NativeShellPreferences
     @ObservedObject var notificationPreferences: NativeNotificationPreferences
@@ -361,7 +361,7 @@ struct NativeSettingsView: View {
     }
 }
 
-@available(iOS 16.0, *)
+
 private struct PerformanceDiagnosticsLogsView: View {
     @ObservedObject var controller: NativePerformanceDiagnosticsController
     @State private var confirmsDeleteAll = false

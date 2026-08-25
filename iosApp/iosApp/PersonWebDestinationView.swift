@@ -43,11 +43,7 @@ struct PersonWebDestinationView: View {
                     .accessibilityLabel("网页前进")
                 Button(action: model.reload) { Image(systemName: "arrow.clockwise") }
                     .accessibilityLabel("重新加载")
-                if #available(iOS 16, *) {
-                    ShareLink(item: model.currentURL ?? route.url) { Image(systemName: "square.and.arrow.up") }
-                } else {
-                    PersonWebLegacyShareButton(url: model.currentURL ?? route.url)
-                }
+                ShareLink(item: model.currentURL ?? route.url) { Image(systemName: "square.and.arrow.up") }
             }
         }
         .task { await model.loadIfNeeded() }
@@ -231,16 +227,5 @@ private struct PersonWebFailure: View {
         }
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
-private struct PersonWebLegacyShareButton: View {
-    let url: URL
-    @State private var isPresenting = false
-
-    var body: some View {
-        ShareLink(item: url) {
-            Image(systemName: "square.and.arrow.up")
-        }
     }
 }

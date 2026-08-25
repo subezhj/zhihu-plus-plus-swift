@@ -113,17 +113,8 @@ struct RiskControlView: View {
     }
 
     var body: some View {
-        Group {
-            if #available(iOS 16.0, *) {
-                NavigationStack {
-                    riskControlContent
-                }
-            } else {
-                NavigationView {
-                    riskControlContent
-                }
-                .navigationViewStyle(.stack)
-            }
+        NavigationStack {
+            riskControlContent
         }
         .accessibilityIdentifier("risk_control_native_shell")
         .onAppear(perform: model.activate)

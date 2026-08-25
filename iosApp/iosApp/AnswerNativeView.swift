@@ -409,12 +409,7 @@ private struct QACollectionsSheet: View {
 }
 
 private struct QACollectionSheetPresentationModifier: ViewModifier {
-    @ViewBuilder
     func body(content: Content) -> some View {
-        if #available(iOS 16.0, *) {
-            content.presentationDetents([.medium, .large])
-        } else {
-            content
-        }
+        content.presentationDetents([.medium, .large])
     }
 }

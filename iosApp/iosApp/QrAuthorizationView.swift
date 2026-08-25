@@ -92,17 +92,8 @@ struct QrAuthorizationView: View {
     let onClose: () -> Void
 
     var body: some View {
-        Group {
-            if #available(iOS 16.0, *) {
-                NavigationStack {
-                    content
-                }
-            } else {
-                NavigationView {
-                    content
-                }
-                .navigationViewStyle(.stack)
-            }
+        NavigationStack {
+            content
         }
         .accessibilityIdentifier("qr_authorization_native_shell")
     }

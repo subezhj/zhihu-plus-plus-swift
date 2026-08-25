@@ -263,7 +263,7 @@ private struct NativeMediaPresentation: Identifiable, Hashable {
     let initialIndex: Int
 }
 
-@available(iOS 16.0, *)
+
 struct NativeAppShell: View {
     let hostModel: HostModel
     let isAppUnlocked: Bool
@@ -1106,7 +1106,7 @@ private struct NativePersonConnectionsRouteView: View {
     }
 }
 
-@available(iOS 16.0, *)
+
 private struct NativeCommentNavigationRouteView: View {
     @StateObject private var model: CommentHostModel
 

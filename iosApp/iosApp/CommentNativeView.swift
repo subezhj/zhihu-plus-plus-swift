@@ -62,7 +62,7 @@ final class CommentHostModel: ObservableObject, Identifiable {
     }
 }
 
-@available(iOS 16.0, *)
+
 struct CommentNavigationPage: View {
     @ObservedObject var model: CommentHostModel
 
@@ -76,7 +76,7 @@ struct CommentNavigationPage: View {
     }
 }
 
-@available(iOS 16.0, *)
+
 private struct CommentThreadContainer: View {
     @ObservedObject var store: CommentSessionStore
     let personModel: PersonHostModel?
@@ -161,7 +161,7 @@ private struct CommentReplySheetDestination: Identifiable {
     let id: String
 }
 
-@available(iOS 16.0, *)
+
 private struct CommentReplySheetView: View {
     @ObservedObject var store: CommentSessionStore
     let level: CommentLevelKey
@@ -195,24 +195,15 @@ private struct CommentReplySheetView: View {
 }
 
 private struct CommentSheetPresentationModifier: ViewModifier {
-    @ViewBuilder
     func body(content: Content) -> some View {
-        if #available(iOS 16.4, *) {
-            content
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
-                .presentationBackground(Color.nativeSystemBackground)
-        } else if #available(iOS 16, *) {
-            content
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
-        } else {
-            content
-        }
+        content
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+            .presentationBackground(Color.nativeSystemBackground)
     }
 }
 
-@available(iOS 16.0, *)
+
 private struct CommentLevelView: View {
     @ObservedObject var store: CommentSessionStore
     let level: CommentLevelKey
@@ -769,15 +760,10 @@ private struct CommentEmojiPicker: View {
 }
 
 private struct CommentEmojiPresentationModifier: ViewModifier {
-    @ViewBuilder
     func body(content: Content) -> some View {
-        if #available(iOS 16, *) {
-            content
-                .presentationDetents([.height(340), .medium])
-                .presentationDragIndicator(.visible)
-        } else {
-            content
-        }
+        content
+            .presentationDetents([.height(340), .medium])
+            .presentationDragIndicator(.visible)
     }
 }
 
@@ -903,16 +889,10 @@ private struct CommentDraftField: View {
     @ObservedObject var store: CommentSessionStore
     let isFocused: FocusState<Bool>.Binding
 
-    @ViewBuilder
     var body: some View {
-        if #available(iOS 16, *) {
-            TextField("发表评论", text: draftBinding, axis: .vertical)
-                .lineLimit(1...5)
-                .focused(isFocused)
-        } else {
-            TextField("发表评论", text: draftBinding)
-                .focused(isFocused)
-        }
+        TextField("发表评论", text: draftBinding, axis: .vertical)
+            .lineLimit(1...5)
+            .focused(isFocused)
     }
 
     private var draftBinding: Binding<String> {

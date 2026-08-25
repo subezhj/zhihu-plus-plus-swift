@@ -1,6 +1,6 @@
 import SwiftUI
 
-@available(iOS 16.0, *)
+
 struct HotListNativeView: View {
     @ObservedObject private var store: HotFeedStore
     @EnvironmentObject private var questionAuthorBlocklist: QuestionAuthorBlocklistStore

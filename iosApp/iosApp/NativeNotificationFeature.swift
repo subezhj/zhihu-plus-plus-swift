@@ -325,7 +325,7 @@ final class NativeNotificationStore: ObservableObject {
     }
 }
 
-@available(iOS 16.0, *)
+
 struct NativeNotificationsView: View {
     @ObservedObject var store: NativeNotificationStore
     @ObservedObject var preferences: NativeNotificationPreferences

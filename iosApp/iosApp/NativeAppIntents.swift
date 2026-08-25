@@ -55,7 +55,7 @@ final class SystemNavigationRequestCenter {
     }
 }
 
-@available(iOS 16.0, *)
+
 struct OpenZhihuSearchIntent: AppIntent {
     static let title: LocalizedStringResource = "搜索知乎"
     static let description = IntentDescription("打开知乎++并搜索内容")
@@ -77,7 +77,7 @@ struct OpenZhihuSearchIntent: AppIntent {
     }
 }
 
-@available(iOS 16.0, *)
+
 struct OpenZhihuHotIntent: AppIntent {
     static let title: LocalizedStringResource = "打开热榜"
     static let description = IntentDescription("打开知乎++热榜")
@@ -91,7 +91,7 @@ struct OpenZhihuHotIntent: AppIntent {
     }
 }
 
-@available(iOS 16.0, *)
+
 struct OpenZhihuCollectionsIntent: AppIntent {
     static let title: LocalizedStringResource = "打开收藏夹"
     static let description = IntentDescription("打开知乎++收藏夹")
@@ -105,7 +105,7 @@ struct OpenZhihuCollectionsIntent: AppIntent {
     }
 }
 
-@available(iOS 16.0, *)
+
 struct ZhihuPlusAppShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(

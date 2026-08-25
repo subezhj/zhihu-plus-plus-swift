@@ -164,17 +164,8 @@ struct NativeLoginView: View {
     }
 
     var body: some View {
-        Group {
-            if #available(iOS 16.0, *) {
-                NavigationStack {
-                    loginContent
-                }
-            } else {
-                NavigationView {
-                    loginContent
-                }
-                .navigationViewStyle(.stack)
-            }
+        NavigationStack {
+            loginContent
         }
         .accessibilityIdentifier("login_native_shell")
         .onAppear(perform: model.activate)

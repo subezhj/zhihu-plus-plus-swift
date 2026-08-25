@@ -369,7 +369,7 @@ final class PinNativeStore: ObservableObject {
     }
 }
 
-@available(iOS 16.0, *)
+
 struct PinNativeView: View {
     @StateObject private var store: PinNativeStore
     @State private var gallery: PinGalleryDestination?

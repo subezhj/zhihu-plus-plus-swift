@@ -16,20 +16,15 @@ private struct NativeHomeFeedScrollTracking: ViewModifier {
     @Binding var collapseProgress: CGFloat
     let isActive: Bool
 
-    @ViewBuilder
     func body(content: Content) -> some View {
-        if #available(iOS 18.0, *) {
-            content.onScrollGeometryChange(for: CGFloat.self) { geometry in
-                NativeHomeFeedScrollMetrics.collapseProgress(
-                    contentOffsetY: geometry.contentOffset.y,
-                    contentInsetTop: geometry.contentInsets.top
-                )
-            } action: { _, newProgress in
-                guard isActive else { return }
-                collapseProgress = newProgress
-            }
-        } else {
-            content
+        content.onScrollGeometryChange(for: CGFloat.self) { geometry in
+            NativeHomeFeedScrollMetrics.collapseProgress(
+                contentOffsetY: geometry.contentOffset.y,
+                contentInsetTop: geometry.contentInsets.top
+            )
+        } action: { _, newProgress in
+            guard isActive else { return }
+            collapseProgress = newProgress
         }
     }
 }
@@ -300,7 +295,7 @@ struct NativeRootCompactTitle: View {
     }
 }
 
-@available(iOS 16.0, *)
+
 struct HomeNativeView: View {
     @ObservedObject private var store: HomeFeedNativeStore
     @EnvironmentObject private var questionAuthorBlocklist: QuestionAuthorBlocklistStore

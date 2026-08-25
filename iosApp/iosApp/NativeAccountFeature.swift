@@ -310,7 +310,7 @@ struct NativeAccountActions {
     let openProfile: (NativeAccountIdentity) -> Void
 }
 
-@available(iOS 16.0, *)
+
 struct NativeAccountView: View {
     @ObservedObject var store: NativeAccountStore
     let actions: NativeAccountActions
