@@ -178,6 +178,18 @@ private struct CommentReplySheetView: View {
         }
         .background(Color.nativeSystemBackground.ignoresSafeArea())
         .modifier(CommentSheetPresentationModifier())
+        .fullScreenCover(
+            item: Binding(
+                get: { store.galleryDestination },
+                set: { store.galleryBindingChanged(to: $0) }
+            )
+        ) { destination in
+            NativeMediaGallery(
+                urls: destination.urls,
+                initialIndex: destination.initialIndex,
+                accessibilityPrefix: "comment_media"
+            )
+        }
         .accessibilityIdentifier("comment_reply_sheet")
         .onDisappear(perform: close)
     }
