@@ -122,6 +122,8 @@ struct NativeCollectionContentView: View {
         self.onOpenContent = onOpenContent
     }
 
+    @Environment(\.nativeContentPresentation) private var presentation
+
     var body: some View {
         List {
             if let collection = store.collection {
@@ -138,8 +140,39 @@ struct NativeCollectionContentView: View {
                     .listRowSeparator(.hidden)
             }
             ForEach(store.items) { item in
-                NativeLibraryItemRow(item: item, onOpenContent: onOpenContent)
-                    .listRowBackground(Color.nativeSystemBackground)
+                if let destination = item.destination {
+                    Button { onOpenContent(destination) } label: {
+                        if presentation.liquidGlassEnabled {
+                            NativeLibraryItemContent(item: item)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 12)
+                                .liquidGlassCard(cornerRadius: 16, isProminent: false)
+                        } else {
+                            NativeLibraryItemContent(item: item)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .fill(Color.nativeSecondarySystemGroupedBackground)
+                                )
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                } else {
+                    NativeLibraryItemContent(item: item)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color.nativeSecondarySystemGroupedBackground)
+                        )
+                        .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                }
             }
             if store.isLoading, !store.items.isEmpty {
                 HStack { Spacer(); ProgressView(); Spacer() }
