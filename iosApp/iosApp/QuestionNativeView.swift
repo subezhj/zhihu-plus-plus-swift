@@ -225,8 +225,8 @@ struct QuestionNativeView: View {
         Binding(
             get: { store.sort },
             set: { value in
-                withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
-                    Task { await store.selectSort(value) }
+                Task {
+                    await store.selectSort(value)
                 }
             }
         )
