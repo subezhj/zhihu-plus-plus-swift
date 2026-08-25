@@ -467,7 +467,7 @@ private final class FullScreenOrientationPlayerViewController: AVPlayerViewContr
         overlay.addSubview(button)
         NSLayoutConstraint.activate([
             button.leadingAnchor.constraint(equalTo: overlay.safeAreaLayoutGuide.leadingAnchor, constant: 18),
-            button.bottomAnchor.constraint(equalTo: overlay.safeAreaLayoutGuide.bottomAnchor, constant: -48),
+            button.bottomAnchor.constraint(equalTo: overlay.safeAreaLayoutGuide.bottomAnchor, constant: -52),
             button.heightAnchor.constraint(equalToConstant: 34)
         ])
 

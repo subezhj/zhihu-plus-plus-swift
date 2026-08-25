@@ -8,12 +8,12 @@ struct PersonPageRow: View {
         if item.allowsNavigation {
             Button(action: open) {
                 rowContent
-                    .nativeFeedCard(cornerRadius: 14)
             }
             .buttonStyle(.plain)
+            .nativeFeedCardItem(cornerRadius: 14)
         } else {
             rowContent
-                .nativeFeedCard(cornerRadius: 14)
+                .nativeFeedCardItem(cornerRadius: 14)
         }
     }
 

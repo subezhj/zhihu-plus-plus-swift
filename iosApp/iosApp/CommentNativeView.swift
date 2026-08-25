@@ -167,7 +167,6 @@ private struct CommentReplySheetView: View {
         .background(Color.nativeSystemBackground.ignoresSafeArea())
         .modifier(CommentSheetPresentationModifier())
         .accessibilityIdentifier("comment_reply_sheet")
-        .onDisappear(perform: close)
     }
 
     private var personBinding: Binding<Bool> {
