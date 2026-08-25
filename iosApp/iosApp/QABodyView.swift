@@ -424,14 +424,15 @@ private final class FullScreenOrientationPlayerViewController: AVPlayerViewContr
 
         // Safari-style liquid glass capsule button
         var config = UIButton.Configuration.plain()
-        config.image = UIImage(systemName: "iphone.landscape")
-        config.imagePadding = 5
+        let imageConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)
+        config.image = UIImage(systemName: "iphone.landscape", withConfiguration: imageConfig)
+        config.imagePadding = 6
         config.imagePlacement = .leading
         config.baseForegroundColor = .white
-        config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10)
+        config.contentInsets = NSDirectionalEdgeInsets(top: 7, leading: 13, bottom: 7, trailing: 13)
 
         var titleAttr = AttributedString("横屏")
-        titleAttr.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        titleAttr.font = UIFont.systemFont(ofSize: 13.5, weight: .semibold)
         config.attributedTitle = titleAttr
 
         let button = UIButton(configuration: config)
@@ -442,10 +443,10 @@ private final class FullScreenOrientationPlayerViewController: AVPlayerViewContr
         let blurView = UIVisualEffectView(effect: blurEffect)
         blurView.isUserInteractionEnabled = false
         blurView.translatesAutoresizingMaskIntoConstraints = false
-        blurView.layer.cornerRadius = 14
+        blurView.layer.cornerRadius = 17
         blurView.layer.masksToBounds = true
         blurView.layer.borderWidth = 0.5
-        blurView.layer.borderColor = UIColor.white.withAlphaComponent(0.2).cgColor
+        blurView.layer.borderColor = UIColor.white.withAlphaComponent(0.25).cgColor
 
         button.insertSubview(blurView, at: 0)
         NSLayoutConstraint.activate([
@@ -456,18 +457,18 @@ private final class FullScreenOrientationPlayerViewController: AVPlayerViewContr
         ])
 
         button.layer.shadowColor = UIColor.black.cgColor
-        button.layer.shadowOpacity = 0.3
+        button.layer.shadowOpacity = 0.35
         button.layer.shadowOffset = CGSize(width: 0, height: 2)
-        button.layer.shadowRadius = 4
+        button.layer.shadowRadius = 5
 
         button.addTarget(self, action: #selector(handleOrientationToggle), for: .touchUpInside)
         button.isHidden = true // Only visible when in full screen
 
         overlay.addSubview(button)
         NSLayoutConstraint.activate([
-            button.leadingAnchor.constraint(equalTo: overlay.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-            button.bottomAnchor.constraint(equalTo: overlay.safeAreaLayoutGuide.bottomAnchor, constant: -16),
-            button.heightAnchor.constraint(equalToConstant: 28)
+            button.leadingAnchor.constraint(equalTo: overlay.safeAreaLayoutGuide.leadingAnchor, constant: 18),
+            button.bottomAnchor.constraint(equalTo: overlay.safeAreaLayoutGuide.bottomAnchor, constant: -32),
+            button.heightAnchor.constraint(equalToConstant: 34)
         ])
 
         self.orientationButton = button
@@ -486,9 +487,10 @@ private final class FullScreenOrientationPlayerViewController: AVPlayerViewContr
     private func updateButtonAppearance() {
         guard let button = orientationButton else { return }
         var config = button.configuration ?? UIButton.Configuration.plain()
-        config.image = UIImage(systemName: isLandscape ? "iphone.portrait" : "iphone.landscape")
+        let imageConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)
+        config.image = UIImage(systemName: isLandscape ? "iphone.portrait" : "iphone.landscape", withConfiguration: imageConfig)
         var titleAttr = AttributedString(isLandscape ? "竖屏" : "横屏")
-        titleAttr.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        titleAttr.font = UIFont.systemFont(ofSize: 13.5, weight: .semibold)
         config.attributedTitle = titleAttr
         button.configuration = config
     }
