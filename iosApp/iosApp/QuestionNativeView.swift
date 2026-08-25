@@ -265,35 +265,77 @@ private struct QuestionActionBar: View {
 
     var body: some View {
         actions
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .liquidGlassCapsule()
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .liquidGlassCapsule(ignoreToggle: true)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 6)
     }
 
     private var actions: some View {
-        HStack(spacing: 8) {
-            Button(action: onFollow) {
-                Label(question.isFollowing ? "已关注" : "关注", systemImage: question.isFollowing ? "checkmark" : "plus")
-                    .padding(.vertical, 4)
-            }
+        HStack(spacing: 6) {
+            action(
+                question.isFollowing ? "checkmark" : "plus",
+                label: question.isFollowing ? "已关注" : "关注",
+                selected: question.isFollowing,
+                action: onFollow
+            )
             .disabled(followInFlight)
+
             Button(action: onWrite) {
-                Label("写回答", systemImage: "square.and.pencil")
-                    .padding(.vertical, 4)
-                    .padding(.horizontal, 4)
+                HStack(spacing: 4) {
+                    Image(systemName: "square.and.pencil")
+                        .font(.system(size: 15, weight: .semibold))
+                    Text("写回答")
+                        .font(.subheadline.weight(.semibold))
+                }
+                .foregroundStyle(Color.primary)
+                .padding(.horizontal, 12)
+                .frame(minHeight: 38)
+                .liquidGlassCapsule(isProminent: true, ignoreToggle: true)
+                .contentShape(Capsule())
             }
-            Spacer(minLength: 4)
-            Button(action: onComments) {
-                Label("\(question.commentCount)", systemImage: "bubble.left")
-                    .padding(.vertical, 4)
-            }
-            Button(action: onShare) {
-                Image(systemName: "square.and.arrow.up").accessibilityLabel("分享问题")
-                    .padding(.vertical, 4)
-            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("写回答")
+
+            Spacer(minLength: 2)
+
+            action(
+                "bubble.left",
+                count: question.commentCount,
+                selected: false,
+                action: onComments
+            )
+
+            action(
+                "square.and.arrow.up",
+                label: "分享",
+                selected: false,
+                action: onShare
+            )
         }
+    }
+
+    private func action(
+        _ systemName: String,
+        count: Int? = nil,
+        label: String? = nil,
+        selected: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            VStack(spacing: 2) {
+                Image(systemName: systemName)
+                    .font(.system(size: 19, weight: selected ? .semibold : .regular))
+                Text(label ?? count.map(String.init) ?? "")
+                    .font(.caption2.monospacedDigit())
+                    .lineLimit(1)
+            }
+            .frame(minWidth: 44, minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(selected ? Color.accentColor : Color.primary)
     }
 }
 
