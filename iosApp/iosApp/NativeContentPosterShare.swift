@@ -164,13 +164,14 @@ struct NativeContentPosterDocument: Identifiable {
 private struct NativeContentPosterPreparedDocument {
     let document: NativeContentPosterDocument
     let images: [URL: UIImage]
-    let qrCode: UIImage
+    let qrCode: UIImage?
     let appIcon: UIImage?
+    let showsHeader: Bool
 }
 
 @MainActor
 enum NativeContentPosterRenderer {
-    static func render(_ document: NativeContentPosterDocument) async throws -> UIImage {
+    static func render(_ document: NativeContentPosterDocument, showsHeader: Bool = true) async throws -> UIImage {
         var images: [URL: UIImage] = [:]
         for url in document.imageURLs {
             try Task.checkCancellation()
@@ -178,21 +179,21 @@ enum NativeContentPosterRenderer {
                 images[url] = image
             }
         }
-        guard let qrCode = NativeContentPosterQRCode.image(for: document.sourceURL) else {
-            throw NativeContentPosterError.qrCodeFailed
-        }
+        let qrCode = showsHeader ? NativeContentPosterQRCode.image(for: document.sourceURL) : nil
         let prepared = NativeContentPosterPreparedDocument(
             document: document,
             images: images,
             qrCode: qrCode,
-            appIcon: NativeContentPosterBranding.appIcon()
+            appIcon: NativeContentPosterBranding.appIcon(),
+            showsHeader: showsHeader
         )
         let content = NativeContentPosterView(prepared: prepared)
-            .frame(width: 390)
+            .frame(width: 414)
             .fixedSize(horizontal: false, vertical: true)
         let renderer = ImageRenderer(content: content)
-        renderer.proposedSize = ProposedViewSize(width: 390, height: nil)
-        renderer.scale = 2
+        renderer.proposedSize = ProposedViewSize(width: 414, height: nil)
+        renderer.scale = UIScreen.main.scale >= 3 ? 3 : 2
+        renderer.isOpaque = true
         guard let image = renderer.uiImage else {
             throw NativeContentPosterError.renderFailed
         }
@@ -282,7 +283,9 @@ private struct NativeContentPosterView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            brandHeader
+            if prepared.showsHeader {
+                brandHeader
+            }
 
             VStack(alignment: .leading, spacing: 18) {
                 Text(prepared.document.title)
@@ -459,37 +462,43 @@ struct NativeContentPosterShareView: View {
     let document: NativeContentPosterDocument
 
     @Environment(\.dismiss) private var dismiss
+    @State private var showsHeader = true
     @State private var renderedImage: UIImage?
     @State private var errorMessage: String?
     @State private var isRendering = true
+    @State private var isSavedToAlbum = false
 
     var body: some View {
         NavigationStack {
-            Group {
-                if let renderedImage {
-                    ScrollView {
-                        Image(uiImage: renderedImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxWidth: .infinity)
-                            .padding(14)
+            VStack(spacing: 0) {
+                headerToggleBar
+
+                Group {
+                    if let renderedImage {
+                        ScrollView {
+                            Image(uiImage: renderedImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxWidth: .infinity)
+                                .padding(14)
+                        }
+                        .background(Color(uiColor: .secondarySystemBackground))
+                    } else if isRendering {
+                        ProgressView("正在生成超清分享长图")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        VStack(spacing: 14) {
+                            Image(systemName: "photo.badge.exclamationmark")
+                                .font(.largeTitle)
+                                .foregroundStyle(.secondary)
+                            Text(errorMessage ?? "分享长图生成失败")
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                            Button("重试") { Task { await render() } }
+                                .buttonStyle(.borderedProminent)
+                        }
+                        .padding(24)
                     }
-                    .background(Color(uiColor: .secondarySystemBackground))
-                } else if isRendering {
-                    ProgressView("正在生成分享长图")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    VStack(spacing: 14) {
-                        Image(systemName: "photo.badge.exclamationmark")
-                            .font(.largeTitle)
-                            .foregroundStyle(.secondary)
-                        Text(errorMessage ?? "分享长图生成失败")
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                        Button("重试") { Task { await render() } }
-                            .buttonStyle(.borderedProminent)
-                    }
-                    .padding(24)
                 }
             }
             .navigationTitle("分享预览")
@@ -499,30 +508,53 @@ struct NativeContentPosterShareView: View {
                     Button("取消") { dismiss() }
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    if let renderedImage {
-                        ShareLink(
-                            item: Image(uiImage: renderedImage),
-                            preview: SharePreview("知乎++分享海报", image: Image(uiImage: renderedImage))
-                        ) {
-                            Text("分享")
+                    HStack(spacing: 12) {
+                        if let renderedImage {
+                            Button {
+                                UIImageWriteToSavedPhotosAlbum(renderedImage, nil, nil, nil)
+                                isSavedToAlbum = true
+                            } label: {
+                                Image(systemName: isSavedToAlbum ? "checkmark.circle.fill" : "square.and.arrow.down")
+                            }
+                            .accessibilityLabel("保存到相册")
+
+                            ShareLink(
+                                item: Image(uiImage: renderedImage),
+                                preview: SharePreview("知乎++分享海报", image: Image(uiImage: renderedImage))
+                            ) {
+                                Image(systemName: "square.and.arrow.up")
+                            }
+                            .accessibilityLabel("系统分享")
+                        } else {
+                            ProgressView()
                         }
-                    } else {
-                        Button("分享") {}
-                            .disabled(true)
                     }
                 }
             }
         }
         .task(id: document.id) { await render() }
+        .onChange(of: showsHeader) { _ in
+            Task { await render() }
+        }
+    }
+
+    private var headerToggleBar: some View {
+        Toggle(isOn: $showsHeader) {
+            Label("顶部扫码查看原文", systemImage: "qrcode")
+                .font(.subheadline)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(Color(uiColor: .tertiarySystemBackground))
     }
 
     @MainActor
     private func render() async {
         isRendering = true
         errorMessage = nil
-        renderedImage = nil
+        isSavedToAlbum = false
         do {
-            renderedImage = try await NativeContentPosterRenderer.render(document)
+            renderedImage = try await NativeContentPosterRenderer.render(document, showsHeader: showsHeader)
         } catch is CancellationError {
             return
         } catch {
