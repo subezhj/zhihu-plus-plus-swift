@@ -476,13 +476,19 @@ private struct CommentRow: View {
                         Button(comment.author.displayName) { store.openAuthor(commentID: comment.id) }
                             .buttonStyle(.plain)
                             .font(.headline)
+
                         if let reply = comment.replyToAuthor {
-                            Text("回复").foregroundStyle(.secondary)
-                            Button(reply.displayName) {
+                            HStack(spacing: 3) {
+                                Image(systemName: "arrowshape.turn.up.left.fill")
+                                    .font(.system(size: 9))
+                                    .foregroundStyle(.tertiary)
+                                Text(reply.displayName)
+                                    .font(.subheadline.weight(.medium))
+                                    .foregroundStyle(.secondary)
+                            }
+                            .onTapGesture {
                                 store.openAuthor(commentID: comment.id, replyToAuthor: true)
                             }
-                            .buttonStyle(.plain)
-                            .font(.headline)
                         }
                     }
                     Text(CommentDateFormatter.string(seconds: comment.createdTimeSeconds))
@@ -526,20 +532,39 @@ private struct CommentRow: View {
                 }
             }
 
-            HStack(spacing: 14) {
+            HStack(spacing: 16) {
                 Button {
+                    hapticFeedback(.selection)
                     store.toggleLike(commentID: comment.id, level: interactionLevel)
                 } label: {
-                    HStack(spacing: 3) {
+                    HStack(spacing: 4) {
                         Image(systemName: comment.isLiked ? "hand.thumbsup.fill" : "hand.thumbsup")
-                            .font(.system(size: 11.5, weight: .medium))
+                            .font(.system(size: 13, weight: .semibold))
+                            .scaleEffect(comment.isLiked ? 1.08 : 1.0)
+                            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: comment.isLiked)
                         if comment.likeCount > 0 {
                             Text("\(comment.likeCount)")
-                                .font(.caption2.weight(.medium).monospacedDigit())
+                                .font(.caption.weight(.medium).monospacedDigit())
                         }
                     }
+                    .padding(.vertical, 4)
+                    .contentShape(Rectangle())
                 }
                 .disabled(store.pages[interactionLevel ?? store.activeLevel]?.activeLikeMutation != nil)
+
+                Button {
+                    beginReply()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "bubble.left")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text("回复")
+                            .font(.caption.weight(.medium))
+                    }
+                    .padding(.vertical, 4)
+                    .contentShape(Rectangle())
+                }
+                .accessibilityLabel("回复评论")
 
                 Spacer(minLength: 12)
 
@@ -547,12 +572,15 @@ private struct CommentRow: View {
                     Button {
                         store.openReplies(rootCommentID: comment.id)
                     } label: {
-                        HStack(spacing: 2.5) {
+                        HStack(spacing: 3) {
                             Text("共 \(comment.childCommentCount) 条回复")
-                                .font(.caption2.weight(.medium))
+                                .font(.caption.weight(.semibold))
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 9, weight: .semibold))
+                                .font(.system(size: 9, weight: .bold))
                         }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.secondary.opacity(0.08), in: Capsule())
                     }
                     .accessibilityIdentifier("reply_count_open_\(comment.id)")
                 }
@@ -580,10 +608,13 @@ private struct CommentComposerBar: View {
         Group {
             if store.composerPresentation.isActive(for: level) {
                 activeComposer
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             } else {
                 collapsedComposer
+                    .transition(.opacity)
             }
         }
+        .animation(.spring(response: 0.32, dampingFraction: 0.86), value: store.composerPresentation.isActive(for: level))
         .background(CommentComposerBackground())
         .onChange(of: store.composerPresentation) { presentation in
             isDraftFocused = presentation.isActive(for: level)
