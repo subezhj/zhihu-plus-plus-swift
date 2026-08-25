@@ -540,7 +540,7 @@ private struct CommentRow: View {
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: comment.isLiked ? "hand.thumbsup.fill" : "hand.thumbsup")
-                            .font(.system(size: 12.5, weight: .semibold))
+                            .font(.system(size: 11.5, weight: .semibold))
                             .scaleEffect(comment.isLiked ? 1.08 : 1.0)
                             .animation(.spring(response: 0.25, dampingFraction: 0.7), value: comment.isLiked)
                         if comment.likeCount > 0 {
@@ -550,7 +550,7 @@ private struct CommentRow: View {
                     }
                     .foregroundStyle(comment.isLiked ? Color.accentColor : Color.secondary)
                     .padding(.horizontal, 9)
-                    .padding(.vertical, 5)
+                    .frame(height: 26)
                     .background(Color.secondary.opacity(comment.isLiked ? 0.12 : 0.08), in: Capsule())
                 }
                 .disabled(store.pages[interactionLevel ?? store.activeLevel]?.activeLikeMutation != nil)
@@ -570,7 +570,7 @@ private struct CommentRow: View {
                         }
                         .foregroundStyle(Color.accentColor)
                         .padding(.horizontal, 9)
-                        .padding(.vertical, 5)
+                        .frame(height: 26)
                         .background(Color.secondary.opacity(0.08), in: Capsule())
                     }
                     .accessibilityIdentifier("reply_count_open_\(comment.id)")
