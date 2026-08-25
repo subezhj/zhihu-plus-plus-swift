@@ -20,7 +20,7 @@ enum NativeTranslationAvailabilityState: Equatable, Sendable {
     case failed(String)
 }
 
-@available(iOS 18.0, *)
+
 protocol NativeTranslationAvailabilityProviding: AnyObject {
     func supportedLanguages() async throws -> [Locale.Language]
     func status(from source: Locale.Language, to target: Locale.Language?) async throws
@@ -29,7 +29,7 @@ protocol NativeTranslationAvailabilityProviding: AnyObject {
         -> NativeTranslationLanguagePairStatus
 }
 
-@available(iOS 18.0, *)
+
 final class AppleTranslationAvailabilityProvider: NativeTranslationAvailabilityProviding {
     private let availability: LanguageAvailability
 
@@ -72,7 +72,7 @@ final class NativeTranslationAvailabilityAdapter: ObservableObject {
     ) {
         self.locale = locale
         self.providerFactory = providerFactory
-        state = if #available(iOS 18.0, *) { .loading } else { .unavailableOnSystem }
+        state = .loading
     }
 
     var languageOptions: [NativeTranslationLanguageOption] {
@@ -81,9 +81,7 @@ final class NativeTranslationAvailabilityAdapter: ObservableObject {
     }
 
     func loadSupportedLanguages() async {
-        guard #available(iOS 18.0, *),
-              let provider = providerFactory() as? NativeTranslationAvailabilityProviding
-        else {
+        guard let provider = providerFactory() as? NativeTranslationAvailabilityProviding else {
             state = .unavailableOnSystem
             return
         }
@@ -111,8 +109,7 @@ final class NativeTranslationAvailabilityAdapter: ObservableObject {
         sourceLanguageIdentifier: String,
         targetLanguageIdentifier: String?
     ) async -> NativeTranslationLanguagePairStatus {
-        guard #available(iOS 18.0, *),
-              let provider = providerFactory() as? NativeTranslationAvailabilityProviding,
+        guard let provider = providerFactory() as? NativeTranslationAvailabilityProviding,
               let sourceIdentifier = sourceLanguageIdentifier.nativeNonBlank
         else { return .unsupported }
         let target = targetLanguageIdentifier?.nativeNonBlank.map(Locale.Language.init(identifier:))
@@ -130,8 +127,7 @@ final class NativeTranslationAvailabilityAdapter: ObservableObject {
         text: String,
         targetLanguageIdentifier: String?
     ) async -> NativeTranslationLanguagePairStatus {
-        guard #available(iOS 18.0, *),
-              let provider = providerFactory() as? NativeTranslationAvailabilityProviding,
+        guard let provider = providerFactory() as? NativeTranslationAvailabilityProviding,
               let content = text.nativeNonBlank
         else { return .unsupported }
         let target = targetLanguageIdentifier?.nativeNonBlank.map(Locale.Language.init(identifier:))
@@ -143,12 +139,12 @@ final class NativeTranslationAvailabilityAdapter: ObservableObject {
     }
 
     func isConfiguredTargetSupported(_ identifier: String?) -> Bool {
-        guard #available(iOS 18.0, *), let identifier = identifier?.nativeNonBlank else { return false }
+        guard let identifier = identifier?.nativeNonBlank else { return false }
         return languageOptions.contains { $0.id == Locale.Language(identifier: identifier).minimalIdentifier }
     }
 }
 
-@available(iOS 18.0, *)
+
 private extension LanguageAvailability.Status {
     var nativeStatus: NativeTranslationLanguagePairStatus {
         switch self {
