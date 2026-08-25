@@ -28,16 +28,19 @@
 
 ## 系统要求
 
+> [!NOTE]
+> **版本与系统支持说明**：
+> - **Build 77 / Tag `v1.0.0-ui-perfect` 之后**：本项目全面转向 **iOS / iPadOS 26 及更高版本** 标准开发，彻底移除历史向下兼容补丁与老旧垫片，直接采用现代 Apple 原生语义与 API（如 `NavigationStack`、`ContentUnavailableView`、`ShareLink`、原生滚动几何监听等），全面释放性能。
+> - **如需快速恢复对 iOS 26 以下旧版本的支持**：可以回退或参考里程碑 Tag [`v1.0.0-ui-perfect`](https://github.com/subezhj/zhihu-plus-plus-swift/tree/v1.0.0-ui-perfect)（Commit `d7d6206`），该版本保留了完整适配 iOS 16–18 的降级垫片与兼容实现。
+
 ### 运行
 
 | 项目 | 要求 |
 | --- | --- |
-| 最低系统 | iOS / iPadOS 16.0 |
-| 推荐系统 | iOS / iPadOS 26 或更高版本，可使用完整的系统 Liquid Glass 效果 |
-| 翻译能力 | 需要 iOS / iPadOS 18 或更高版本，并取决于系统翻译资源可用性 |
+| 最低系统 | iOS / iPadOS 26.0（Build 77 起） |
+| 推荐系统 | iOS / iPadOS 26 或更高版本，原生享受 Apple 液态玻璃（Liquid Glass）与极致性能 |
+| 历史兼容版本 | iOS / iPadOS 16.0–18.0（请使用 Tag `v1.0.0-ui-perfect`） |
 | 设备 | Xcode Target 支持 iPhone 与 iPad；当前主要验收设备为 iPhone |
-
-iOS 16–18/25 会使用系统提供的兼容样式；iOS 26+ 才会启用 Liquid Glass 等新系统效果。部分能力还取决于设备硬件与权限，例如相机扫码、Face ID / Touch ID、照片保存和语音朗读。
 
 ### 构建
 
