@@ -604,8 +604,11 @@ private final class NativeMediaImageStore: ObservableObject {
         }
         do {
             let data = try await operation.task.value
-            guard let image = UIImage(data: data) else { throw URLError(.cannotDecodeContentData) }
-            images[url] = image
+            let decodedImage = await Task.detached(priority: .userInitiated) {
+                UIImage(data: data)
+            }.value
+            guard let decodedImage else { throw URLError(.cannotDecodeContentData) }
+            images[url] = decodedImage
             failedURLs.remove(url)
         } catch is CancellationError {
             // A second visible page may still await the shared operation.

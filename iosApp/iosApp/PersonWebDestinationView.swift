@@ -85,6 +85,13 @@ private final class PersonWebDestinationModel: NSObject, ObservableObject, WKNav
         }
     }
 
+    deinit {
+        progressObservation?.invalidate()
+        progressObservation = nil
+        webView.stopLoading()
+        webView.navigationDelegate = nil
+    }
+
     func loadIfNeeded() async {
         guard !hasLoaded else { return }
         hasLoaded = true
