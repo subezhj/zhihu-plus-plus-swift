@@ -667,6 +667,7 @@ private struct NativeSpecialItemRow: View {
 
 private struct NativeLibraryItemContent: View {
     let item: NativeLibraryItem
+    @Environment(\.nativeContentPresentation) private var presentation
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -678,11 +679,18 @@ private struct NativeLibraryItemContent: View {
                 .frame(width: 38, height: 38).clipShape(Circle())
             }
             VStack(alignment: .leading, spacing: 5) {
-                Text(item.title).font(.headline).foregroundStyle(.primary)
+                Text(item.title)
+                    .font(NativeTypography.feedTitle(scale: presentation.fontScale))
+                    .foregroundStyle(.primary)
                 if !item.summary.isEmpty {
-                    Text(item.summary).font(.subheadline).foregroundStyle(.secondary).lineLimit(3)
+                    Text(item.summary)
+                        .font(NativeTypography.feedExcerpt(scale: presentation.fontScale))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(3)
                 }
-                Text(item.detail).font(.caption).foregroundStyle(.secondary)
+                Text(item.detail)
+                    .font(NativeTypography.caption(scale: presentation.fontScale))
+                    .foregroundStyle(.secondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -733,12 +741,18 @@ private struct NativeHistoryRow: View {
     private var content: some View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 5) {
-                Text(item.title).font(.headline).foregroundStyle(.primary)
+                Text(item.title)
+                    .font(NativeTypography.feedTitle(scale: presentation.fontScale))
+                    .foregroundStyle(.primary)
                 if !item.summary.isEmpty {
-                    Text(item.summary).font(.subheadline).foregroundStyle(.secondary).lineLimit(3)
+                    Text(item.summary)
+                        .font(NativeTypography.feedExcerpt(scale: presentation.fontScale))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(3)
                 }
                 Text([item.authorName, item.detail].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(NativeTypography.caption(scale: presentation.fontScale))
+                    .foregroundStyle(.secondary)
             }
             Spacer(minLength: 4)
             if item.coverURL != nil {

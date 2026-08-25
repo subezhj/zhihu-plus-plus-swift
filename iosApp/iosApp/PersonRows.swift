@@ -82,26 +82,28 @@ struct PersonPageRow: View {
         }
     }
 
+    @Environment(\.nativeContentPresentation) private var presentation
+
     private func textRow(title: String, summary: String?, metadata: String) -> some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
-                    .font(.headline)
+                    .font(NativeTypography.feedTitle(scale: presentation.fontScale))
                     .foregroundStyle(.primary)
                     .fixedSize(horizontal: false, vertical: true)
                 if let summary, !summary.isEmpty {
                     Text(summary)
-                        .font(.subheadline)
+                        .font(NativeTypography.feedExcerpt(scale: presentation.fontScale))
                         .foregroundStyle(.secondary)
                         .lineLimit(3)
                 }
                 Text(metadata)
-                    .font(.caption)
+                    .font(NativeTypography.caption(scale: presentation.fontScale))
                     .foregroundStyle(.secondary)
+                    .monospacedDigit()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.vertical, 6)
     }
 
     private func personRow(_ value: PersonListPersonItem) -> some View {
@@ -137,17 +139,18 @@ struct PersonPageRow: View {
             .background(Color.secondary.opacity(0.08))
             .clipShape(Circle())
             VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(.headline).foregroundStyle(.primary)
+                Text(title)
+                    .font(NativeTypography.authorName(scale: presentation.fontScale))
+                    .foregroundStyle(.primary)
                 if let subtitle, !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(.caption)
+                        .font(NativeTypography.footnote(scale: presentation.fontScale))
                         .foregroundStyle(.secondary)
                         .lineLimit(3)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.vertical, 6)
     }
 
     private func compact(_ value: Int) -> String {

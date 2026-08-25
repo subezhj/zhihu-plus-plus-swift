@@ -344,9 +344,6 @@ struct HomeNativeView: View {
                         store.opened(item)
                         onOpen(route)
                     }
-                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
                     .onAppear {
                         if item.id == visibleItems.last?.id, store.canLoadMore {
                             Task { await store.loadMore() }
@@ -485,14 +482,11 @@ struct FollowNativeView: View {
 
                 ForEach(visibleItems) { item in
                     FeedItemRow(item: item, showsThumbnail: true, onOpen: onOpen)
-                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                        .onAppear {
-                            if item.id == visibleItems.last?.id, store.moments.canLoadMore {
-                                Task { await store.loadMore(section: .moments) }
-                            }
+                    .onAppear {
+                        if item.id == visibleItems.last?.id, store.moments.canLoadMore {
+                            Task { await store.loadMore(section: .moments) }
                         }
+                    }
                 }
 
                 if let message = store.moments.errorMessage {
