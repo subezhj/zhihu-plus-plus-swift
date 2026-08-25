@@ -327,12 +327,33 @@ enum QARichTextFormatter {
     }
 }
 
+private struct FullScreenVideoPlayerView: UIViewControllerRepresentable {
+    let player: AVPlayer
+    let showsPlaybackControls: Bool
+
+    func makeUIViewController(context: Context) -> AVPlayerViewController {
+        let controller = AVPlayerViewController()
+        controller.player = player
+        controller.showsPlaybackControls = showsPlaybackControls
+        controller.allowsPictureInPicturePlayback = true
+        controller.videoGravity = .resizeAspect
+        return controller
+    }
+
+    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
+        if uiViewController.player !== player {
+            uiViewController.player = player
+        }
+    }
+}
+
 private struct QANativeVideoPlayer: View {
     let video: QAAttachmentVideoDTO
     @State private var player: AVPlayer?
+    @State private var isFullScreenPresented = false
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .bottomTrailing) {
             Color.black
             if let player {
                 VideoPlayer(player: player)
@@ -345,6 +366,22 @@ private struct QANativeVideoPlayer: View {
             } else {
                 ProgressView().tint(.white)
             }
+
+            if let player {
+                HStack(spacing: 8) {
+                    Button {
+                        isFullScreenPresented = true
+                    } label: {
+                        Image(systemName: "viewfinder")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .padding(8)
+                            .background(.black.opacity(0.65), in: Circle())
+                    }
+                    .accessibilityLabel("全屏播放")
+                }
+                .padding(8)
+            }
         }
         .aspectRatio(16 / 9, contentMode: .fit)
         .clipShape(RoundedRectangle(cornerRadius: 14))
@@ -353,7 +390,77 @@ private struct QANativeVideoPlayer: View {
             player = AVPlayer(url: playbackURL)
         }
         .onDisappear { player?.pause() }
+        .fullScreenCover(isPresented: $isFullScreenPresented) {
+            if let player {
+                FullScreenVideoPlayerContainer(player: player) {
+                    isFullScreenPresented = false
+                }
+            }
+        }
         .accessibilityLabel("视频播放器")
+    }
+}
+
+private struct FullScreenVideoPlayerContainer: View {
+    let player: AVPlayer
+    let dismiss: () -> Void
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            Color.black.ignoresSafeArea()
+            FullScreenVideoPlayerView(player: player, showsPlaybackControls: true)
+                .ignoresSafeArea()
+
+            HStack {
+                Button {
+                    requestDeviceOrientation(.portrait)
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(.white.opacity(0.85), .black.opacity(0.5))
+                        .padding(16)
+                }
+                .accessibilityLabel("关闭全屏")
+
+                Spacer()
+
+                Button {
+                    toggleOrientation()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "rotate.right.fill")
+                        Text("旋转横屏")
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(.black.opacity(0.6), in: Capsule())
+                    .padding(16)
+                }
+                .accessibilityLabel("旋转屏幕")
+            }
+        }
+        .onAppear {
+            player.play()
+        }
+    }
+
+    private func toggleOrientation() {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        let currentOrientation = windowScene.interfaceOrientation
+        if currentOrientation.isLandscape {
+            requestDeviceOrientation(.portrait)
+        } else {
+            requestDeviceOrientation(.landscapeRight)
+        }
+    }
+
+    private func requestDeviceOrientation(_ mask: UIInterfaceOrientationMask) {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        let geometryPreferences = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: mask)
+        windowScene.requestGeometryUpdate(geometryPreferences) { _ in }
     }
 }
 
@@ -412,10 +519,11 @@ struct NativeVideoPlayerScreen: View {
     @State private var player: AVPlayer?
     @State private var isLoading = true
     @State private var errorMessage: String?
+    @State private var isFullScreenPresented = false
 
     var body: some View {
         VStack(spacing: 18) {
-            ZStack {
+            ZStack(alignment: .bottomTrailing) {
                 Color.black
                 if let player {
                     VideoPlayer(player: player)
@@ -437,6 +545,33 @@ struct NativeVideoPlayerScreen: View {
                     ProgressView("正在载入视频")
                         .tint(.white)
                         .foregroundStyle(.white)
+                }
+
+                if let player {
+                    HStack(spacing: 8) {
+                        Button {
+                            toggleOrientation()
+                        } label: {
+                            Image(systemName: "rotate.right")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .padding(8)
+                                .background(.black.opacity(0.65), in: Circle())
+                        }
+                        .accessibilityLabel("横屏旋转")
+
+                        Button {
+                            isFullScreenPresented = true
+                        } label: {
+                            Image(systemName: "viewfinder")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .padding(8)
+                                .background(.black.opacity(0.65), in: Circle())
+                        }
+                        .accessibilityLabel("全屏播放")
+                    }
+                    .padding(10)
                 }
             }
             .aspectRatio(16 / 9, contentMode: .fit)
@@ -469,7 +604,33 @@ struct NativeVideoPlayerScreen: View {
         .navigationTitle(route.title)
         .navigationBarTitleDisplayMode(.inline)
         .task(id: route) { await load() }
-        .onDisappear { player?.pause() }
+        .onDisappear {
+            player?.pause()
+            requestDeviceOrientation(.portrait)
+        }
+        .fullScreenCover(isPresented: $isFullScreenPresented) {
+            if let player {
+                FullScreenVideoPlayerContainer(player: player) {
+                    isFullScreenPresented = false
+                }
+            }
+        }
+    }
+
+    private func toggleOrientation() {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        let currentOrientation = windowScene.interfaceOrientation
+        if currentOrientation.isLandscape {
+            requestDeviceOrientation(.portrait)
+        } else {
+            requestDeviceOrientation(.landscapeRight)
+        }
+    }
+
+    private func requestDeviceOrientation(_ mask: UIInterfaceOrientationMask) {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        let geometryPreferences = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: mask)
+        windowScene.requestGeometryUpdate(geometryPreferences) { _ in }
     }
 
     @MainActor
