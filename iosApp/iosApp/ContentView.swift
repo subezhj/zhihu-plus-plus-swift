@@ -199,18 +199,15 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                 } else {
                     ZStack {
                         shape
-                            .fill(Color.nativeSecondarySystemGroupedBackground)
-
-                        shape
-                            .fill(.ultraThinMaterial.opacity(0.85))
+                            .fill(.ultraThinMaterial)
 
                         // Lightweight subtle specular rim stroke (Apple standard)
                         shape
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        Color.white.opacity(colorScheme == .dark ? 0.3 : 0.5),
-                                        Color.white.opacity(colorScheme == .dark ? 0.05 : 0.1)
+                                        Color.white.opacity(colorScheme == .dark ? 0.35 : 0.6),
+                                        Color.white.opacity(colorScheme == .dark ? 0.05 : 0.15)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
