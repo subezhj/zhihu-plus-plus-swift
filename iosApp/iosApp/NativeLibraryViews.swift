@@ -29,13 +29,13 @@ struct NativeCollectionsView: View {
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.nativeSystemBackground)
                 } else if let error = store.errorMessage {
-                    NativeUnavailableState(title: "无法加载收藏夹", message: error, actionTitle: "重试") {
+                    NativeInlineRetry(message: "无法加载收藏夹：\(error)") {
                         Task { await store.refresh() }
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                 } else {
-                    NativeUnavailableState(title: "还没有收藏夹", message: "收藏的内容会显示在这里")
+                    NativeEmptyPlaceholder(title: "还没有收藏夹", subtitle: "收藏的内容会显示在这里", systemImage: "star.slash")
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
                 }
@@ -139,9 +139,8 @@ struct NativeCollectionContentView: View {
                 }
             }
             if store.isLoading, !store.items.isEmpty {
-                HStack { Spacer(); ProgressView(); Spacer() }
+                NativeLoadingRow("正在加载更多")
                     .listRowBackground(Color.nativeSystemGroupedBackground)
-                    .listRowSeparator(.hidden)
             } else if !store.isEnd, !store.items.isEmpty {
                 Color.clear.frame(height: 1).task { await store.loadMore() }
                     .listRowBackground(Color.nativeSystemGroupedBackground)
@@ -764,44 +763,5 @@ private struct NativeHistoryRow: View {
             }
         }
         .padding(.vertical, 5)
-    }
-}
-
-struct NativeInlineRetry: View {
-    let message: String
-    let retry: () -> Void
-
-    var body: some View {
-        HStack(spacing: 10) {
-            Text(message).font(.footnote).foregroundStyle(.secondary)
-            Spacer()
-            Button("重试", action: retry).font(.footnote.weight(.semibold))
-        }
-    }
-}
-
-struct NativeUnavailableState: View {
-    let title: String
-    let message: String
-    var actionTitle: String?
-    var action: (() -> Void)?
-
-    init(title: String, message: String, actionTitle: String? = nil, action: (() -> Void)? = nil) {
-        self.title = title
-        self.message = message
-        self.actionTitle = actionTitle
-        self.action = action
-    }
-
-    var body: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "tray").font(.largeTitle).foregroundStyle(.secondary)
-            Text(title).font(.headline)
-            Text(message).font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
-            if let actionTitle, let action {
-                Button(actionTitle, action: action).buttonStyle(.borderedProminent)
-            }
-        }
-        .padding(28)
     }
 }

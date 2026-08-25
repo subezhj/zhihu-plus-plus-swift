@@ -416,4 +416,97 @@ public extension View {
     }
 }
 
+// MARK: - Reusable Loading, Error & Empty Components
+
+public struct NativeLoadingRow: View {
+    private let title: String?
+
+    public init(_ title: String? = nil) {
+        self.title = title
+    }
+
+    public var body: some View {
+        HStack(spacing: 8) {
+            Spacer()
+            ProgressView()
+                .controlSize(.small)
+            if let title {
+                Text(title)
+                    .font(NativeTypography.caption())
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+        }
+        .padding(.vertical, 10)
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(title ?? "正在加载")
+    }
+}
+
+public struct NativeInlineRetry: View {
+    private let message: String
+    private let retry: () -> Void
+
+    public init(message: String, retry: @escaping () -> Void) {
+        self.message = message
+        self.retry = retry
+    }
+
+    public var body: some View {
+        HStack(spacing: 12) {
+            Text(message)
+                .font(NativeTypography.footnote())
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+            Spacer()
+            Button("重试", action: retry)
+                .font(NativeTypography.feedTitle())
+                .foregroundStyle(Color.accentColor)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(Color.secondary.opacity(0.08), in: Capsule())
+        }
+        .padding(.vertical, 6)
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
+    }
+}
+
+public struct NativeEmptyPlaceholder: View {
+    private let title: String
+    private let subtitle: String?
+    private let systemImage: String?
+
+    public init(title: String, subtitle: String? = nil, systemImage: String? = nil) {
+        self.title = title
+        self.subtitle = subtitle
+        self.systemImage = systemImage
+    }
+
+    public var body: some View {
+        VStack(spacing: 10) {
+            if let systemImage {
+                Image(systemName: systemImage)
+                    .font(.system(size: 36, weight: .light))
+                    .foregroundStyle(.secondary.opacity(0.6))
+            }
+            Text(title)
+                .font(NativeTypography.feedTitle())
+                .foregroundStyle(.primary)
+            if let subtitle {
+                Text(subtitle)
+                    .font(NativeTypography.feedExcerpt())
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .frame(maxWidth: .infinity, minHeight: 120)
+        .padding(.vertical, 24)
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
+    }
+}
+
 

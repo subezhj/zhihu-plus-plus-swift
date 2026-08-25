@@ -220,19 +220,13 @@ struct SearchNativeView: View {
                 }
 
                 if store.isRefreshingSuggestions {
-                    HStack {
-                        Spacer()
-                        ProgressView()
-                        Spacer()
-                    }
-                    .listRowBackground(Color.nativeSystemGroupedBackground)
-                    .listRowSeparator(.hidden)
+                    NativeLoadingRow("正在刷新热搜")
+                        .listRowBackground(Color.nativeSystemGroupedBackground)
                 } else if let error = store.suggestionErrorMessage {
-                    FeedRetryRow(message: error) {
+                    NativeInlineRetry(message: error) {
                         Task { await store.refreshSuggestions() }
                     }
                     .listRowBackground(Color.nativeSystemGroupedBackground)
-                    .listRowSeparator(.hidden)
                 }
             } header: {
                 HStack {
@@ -258,20 +252,20 @@ struct SearchNativeView: View {
         }
 
         if !store.showsHistory, !store.showsHotSearch {
-            Text(store.route.isMemberRestricted
-                 ? "输入关键词搜索 \(store.memberDisplayName) 的创作"
-                 : "请输入搜索内容")
-                .font(NativeTypography.feedTitle())
-                .foregroundStyle(.secondary)
-                .listRowBackground(Color.nativeSystemGroupedBackground)
-                .listRowSeparator(.hidden)
+            NativeEmptyPlaceholder(
+                title: store.route.isMemberRestricted ? "搜索创作" : "搜索知乎",
+                subtitle: store.route.isMemberRestricted ? "输入关键词搜索 \(store.memberDisplayName) 的创作" : "输入关键词搜索问题、回答、想法或文章",
+                systemImage: "magnifyingglass"
+            )
+            .listRowBackground(Color.nativeSystemGroupedBackground)
         } else if store.showsHistory, store.history.isEmpty,
                   (!store.showsHotSearch || (!store.isRefreshingSuggestions && store.suggestions.isEmpty && store.suggestionErrorMessage == nil)) {
-            Text("暂无搜索历史，输入关键词搜索后会保存在这里")
-                .font(NativeTypography.feedExcerpt())
-                .foregroundStyle(.secondary)
-                .listRowBackground(Color.nativeSystemGroupedBackground)
-                .listRowSeparator(.hidden)
+            NativeEmptyPlaceholder(
+                title: "暂无搜索历史",
+                subtitle: "搜索过的内容会自动保存在这里，方便快速再次查找",
+                systemImage: "clock.arrow.circlepath"
+            )
+            .listRowBackground(Color.nativeSystemGroupedBackground)
         }
     }
 
@@ -291,20 +285,18 @@ struct SearchNativeView: View {
         }
 
         if let error = store.resultErrorMessage {
-            FeedRetryRow(message: error) {
+            NativeInlineRetry(message: error) {
                 Task { await store.retryResults() }
             }
         } else if store.canLoadNextPage {
-            HStack {
-                Spacer()
-                ProgressView()
-                Spacer()
-            }
-            .listRowSeparator(.hidden)
-            .task { await store.loadNextPage() }
+            NativeLoadingRow("正在加载更多")
+                .task { await store.loadNextPage() }
         } else if visibleItems.isEmpty, !store.isLoadingResults {
-            Text("没有找到相关内容")
-                .foregroundStyle(.secondary)
+            NativeEmptyPlaceholder(
+                title: "没有找到相关内容",
+                subtitle: "换个关键词试试看吧",
+                systemImage: "doc.text.magnifyingglass"
+            )
         }
     }
 
