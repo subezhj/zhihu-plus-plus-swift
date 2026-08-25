@@ -177,18 +177,10 @@ struct SearchNativeView: View {
             } header: {
                 HStack {
                     Text("搜索历史")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.primary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(Color.secondary.opacity(0.08), in: Capsule())
+                        .nativeCapsuleBadge(foregroundColor: .primary)
                     Spacer()
                     Button("清空") { store.clearHistory() }
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(Color.accentColor)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(Color.secondary.opacity(0.08), in: Capsule())
+                        .nativeCapsuleBadge(foregroundColor: Color.accentColor)
                         .textCase(nil)
                 }
                 .padding(.top, 4)
@@ -245,11 +237,7 @@ struct SearchNativeView: View {
             } header: {
                 HStack {
                     Text("热搜")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.primary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(Color.secondary.opacity(0.08), in: Capsule())
+                        .nativeCapsuleBadge(foregroundColor: .primary)
                     Spacer()
                     Button {
                         Task { await store.refreshSuggestions() }
@@ -258,11 +246,7 @@ struct SearchNativeView: View {
                             Image(systemName: "arrow.clockwise")
                             Text("刷新")
                         }
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(Color.accentColor)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(Color.secondary.opacity(0.08), in: Capsule())
+                        .nativeCapsuleBadge(foregroundColor: Color.accentColor)
                     }
                     .disabled(store.isRefreshingSuggestions)
                     .textCase(nil)

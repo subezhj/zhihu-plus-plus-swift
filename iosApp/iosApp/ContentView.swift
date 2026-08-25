@@ -384,3 +384,36 @@ public enum NativeTypography {
     }
 }
 
+// MARK: - Reusable Capsule Badge Component
+
+public struct NativeCapsuleBadge<Content: View>: View {
+    private let content: Content
+    private let foregroundColor: Color
+
+    public init(
+        foregroundColor: Color = .primary,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.content = content()
+        self.foregroundColor = foregroundColor
+    }
+
+    public var body: some View {
+        content
+            .font(.system(size: 15, weight: .medium))
+            .foregroundStyle(foregroundColor)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(Color.secondary.opacity(0.08), in: Capsule())
+    }
+}
+
+public extension View {
+    func nativeCapsuleBadge(foregroundColor: Color = .primary) -> some View {
+        NativeCapsuleBadge(foregroundColor: foregroundColor) {
+            self
+        }
+    }
+}
+
+
