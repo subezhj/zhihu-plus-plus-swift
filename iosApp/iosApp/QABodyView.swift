@@ -437,7 +437,7 @@ private struct QANativeVideoPlayer: View {
     @State private var player: AVPlayer?
     @State private var isLoading = false
     @State private var errorMessage: String?
-    @State private var isFullScreenPresented = false
+    @State private var isLandscape = false
 
     var body: some View {
         ZStack {
@@ -507,40 +507,55 @@ private struct QANativeVideoPlayer: View {
                 VStack {
                     Spacer()
                     HStack {
-                        Spacer()
-                        Button {
-                            isFullScreenPresented = true
-                        } label: {
-                            Image(systemName: "arrow.up.left.and.arrow.down.right")
-                                .font(.system(size: 13, weight: .bold))
-                                .foregroundStyle(.white)
-                                .frame(width: 32, height: 32)
-                                .background(.black.opacity(0.6), in: Circle())
+                        Button(action: toggleOrientation) {
+                            HStack(spacing: 5) {
+                                Image(systemName: isLandscape ? "iphone.portrait" : "iphone.landscape")
+                                    .font(.system(size: 13, weight: .semibold))
+                                Text(isLandscape ? "竖屏" : "横屏")
+                                    .font(.caption2.weight(.medium))
+                            }
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 10)
+                            .frame(height: 28)
+                            .background(.ultraThinMaterial, in: Capsule())
+                            .overlay(Capsule().stroke(.white.opacity(0.2), lineWidth: 0.5))
+                            .shadow(color: .black.opacity(0.25), radius: 4, y: 1)
                         }
                         .buttonStyle(.plain)
-                        .padding(.trailing, 10)
-                        .padding(.bottom, 10)
-                        .accessibilityLabel("全屏与横屏播放")
+                        .padding(.leading, 12)
+                        .padding(.bottom, 12)
+                        .accessibilityLabel(isLandscape ? "切换竖屏" : "切换横屏")
+
+                        Spacer()
                     }
                 }
             }
         }
-        .aspectRatio(16 / 9, contentMode: .fit)
+        .aspectRatio(isLandscape ? 16 / 9 : 16 / 9, contentMode: .fit)
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .task {
             if let playbackURL = video.playbackURL {
                 player = AVPlayer(url: playbackURL)
             }
         }
-        .onDisappear { player?.pause() }
-        .fullScreenCover(isPresented: $isFullScreenPresented) {
-            if let player {
-                FullScreenVideoPlayerContainer(player: player) {
-                    isFullScreenPresented = false
-                }
+        .onDisappear {
+            player?.pause()
+            if isLandscape {
+                requestDeviceOrientation(.portrait)
             }
         }
         .accessibilityLabel("视频播放器")
+    }
+
+    private func toggleOrientation() {
+        isLandscape.toggle()
+        requestDeviceOrientation(isLandscape ? .landscapeRight : .portrait)
+    }
+
+    private func requestDeviceOrientation(_ mask: UIInterfaceOrientationMask) {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        let geometryPreferences = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: mask)
+        windowScene.requestGeometryUpdate(geometryPreferences) { _ in }
     }
 
     @MainActor
@@ -582,70 +597,6 @@ private struct QANativeVideoPlayer: View {
     }
 }
 
-private struct FullScreenVideoPlayerContainer: View {
-    let player: AVPlayer
-    let dismiss: () -> Void
-    @State private var isLandscape = false
-
-    var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-            NativeInlineVideoPlayer(player: player, showsPlaybackControls: true)
-                .ignoresSafeArea()
-
-            VStack {
-                HStack {
-                    Button(action: dismiss) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(width: 38, height: 38)
-                            .background(.black.opacity(0.55), in: Circle())
-                    }
-                    .padding(.leading, 20)
-                    .padding(.top, 20)
-                    .accessibilityLabel("退出全屏")
-
-                    Spacer()
-                }
-
-                Spacer()
-
-                HStack {
-                    Spacer()
-
-                    Button(action: toggleOrientation) {
-                        Image(systemName: isLandscape ? "iphone.portrait" : "iphone.landscape")
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 44, height: 44)
-                            .background(.black.opacity(0.6), in: Circle())
-                    }
-                    .padding(.trailing, 24)
-                    .padding(.bottom, 28)
-                    .accessibilityLabel(isLandscape ? "切换竖屏" : "切换横屏")
-                }
-            }
-        }
-        .onAppear {
-            player.play()
-        }
-        .onDisappear {
-            requestDeviceOrientation(.portrait)
-        }
-    }
-
-    private func toggleOrientation() {
-        isLandscape.toggle()
-        requestDeviceOrientation(isLandscape ? .landscapeRight : .portrait)
-    }
-
-    private func requestDeviceOrientation(_ mask: UIInterfaceOrientationMask) {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-        let geometryPreferences = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: mask)
-        windowScene.requestGeometryUpdate(geometryPreferences) { _ in }
-    }
-}
 
 private struct QAVideoAttachmentView: View {
     let video: QAAttachmentVideoDTO
