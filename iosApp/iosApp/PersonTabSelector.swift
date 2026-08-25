@@ -56,7 +56,7 @@ private struct PersonGlassTabButtonStyle: ButtonStyle {
     @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .foregroundStyle(isSelected ? Color(uiColor: .systemBackground) : Color.primary)
+            .foregroundStyle(isSelected ? Color.white : Color.primary)
             .padding(.horizontal, 14)
             .frame(minHeight: 38)
             .liquidGlassCapsule(isProminent: isSelected)
