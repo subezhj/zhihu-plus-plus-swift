@@ -142,11 +142,8 @@ struct QuestionNativeView: View {
                                 RoundedRectangle(cornerRadius: 3).frame(width: 100, height: 12)
                             }
                             .foregroundStyle(.secondary.opacity(0.3))
-                            .nativeFeedCard(cornerRadius: 14)
                             .redacted(reason: .placeholder)
-                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
+                            .nativeFeedCardItem(cornerRadius: 14)
                         }
                     } else {
                         ForEach(store.answers) { answer in
@@ -154,12 +151,9 @@ struct QuestionNativeView: View {
                                 onNavigate(.answer(store.answerRoute(for: answer)))
                             } label: {
                                 QAAnswerPreviewRow(answer: answer)
-                                    .nativeFeedCard(cornerRadius: 14)
                             }
                             .buttonStyle(.plain)
-                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
+                            .nativeFeedCardItem(cornerRadius: 14)
                             .task {
                                 if answer.id == store.answers.last?.id { await store.loadMore() }
                             }

@@ -241,6 +241,15 @@ public extension View {
     func nativeFeedCard(cornerRadius: CGFloat = 14) -> some View {
         modifier(NativeFeedCardModifier(cornerRadius: cornerRadius))
     }
+
+    /// 统一的全 App 信息流卡片容器修饰器：自动包含标准内边距、圆角背景与 List 外部外边距
+    func nativeFeedCardItem(cornerRadius: CGFloat = 14) -> some View {
+        self
+            .nativeFeedCard(cornerRadius: cornerRadius)
+            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+    }
 }
 
 private struct NativeFeedCardModifier: ViewModifier {

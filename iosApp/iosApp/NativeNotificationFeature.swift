@@ -351,9 +351,7 @@ struct NativeNotificationsView: View {
             }
             ForEach(store.items) { item in
                 NativeNotificationRow(item: item, onOpenContent: onOpenContent)
-                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+                    .nativeFeedCardItem(cornerRadius: 14)
             }
             if store.isLoading, !store.items.isEmpty {
                 HStack { Spacer(); ProgressView(); Spacer() }

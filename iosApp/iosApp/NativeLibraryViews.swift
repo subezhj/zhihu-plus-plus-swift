@@ -133,18 +133,12 @@ struct NativeCollectionContentView: View {
                 if let destination = item.destination {
                     Button { onOpenContent(destination) } label: {
                         NativeLibraryItemContent(item: item)
-                            .nativeFeedCard(cornerRadius: 14)
                     }
                     .buttonStyle(.plain)
-                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+                    .nativeFeedCardItem(cornerRadius: 14)
                 } else {
                     NativeLibraryItemContent(item: item)
-                        .nativeFeedCard(cornerRadius: 14)
-                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
+                        .nativeFeedCardItem(cornerRadius: 14)
                 }
             }
             if store.isLoading, !store.items.isEmpty {
@@ -382,18 +376,12 @@ struct NativeColumnView: View {
                 if let destination = item.destination {
                     Button { onOpenContent(destination) } label: {
                         NativeLibraryItemContent(item: item)
-                            .nativeFeedCard(cornerRadius: 14)
                     }
                     .buttonStyle(.plain)
-                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+                    .nativeFeedCardItem(cornerRadius: 14)
                 } else {
                     NativeLibraryItemContent(item: item)
-                        .nativeFeedCard(cornerRadius: 14)
-                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
+                        .nativeFeedCardItem(cornerRadius: 14)
                 }
             }
             if store.canLoadMore {
