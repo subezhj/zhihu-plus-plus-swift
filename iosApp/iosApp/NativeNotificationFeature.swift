@@ -386,7 +386,7 @@ struct NativeNotificationsView: View {
             if store.items.isEmpty {
                 initialState
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.nativeSystemBackground.ignoresSafeArea())
+                    .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
             }
         }
         .task {

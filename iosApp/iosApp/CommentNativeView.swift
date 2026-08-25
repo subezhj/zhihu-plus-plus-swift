@@ -164,7 +164,7 @@ private struct CommentReplySheetView: View {
                     if let personModel { PersonNativeView(model: personModel) }
                 }
         }
-        .background(Color.nativeSystemBackground.ignoresSafeArea())
+        .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .modifier(CommentSheetPresentationModifier())
         .accessibilityIdentifier("comment_reply_sheet")
     }
@@ -186,7 +186,7 @@ private struct CommentSheetPresentationModifier: ViewModifier {
         content
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
-            .presentationBackground(Color.nativeSystemBackground)
+            .presentationBackground(Color.nativeSystemGroupedBackground)
     }
 }
 
@@ -204,14 +204,14 @@ private struct CommentLevelView: View {
             if level == .root {
                 sortControl
                     .listRowSeparator(.hidden)
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.nativeSystemGroupedBackground)
             }
             pageContent
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
-        .background(Color.nativeSystemBackground)
+        .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .background(CommentScrollViewAccessor { scrollView = $0 })
         .onChange(of: store.scrollToStartLevel) { target in
             guard target == level else { return }
@@ -285,7 +285,7 @@ private struct CommentLevelView: View {
         case .idle where page.items.isEmpty, .loading where page.items.isEmpty:
             HStack { Spacer(); ProgressView("正在加载评论"); Spacer() }
                 .listRowSeparator(.hidden)
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
         case let .failed(message) where page.items.isEmpty:
             CommentUnavailableView(
                 title: "评论加载失败",
@@ -293,7 +293,7 @@ private struct CommentLevelView: View {
                 actionTitle: "重试"
             ) { store.retryInitial(level: level) }
             .listRowSeparator(.hidden)
-            .listRowBackground(Color.nativeSystemBackground)
+            .listRowBackground(Color.nativeSystemGroupedBackground)
         case .loaded where page.items.isEmpty:
             CommentUnavailableView(
                 title: level == .root ? "暂无评论" : "暂无回复",
@@ -302,7 +302,7 @@ private struct CommentLevelView: View {
                 action: nil
             )
             .listRowSeparator(.hidden)
-            .listRowBackground(Color.nativeSystemBackground)
+            .listRowBackground(Color.nativeSystemGroupedBackground)
         default:
             ForEach(page.items) { comment in
                 CommentRow(
@@ -378,20 +378,20 @@ private struct CommentLevelView: View {
             HStack { Spacer(); ProgressView("正在加载更多"); Spacer() }
                 .font(.caption)
                 .listRowSeparator(.hidden)
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
         case let .failed(message):
             CommentUnavailableView(title: "未能加载更多", message: message, actionTitle: "重试") {
                 store.retryNext(level: level)
             }
             .listRowSeparator(.hidden)
-            .listRowBackground(Color.nativeSystemBackground)
+            .listRowBackground(Color.nativeSystemGroupedBackground)
         case .idle where page.isEnd && !page.items.isEmpty:
             Text(level == .root ? "已显示全部评论" : "已显示全部回复")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity)
                 .listRowSeparator(.hidden)
-                .listRowBackground(Color.nativeSystemBackground)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
         default:
             EmptyView()
         }

@@ -306,17 +306,17 @@ public struct NativeThinDivider: View {
 // MARK: - Global Theme Colors
 
 public extension Color {
-    /// 基础内容/文章阅读器背景：浅色为 #EDEDED (237, 237, 237)，深色为 #191919 (25, 25, 25)
+    /// 基础内容/文章阅读器背景：浅色为 #EDEDED (237, 237, 237)，深色为 #181818 (24, 24, 24)
     static let nativeSystemBackground = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 25.0 / 255.0, green: 25.0 / 255.0, blue: 25.0 / 255.0, alpha: 1.0)
+            ? UIColor(red: 24.0 / 255.0, green: 24.0 / 255.0, blue: 24.0 / 255.0, alpha: 1.0)
             : UIColor(red: 237.0 / 255.0, green: 237.0 / 255.0, blue: 237.0 / 255.0, alpha: 1.0)
     })
 
-    /// 信息流列表/分组底层背景 (Canvas Background)：浅色为 #EDEDED (237, 237, 237)，深色为 #191919 (25, 25, 25)
+    /// 信息流列表/分组底层背景 (Canvas Background)：浅色为 #EDEDED (237, 237, 237)，深色为 #181818 (24, 24, 24)
     static let nativeSystemGroupedBackground = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 25.0 / 255.0, green: 25.0 / 255.0, blue: 25.0 / 255.0, alpha: 1.0)
+            ? UIColor(red: 24.0 / 255.0, green: 24.0 / 255.0, blue: 24.0 / 255.0, alpha: 1.0)
             : UIColor(red: 237.0 / 255.0, green: 237.0 / 255.0, blue: 237.0 / 255.0, alpha: 1.0)
     })
 
