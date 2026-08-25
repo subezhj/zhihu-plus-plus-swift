@@ -356,27 +356,67 @@ struct NativeColumnView: View {
         self.onOpenContent = onOpenContent
     }
 
+    @Environment(\.nativeContentPresentation) private var presentation
+
     var body: some View {
         List {
             if let column = store.column {
                 NativeColumnHeader(column: column)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                     .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
             }
             if let error = store.errorMessage, !store.items.isEmpty {
                 NativeInlineRetry(message: error) { Task { await store.loadMore() } }
+                    .listRowBackground(Color.clear)
             }
             ForEach(store.items) { item in
-                NativeLibraryItemRow(item: item, onOpenContent: onOpenContent)
+                if let destination = item.destination {
+                    Button { onOpenContent(destination) } label: {
+                        if presentation.liquidGlassEnabled {
+                            NativeLibraryItemContent(item: item)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 12)
+                                .liquidGlassCard(cornerRadius: 16, isProminent: false)
+                        } else {
+                            NativeLibraryItemContent(item: item)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .fill(Color.nativeSecondarySystemGroupedBackground)
+                                )
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                } else {
+                    NativeLibraryItemContent(item: item)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color.nativeSecondarySystemGroupedBackground)
+                        )
+                        .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                }
             }
             if store.canLoadMore {
                 NativePaginationFooter(
                     isLoading: store.isLoadingMore,
                     accessibilityIdentifier: "native_column_pagination_footer"
                 )
+                    .listRowBackground(Color.clear)
                     .task { await store.loadMore() }
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .accessibilityIdentifier("native_column_screen")
         .navigationTitle(store.column?.title ?? "专栏")
         .navigationBarTitleDisplayMode(.inline)
@@ -649,28 +689,10 @@ private struct NativeSpecialItemRow: View {
     }
 }
 
-private struct NativeLibraryItemRow: View {
+private struct NativeLibraryItemContent: View {
     let item: NativeLibraryItem
-    let onOpenContent: (NativeContentDestination) -> Void
 
     var body: some View {
-        Group {
-            if let destination = item.destination {
-                Button { onOpenContent(destination) } label: { rowContent }
-                    .buttonStyle(.plain)
-            } else {
-                rowContent
-            }
-        }
-    }
-
-    private var rowContent: some View {
-        content
-            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-            .contentShape(Rectangle())
-    }
-
-    private var content: some View {
         HStack(alignment: .top, spacing: 12) {
             if item.avatarURL != nil {
                 AsyncImage(url: item.avatarURL) { phase in
@@ -687,7 +709,7 @@ private struct NativeLibraryItemRow: View {
                 Text(item.detail).font(.caption).foregroundStyle(.secondary)
             }
         }
-        .padding(.vertical, 5)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
