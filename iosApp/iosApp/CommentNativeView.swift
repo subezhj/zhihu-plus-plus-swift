@@ -406,8 +406,6 @@ private struct CommentLevelView: View {
             EmptyView()
         }
     }
-
-    }
 }
 
 private struct CommentRow: View {
