@@ -93,6 +93,7 @@ struct QuestionDTO: Hashable, Sendable {
     let id: Int64
     let title: String
     let detailHTML: String
+    let plainTextDetail: String
     let detailBlocks: [QABodyBlock]
     let answerCount: Int
     let visitCount: Int
@@ -102,11 +103,40 @@ struct QuestionDTO: Hashable, Sendable {
     let author: QAAuthorDTO?
     let topics: [QATopicDTO]
 
+    init(
+        id: Int64,
+        title: String,
+        detailHTML: String,
+        plainTextDetail: String? = nil,
+        detailBlocks: [QABodyBlock],
+        answerCount: Int,
+        visitCount: Int,
+        commentCount: Int,
+        followerCount: Int,
+        isFollowing: Bool,
+        author: QAAuthorDTO?,
+        topics: [QATopicDTO]
+    ) {
+        self.id = id
+        self.title = title
+        self.detailHTML = detailHTML
+        self.plainTextDetail = plainTextDetail ?? QARichContentParser.plainText(detailHTML)
+        self.detailBlocks = detailBlocks
+        self.answerCount = answerCount
+        self.visitCount = visitCount
+        self.commentCount = commentCount
+        self.followerCount = followerCount
+        self.isFollowing = isFollowing
+        self.author = author
+        self.topics = topics
+    }
+
     func replacingFollow(isFollowing: Bool, followerCount: Int) -> Self {
         Self(
             id: id,
             title: title,
             detailHTML: detailHTML,
+            plainTextDetail: plainTextDetail,
             detailBlocks: detailBlocks,
             answerCount: answerCount,
             visitCount: visitCount,

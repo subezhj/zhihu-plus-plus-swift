@@ -524,15 +524,44 @@ struct WriteAnswerNativeView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(store.route.questionTitle).font(.headline).padding(.horizontal)
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(store.route.questionTitle)
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(.primary)
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 14)
+            .padding(.bottom, 12)
+
+            Divider()
+                .padding(.horizontal, 16)
+
             TextEditor(text: $store.text)
+                .font(.body)
                 .overlay(alignment: .topLeading) {
-                    if store.text.isEmpty { Text("请输入回答内容…").foregroundStyle(.secondary).padding(8) }
+                    if store.text.isEmpty {
+                        Text("请输入回答内容…")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 8)
+                            .allowsHitTesting(false)
+                    }
                 }
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
+
+            Divider()
+                .padding(.horizontal, 16)
+
             Toggle("生成目录", isOn: $store.tableOfContentsEnabled)
-                .padding(.horizontal)
+                .font(.subheadline)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
         }
         .navigationTitle(store.existingAnswerID == nil ? "写回答" : "编辑回答")
         .navigationBarTitleDisplayMode(.inline)

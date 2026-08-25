@@ -55,7 +55,9 @@ struct QuestionNativeView: View {
                     if !question.detailBlocks.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             Button {
-                                withAnimation(.easeInOut(duration: 0.2)) { store.isDetailExpanded.toggle() }
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+                                    store.isDetailExpanded.toggle()
+                                }
                             } label: {
                                 HStack {
                                     Text("问题描述")
@@ -77,14 +79,16 @@ struct QuestionNativeView: View {
                                     segmentSubject: .question(question.id),
                                     onNavigate: onNavigate
                                 )
+                                .transition(.opacity)
                             } else {
-                                Text(QARichContentParser.plainText(question.detailHTML))
+                                Text(question.plainTextDetail)
                                     .font(.system(size: detailSummaryPointSize * contentPresentation.fontScale))
                                     .lineSpacing(contentPresentation.extraLineSpacing(
                                         for: detailSummaryPointSize * contentPresentation.fontScale
                                     ))
                                     .foregroundStyle(.secondary)
                                     .lineLimit(3)
+                                    .transition(.opacity)
                             }
                         }
                     }

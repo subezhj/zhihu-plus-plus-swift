@@ -64,7 +64,29 @@ final class QuestionStore: ObservableObject {
     func selectSort(_ sort: QuestionAnswerSort) async {
         guard self.sort != sort else { return }
         self.sort = sort
-        await refresh()
+        generation &+= 1
+        let accepted = generation
+        answers = []
+        nextPage = .loading
+        isEnd = false
+        do {
+            let page = try await repository.fetchQuestionAnswers(
+                questionID: route.questionID,
+                sort: sort,
+                after: nil
+            )
+            guard generation == accepted else { return }
+            answers = page.items
+            nextURL = page.nextURL
+            isEnd = page.isEnd
+            nextPage = .idle
+        } catch is CancellationError {
+            if generation == accepted { nextPage = .idle }
+            return
+        } catch {
+            guard generation == accepted else { return }
+            nextPage = .failed(error.localizedDescription)
+        }
     }
 
     func loadMore() async {

@@ -89,9 +89,13 @@ struct PersonNativeView: View {
     @ViewBuilder
     private var pageContent: some View {
         if let sort = store.sortByTab[store.selectedTab] {
-            PersonSortControl(selection: sort, onSelect: store.changeSort)
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.nativeSystemGroupedBackground)
+            PersonSortControl(selection: sort, onSelect: { newSort in
+                withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
+                    store.changeSort(newSort)
+                }
+            })
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.nativeSystemGroupedBackground)
         }
 
         let page = store.visiblePage
@@ -122,7 +126,16 @@ struct PersonNativeView: View {
             .listRowSeparator(.hidden)
             .listRowBackground(Color.nativeSystemGroupedBackground)
         default:
-            if case let .failed(error) = page.initialLoad {
+            if case .loading = page.initialLoad {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                        .padding(.vertical, 8)
+                    Spacer()
+                }
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
+            } else if case let .failed(error) = page.initialLoad {
                 InlinePersonFailure(message: error.message, retryTitle: "重新加载当前列表", retry: store.retryInitialPage)
                     .listRowBackground(Color.nativeSystemGroupedBackground)
             }
