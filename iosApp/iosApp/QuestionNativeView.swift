@@ -127,10 +127,20 @@ struct QuestionNativeView: View {
                         Button {
                             onNavigate(.answer(store.answerRoute(for: answer)))
                         } label: {
-                            QAAnswerPreviewRow(answer: answer)
+                            if contentPresentation.liquidGlassEnabled {
+                                QAAnswerPreviewRow(answer: answer)
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 12)
+                                    .liquidGlassCard(cornerRadius: 16, isProminent: false)
+                            } else {
+                                QAAnswerPreviewRow(answer: answer)
+                                    .nativeFeedCard(cornerRadius: 14)
+                            }
                         }
                         .buttonStyle(.plain)
-                        .listRowBackground(Color.nativeSystemBackground)
+                        .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
                         .task {
                             if answer.id == store.answers.last?.id { await store.loadMore() }
                         }
@@ -139,19 +149,19 @@ struct QuestionNativeView: View {
                     switch store.nextPage {
                     case .loading:
                         HStack { Spacer(); ProgressView(); Spacer() }
-                            .listRowBackground(Color.nativeSystemBackground)
+                            .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
                     case let .failed(message):
                         Button("加载更多失败，点此重试") { Task { await store.loadMore() } }
                             .foregroundStyle(.red)
                             .accessibilityHint(message)
-                            .listRowBackground(Color.nativeSystemBackground)
+                            .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
                     case .idle:
                         if store.answers.isEmpty {
                             Text("还没有回答")
                                 .foregroundStyle(.secondary)
-                                .listRowBackground(Color.nativeSystemBackground)
+                                .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                         }
                     }

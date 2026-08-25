@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PersonProfileHeader: View {
     let profile: PersonProfile
+    let selectedTab: PersonTab
     let followState: PersonActionState
     let blockState: PersonActionState
     let onSelectTab: (PersonTab) -> Void
@@ -104,25 +105,29 @@ struct PersonProfileHeader: View {
     }
 
     private var statistics: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 8) {
             statistic(profile.answerCount, "回答", .answers)
             statistic(profile.articleCount, "文章", .articles)
             statistic(profile.followerCount, "粉丝", .followers)
             statistic(profile.followingCount, "关注", .following)
         }
+        .padding(.vertical, 2)
     }
 
     private func statistic(_ count: Int, _ label: String, _ tab: PersonTab) -> some View {
-        Button { onSelectTab(tab) } label: {
+        let isSelected = selectedTab == tab
+        return Button { onSelectTab(tab) } label: {
             VStack(spacing: 3) {
                 Text(count.formatted(.number.notation(.compactName)))
                     .font(.headline.monospacedDigit())
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(isSelected ? Color.white : Color.primary)
                 Text(label)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(isSelected ? Color.white.opacity(0.9) : Color.secondary)
             }
             .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .liquidGlassCapsule(isProminent: isSelected, ignoreToggle: true)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

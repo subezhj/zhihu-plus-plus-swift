@@ -59,7 +59,7 @@ private struct PersonGlassTabButtonStyle: ButtonStyle {
             .foregroundStyle(isSelected ? Color.white : Color.primary)
             .padding(.horizontal, 14)
             .frame(minHeight: 38)
-            .liquidGlassCapsule(isProminent: isSelected)
+            .liquidGlassCapsule(isProminent: isSelected, ignoreToggle: true)
             .opacity(configuration.isPressed ? 0.78 : 1)
     }
 }

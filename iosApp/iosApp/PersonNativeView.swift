@@ -73,6 +73,7 @@ struct PersonNativeView: View {
     private func profileHeader(_ profile: PersonProfile) -> some View {
         PersonProfileHeader(
             profile: profile,
+            selectedTab: store.selectedTab,
             followState: store.followAction,
             blockState: store.blockAction,
             onSelectTab: store.selectTab,
