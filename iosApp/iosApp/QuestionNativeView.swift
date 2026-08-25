@@ -30,7 +30,7 @@ struct QuestionNativeView: View {
             }
         }
         .background(Color.nativeSystemBackground.ignoresSafeArea())
-        .navigationTitle("问题")
+        .navigationTitle(store.question?.title.isEmpty == false ? (store.question?.title ?? "问题") : "问题")
         .navigationBarTitleDisplayMode(.inline)
         .task { await store.loadIfNeeded() }
         .alert(item: messageBinding) { message in

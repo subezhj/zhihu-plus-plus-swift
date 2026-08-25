@@ -43,6 +43,15 @@ struct AppHostView: View {
             tabAppearance.shadowColor = UIColor.separator.withAlphaComponent(0.15)
             UITabBar.appearance().standardAppearance = tabAppearance
             UITabBar.appearance().scrollEdgeAppearance = tabAppearance
+
+            let navAppearance = UINavigationBarAppearance()
+            navAppearance.configureWithTransparentBackground()
+            navAppearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
+            navAppearance.shadowColor = UIColor.separator.withAlphaComponent(0.15)
+            UINavigationBar.appearance().standardAppearance = navAppearance
+            UINavigationBar.appearance().compactAppearance = navAppearance
+            UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
+            UINavigationBar.appearance().compactScrollEdgeAppearance = navAppearance
         }
         .fullScreenCover(item: $router.presentedModal, onDismiss: hostModel.modalDidDismiss) { modal in
             switch modal {
