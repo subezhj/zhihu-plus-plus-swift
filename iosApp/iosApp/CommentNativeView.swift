@@ -84,97 +84,49 @@ private struct CommentThreadContainer: View {
 
     var body: some View {
         CommentLevelView(store: store, level: .root, close: nil)
-            .navigationDestination(isPresented: rootPersonBinding) {
+            .navigationDestination(isPresented: personBinding) {
                 if let personModel { PersonNativeView(model: personModel) }
             }
-        .sheet(item: replyDestinationBinding) { destination in
-            CommentReplySheetView(
-                store: store,
-                level: destination.level,
-                personModel: personModel,
-                personBindingChanged: personBindingChanged,
-                close: closeReplies
-            )
-        }
-        .alert(
-            item: Binding(
-                get: { store.message },
-                set: { store.messageBindingChanged(to: $0) }
-            )
-        ) { message in
-            Alert(
-                title: Text("操作未完成"),
-                message: Text(message.text),
-                dismissButton: .default(Text("知道了"))
-            )
-        }
-        .task { store.start() }
-    }
-
-    private var rootPersonBinding: Binding<Bool> {
-        Binding(
-            get: { personModel != nil && store.activeLevel == .root },
-            set: { isPresented in
-                if !isPresented, store.activeLevel == .root {
-                    personBindingChanged(false)
+            .navigationDestination(isPresented: replyDestinationBinding) {
+                if case let .replies(rootCommentID) = store.activeLevel {
+                    CommentLevelView(store: store, level: .replies(rootCommentID: rootCommentID), close: nil)
                 }
             }
-        )
-    }
-
-    private var replyDestinationBinding: Binding<CommentReplySheetDestination?> {
-        Binding(
-            get: { CommentReplySheetDestination(level: store.activeLevel) },
-            set: { destination in
-                if destination == nil { closeReplies() }
+            .alert(
+                item: Binding(
+                    get: { store.message },
+                    set: { store.messageBindingChanged(to: $0) }
+                )
+            ) { message in
+                Alert(
+                    title: Text("操作未完成"),
+                    message: Text(message.text),
+                    dismissButton: .default(Text("知道了"))
+                )
             }
-        )
-    }
-
-    private func closeReplies() {
-        personBindingChanged(false)
-        store.dismissReplies()
-    }
-}
-
-private struct CommentReplySheetDestination: Identifiable {
-    let level: CommentLevelKey
-
-    init?(level: CommentLevelKey) {
-        guard case let .replies(rootCommentID) = level else { return nil }
-        self.level = level
-        id = rootCommentID
-    }
-
-    let id: String
-}
-
-
-private struct CommentReplySheetView: View {
-    @ObservedObject var store: CommentSessionStore
-    let level: CommentLevelKey
-    let personModel: PersonHostModel?
-    let personBindingChanged: (Bool) -> Void
-    let close: () -> Void
-
-    var body: some View {
-        NavigationStack {
-            CommentLevelView(store: store, level: level, close: close)
-                .navigationDestination(isPresented: personBinding) {
-                    if let personModel { PersonNativeView(model: personModel) }
-                }
-        }
-        .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
-        .modifier(CommentSheetPresentationModifier())
-        .accessibilityIdentifier("comment_reply_sheet")
+            .task { store.start() }
     }
 
     private var personBinding: Binding<Bool> {
         Binding(
-            get: { personModel != nil && store.activeLevel == level },
+            get: { personModel != nil },
             set: { isPresented in
-                if !isPresented, store.activeLevel == level {
+                if !isPresented {
                     personBindingChanged(false)
+                }
+            }
+        )
+    }
+
+    private var replyDestinationBinding: Binding<Bool> {
+        Binding(
+            get: {
+                if case .replies = store.activeLevel { return true }
+                return false
+            },
+            set: { isPresented in
+                if !isPresented {
+                    store.dismissReplies()
                 }
             }
         )

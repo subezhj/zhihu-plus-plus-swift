@@ -625,6 +625,7 @@ private struct QANativeVideoPlayer: View {
 
     @MainActor
     private func playInline() async {
+        Self.configureAudioSession()
         if let playbackURL = video.playbackURL {
             let player = AVPlayer(url: playbackURL)
             self.player = player
@@ -658,6 +659,16 @@ private struct QANativeVideoPlayer: View {
             guard !error.isNativeRequestCancellation else { return }
             isLoading = false
             errorMessage = error.localizedDescription
+        }
+    }
+
+    static func configureAudioSession() {
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setCategory(.playback, mode: .moviePlayback)
+            try session.setActive(true)
+        } catch {
+            // Audio session activation best effort
         }
     }
 }
@@ -804,6 +815,7 @@ struct NativeVideoPlayerScreen: View {
 
     @MainActor
     private func load() async {
+        QANativeVideoPlayer.configureAudioSession()
         player?.pause()
         player = nil
         errorMessage = nil
