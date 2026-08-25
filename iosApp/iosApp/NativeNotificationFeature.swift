@@ -341,12 +341,12 @@ struct NativeNotificationsView: View {
                 }
                 .pickerStyle(.segmented)
             }
-            .listRowBackground(Color.nativeSystemBackground)
+            .listRowBackground(Color.nativeSystemGroupedBackground)
             .listRowSeparator(.hidden)
 
             if let error = store.errorMessage, !store.items.isEmpty {
                 NativeInlineRetry(message: error) { Task { await store.loadMore() } }
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.nativeSystemGroupedBackground)
                     .listRowSeparator(.hidden)
             }
             ForEach(store.items) { item in
@@ -365,7 +365,7 @@ struct NativeNotificationsView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .background(Color.nativeSystemBackground.ignoresSafeArea())
+        .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .navigationTitle("通知")
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {

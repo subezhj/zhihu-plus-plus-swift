@@ -266,6 +266,10 @@ private struct NativeFeedCardModifier: ViewModifier {
                 .background(
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                         .fill(Color.nativeSecondarySystemGroupedBackground)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                                .stroke(Color.primary.opacity(colorScheme == .dark ? 0.12 : 0.05), lineWidth: 0.5)
+                        )
                 )
         case .lightLiquidGlass:
             content
@@ -276,7 +280,7 @@ private struct NativeFeedCardModifier: ViewModifier {
                         .fill(Color.nativeSecondarySystemGroupedBackground)
                         .overlay(
                             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                                .stroke(Color.primary.opacity(colorScheme == .dark ? 0.12 : 0.06), lineWidth: 0.5)
+                                .stroke(Color.primary.opacity(colorScheme == .dark ? 0.12 : 0.08), lineWidth: 0.5)
                         )
                 )
         case .plain:
@@ -306,27 +310,27 @@ public extension Color {
     static let nativeSystemBackground = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
             ? UIColor(red: 25.0 / 255.0, green: 25.0 / 255.0, blue: 25.0 / 255.0, alpha: 1.0)
-            : .systemBackground
+            : .white
     })
 
     /// 信息流列表/分组底色（如推荐页、个人主页、问题列表底色）：浅色为系统分组底色 #F0EFF4 (.systemGroupedBackground)，深色为 #191919
     static let nativeSystemGroupedBackground = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
             ? UIColor(red: 25.0 / 255.0, green: 25.0 / 255.0, blue: 25.0 / 255.0, alpha: 1.0)
-            : .systemGroupedBackground
+            : UIColor(red: 240.0 / 255.0, green: 239.0 / 255.0, blue: 244.0 / 255.0, alpha: 1.0)
     })
 
-    /// 次级背景（用于分组内卡片）：浅色为 #FFFFFF (.secondarySystemGroupedBackground)，深色为 #282828
+    /// 次级背景（用于分组内卡片）：浅色为纯白 #FFFFFF，深色为 #282828
     static let nativeSecondarySystemBackground = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
             ? UIColor(red: 40.0 / 255.0, green: 40.0 / 255.0, blue: 40.0 / 255.0, alpha: 1.0)
-            : .secondarySystemBackground
+            : .white
     })
 
-    /// 信息流卡片容器标准背景：浅色为纯白卡片 #FFFFFF (.secondarySystemGroupedBackground)，深色为暗色卡片 (#282828)
+    /// 信息流卡片容器标准背景：浅色为真纯白 #FFFFFF，深色为暗色卡片 (#282828)
     static let nativeSecondarySystemGroupedBackground = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
             ? UIColor(red: 40.0 / 255.0, green: 40.0 / 255.0, blue: 40.0 / 255.0, alpha: 1.0)
-            : .secondarySystemGroupedBackground
+            : .white
     })
 }

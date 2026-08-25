@@ -46,18 +46,15 @@ struct NativeCollectionsView: View {
                 ForEach(store.collections) { collection in
                     NavigationLink(value: NativeShellRoute.collectionContent(collection.id)) {
                         collectionRow(collection)
-                            .nativeFeedCard(cornerRadius: 14)
                     }
-                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+                    .nativeFeedCardItem(cornerRadius: 14)
                 }
                 paginationFooter
             }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .background(Color.nativeSystemBackground.ignoresSafeArea())
+        .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .navigationTitle("我的收藏")
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await store.refresh() }
@@ -126,7 +123,7 @@ struct NativeCollectionContentView: View {
             }
             if let error = store.errorMessage, !store.items.isEmpty {
                 NativeInlineRetry(message: error) { Task { await store.loadMore() } }
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.nativeSystemGroupedBackground)
                     .listRowSeparator(.hidden)
             }
             ForEach(store.items) { item in
@@ -143,17 +140,17 @@ struct NativeCollectionContentView: View {
             }
             if store.isLoading, !store.items.isEmpty {
                 HStack { Spacer(); ProgressView(); Spacer() }
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.nativeSystemGroupedBackground)
                     .listRowSeparator(.hidden)
             } else if !store.isEnd, !store.items.isEmpty {
                 Color.clear.frame(height: 1).task { await store.loadMore() }
-                    .listRowBackground(Color.nativeSystemBackground)
+                    .listRowBackground(Color.nativeSystemGroupedBackground)
                     .listRowSeparator(.hidden)
             }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .background(Color.nativeSystemBackground)
+        .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .navigationTitle(store.collection?.title ?? "收藏夹")
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await store.refresh() }
@@ -395,7 +392,7 @@ struct NativeColumnView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .background(Color.nativeSystemBackground.ignoresSafeArea())
+        .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .accessibilityIdentifier("native_column_screen")
         .navigationTitle(store.column?.title ?? "专栏")
         .navigationBarTitleDisplayMode(.inline)
@@ -410,7 +407,7 @@ struct NativeColumnView: View {
         if store.isLoading, store.items.isEmpty {
             ProgressView("正在加载专栏")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.nativeSystemBackground.ignoresSafeArea())
+                .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         } else if let error = store.errorMessage, store.items.isEmpty {
             NativeUnavailableState(
                 title: "无法加载专栏",
