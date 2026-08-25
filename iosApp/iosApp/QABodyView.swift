@@ -63,7 +63,9 @@ struct QABodyView: View {
                 .padding(.top, level <= 2 ? 8 : 2)
         case let .quote(_, runs):
             HStack(alignment: .top, spacing: 12) {
-                Capsule().fill(.secondary.opacity(0.38)).frame(width: 3)
+                Capsule()
+                    .fill(Color.accentColor.opacity(0.85))
+                    .frame(width: 3.5)
                 Text(QARichTextFormatter.attributed(runs))
                     .font(bodyFont)
                     .foregroundStyle(.secondary)
@@ -71,6 +73,9 @@ struct QABodyView: View {
                     .tint(.accentColor)
                     .textSelection(.enabled)
             }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(Color(uiColor: .secondarySystemBackground).opacity(0.65), in: RoundedRectangle(cornerRadius: 8))
         case let .list(_, kind, items):
             VStack(alignment: .leading, spacing: 9) {
                 ForEach(listRows(kind: kind, items: items)) { row in

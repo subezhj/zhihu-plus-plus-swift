@@ -43,7 +43,7 @@ struct AnswerNativeView: View {
     private func loaded(_ content: AnswerDTO) -> some View {
         let metadata = QAMetadataPlacement(pinAnswerDate: pinAnswerDate)
         return ScrollView {
-            LazyVStack(alignment: .leading, spacing: 18) {
+            LazyVStack(alignment: .leading, spacing: 14) {
                 if content.route.kind == .answer {
                     Button {
                         if let questionID = content.questionID {
@@ -51,23 +51,36 @@ struct AnswerNativeView: View {
                         }
                     } label: {
                         Text(content.title)
-                            .font(.title3.bold())
+                            .font(.title2.bold())
                             .foregroundStyle(.primary)
                             .fixedSize(horizontal: false, vertical: true)
                             .multilineTextAlignment(.leading)
+                            .lineSpacing(4)
                     }
                     .buttonStyle(.plain)
                     .disabled(content.questionID == nil)
+                    .padding(.bottom, 4)
+
+                    Divider()
+                        .opacity(0.6)
+                        .padding(.vertical, 2)
                 } else {
                     Text(content.title)
                         .font(.title2.bold())
                         .fixedSize(horizontal: false, vertical: true)
                         .textSelection(.enabled)
+                        .lineSpacing(4)
+                        .padding(.bottom, 4)
+
+                    Divider()
+                        .opacity(0.6)
+                        .padding(.vertical, 2)
                 }
 
                 QAAuthorRow(author: content.author) {
                     if let intent = content.author.personIntent { onNavigate(intent) }
                 }
+                .padding(.vertical, 2)
 
                 if !content.endorsements.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -98,6 +111,10 @@ struct AnswerNativeView: View {
                         .foregroundStyle(.secondary)
                 }
 
+                Divider()
+                    .opacity(0.6)
+                    .padding(.vertical, 4)
+
                 QABodyView(
                     blocks: content.blocks,
                     segmentSubject: content.route.kind == .answer
@@ -105,6 +122,7 @@ struct AnswerNativeView: View {
                         : .article(content.route.contentID),
                     onNavigate: onNavigate
                 )
+                .padding(.top, 4)
 
                 if let attachment = content.attachment {
                     QABodyView(

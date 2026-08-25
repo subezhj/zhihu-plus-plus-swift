@@ -29,6 +29,13 @@ struct AppHostView: View {
                     : .systemBackground
             }
 
+            // Enable high-performance shared URL cache for lightning fast image loading and instant reuse
+            URLCache.shared = URLCache(
+                memoryCapacity: 100 * 1024 * 1024,
+                diskCapacity: 500 * 1024 * 1024,
+                diskPath: "zhihu_plus_media_cache"
+            )
+
             // Configure global UIWindow background so no default black root shines through
             if let window = UIApplication.shared.connectedScenes
                 .compactMap({ $0 as? UIWindowScene })
