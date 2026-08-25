@@ -533,39 +533,28 @@ private struct CommentRow: View {
                 }
             }
 
-            HStack(spacing: 16) {
+            HStack(alignment: .center) {
                 Button {
                     hapticFeedback(.selection)
                     store.toggleLike(commentID: comment.id, level: interactionLevel)
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: comment.isLiked ? "hand.thumbsup.fill" : "hand.thumbsup")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.system(size: 12.5, weight: .semibold))
                             .scaleEffect(comment.isLiked ? 1.08 : 1.0)
                             .animation(.spring(response: 0.25, dampingFraction: 0.7), value: comment.isLiked)
                         if comment.likeCount > 0 {
                             Text("\(comment.likeCount)")
-                                .font(.caption.weight(.medium).monospacedDigit())
+                                .font(.caption2.weight(.semibold).monospacedDigit())
                         }
                     }
-                    .padding(.vertical, 4)
-                    .contentShape(Rectangle())
+                    .foregroundStyle(comment.isLiked ? Color.accentColor : Color.secondary)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 5)
+                    .background(Color.secondary.opacity(comment.isLiked ? 0.12 : 0.08), in: Capsule())
                 }
                 .disabled(store.pages[interactionLevel ?? store.activeLevel]?.activeLikeMutation != nil)
-
-                Button {
-                    beginReply()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "bubble.left")
-                            .font(.system(size: 12, weight: .semibold))
-                        Text("回复")
-                            .font(.caption.weight(.medium))
-                    }
-                    .padding(.vertical, 4)
-                    .contentShape(Rectangle())
-                }
-                .accessibilityLabel("回复评论")
+                .accessibilityLabel("点赞评论")
 
                 Spacer(minLength: 12)
 
@@ -575,19 +564,19 @@ private struct CommentRow: View {
                     } label: {
                         HStack(spacing: 3) {
                             Text("共 \(comment.childCommentCount) 条回复")
-                                .font(.caption.weight(.semibold))
+                                .font(.caption2.weight(.semibold))
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 9, weight: .bold))
+                                .font(.system(size: 8.5, weight: .bold))
                         }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .foregroundStyle(Color.accentColor)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 5)
                         .background(Color.secondary.opacity(0.08), in: Capsule())
                     }
                     .accessibilityIdentifier("reply_count_open_\(comment.id)")
                 }
             }
-            .foregroundStyle(.tint)
-            .buttonStyle(.borderless)
+            .buttonStyle(.plain)
         }
         .contentShape(Rectangle())
     }
@@ -665,7 +654,7 @@ private struct CommentComposerBar: View {
                 Spacer()
             }
             .padding(.horizontal, 14)
-            .frame(minHeight: 42)
+            .frame(minHeight: 44)
             .liquidGlassCapsule(isProminent: false)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -676,18 +665,31 @@ private struct CommentComposerBar: View {
     }
 
     private var activeComposer: some View {
-        VStack(spacing: 6) {
-            HStack {
-                Text(store.activeReplyTargetName.map { "回复 \($0)" } ?? (level == .root ? "发表新评论" : "发表新回复"))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+        VStack(spacing: 8) {
+            HStack(alignment: .center) {
+                HStack(spacing: 5) {
+                    Image(systemName: "bubble.and.pencil")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color.accentColor)
+                    Text(store.activeReplyTargetName.map { "回复 @\($0)" } ?? (level == .root ? "发表评论" : "发表回复"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                }
                 Spacer()
-                Button("取消") { dismissComposer() }
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(Color.accentColor)
+                Button {
+                    dismissComposer()
+                } label: {
+                    Text("取消")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.secondary.opacity(0.1), in: Capsule())
+                }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, 14)
-            .padding(.top, 10)
+            .padding(.top, 12)
             .padding(.bottom, 2)
 
             if let imageData = store.draft.imageData, let image = UIImage(data: imageData) {
