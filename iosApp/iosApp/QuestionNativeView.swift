@@ -261,30 +261,52 @@ private struct QAQuestionStats: View {
 
 private struct QAAnswerPreviewRow: View {
     let answer: AnswerPreviewDTO
+    @Environment(\.nativeContentPresentation) private var presentation
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 9) {
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(alignment: .top, spacing: 10) {
                 AsyncImage(url: answer.author.avatarURL) { image in
                     image.resizable().scaledToFill()
                 } placeholder: {
-                    Image(systemName: "person.crop.circle.fill").resizable().foregroundStyle(.tertiary)
+                    Image(systemName: "person.crop.circle.fill")
+                        .resizable()
+                        .foregroundStyle(.tertiary)
                 }
-                .frame(width: 30, height: 30)
+                .frame(width: 28, height: 28)
                 .clipShape(Circle())
+
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(answer.author.displayName).font(.subheadline.weight(.medium))
+                    Text(answer.author.displayName)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
                     if !answer.author.headline.isEmpty {
-                        Text(answer.author.headline).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                        Text(answer.author.headline)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
+
             if !answer.excerpt.isEmpty {
-                Text(answer.excerpt).font(.body).lineLimit(4)
+                let renderedPointSize = 15.0 * presentation.fontScale
+                Text(answer.excerpt)
+                    .font(.system(size: renderedPointSize))
+                    .foregroundStyle(.secondary)
+                    .lineSpacing(presentation.extraLineSpacing(for: renderedPointSize) * 0.45)
+                    .lineLimit(presentation.feedExcerptLines)
             }
-            Text("\(answer.voteUpCount) 赞同 · \(answer.commentCount) 评论")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+
+            HStack(spacing: 6) {
+                Text("\(answer.voteUpCount) 赞同 · \(answer.commentCount) 评论")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+                Spacer(minLength: 0)
+            }
+            .padding(.top, 2)
         }
         .contentShape(Rectangle())
     }
