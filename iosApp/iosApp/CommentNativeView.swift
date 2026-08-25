@@ -168,19 +168,13 @@ private struct CommentReplySheetView: View {
     let personModel: PersonHostModel?
     let personBindingChanged: (Bool) -> Void
     let close: () -> Void
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.nativeHapticFeedback) private var hapticFeedback
 
     var body: some View {
-        GeometryReader { geometry in
-            NavigationStack {
-                CommentLevelView(store: store, level: level, close: close)
-                    .navigationDestination(isPresented: personBinding) {
-                        if let personModel { PersonNativeView(model: personModel) }
-                    }
-            }
-            .contentShape(Rectangle())
-            .simultaneousGesture(edgeDismissGesture(containerWidth: geometry.size.width))
+        NavigationStack {
+            CommentLevelView(store: store, level: level, close: close)
+                .navigationDestination(isPresented: personBinding) {
+                    if let personModel { PersonNativeView(model: personModel) }
+                }
         }
         .background(Color.nativeSystemBackground.ignoresSafeArea())
         .modifier(CommentSheetPresentationModifier())
@@ -197,56 +191,6 @@ private struct CommentReplySheetView: View {
                 }
             }
         )
-    }
-
-    private func edgeDismissGesture(containerWidth: CGFloat) -> some Gesture {
-        DragGesture(minimumDistance: CommentReplySheetSwipePolicy.minimumDistance)
-            .onEnded { value in
-                guard CommentReplySheetSwipePolicy.shouldDismiss(
-                    startLocation: value.startLocation,
-                    translation: value.translation,
-                    predictedEndTranslation: value.predictedEndTranslation,
-                    containerWidth: containerWidth
-                ) else { return }
-                CommentReplySheetFeedback(action: hapticFeedback).edgeDismissDidCommit(true)
-                var transaction = Transaction()
-                transaction.disablesAnimations = reduceMotion
-                withTransaction(transaction, close)
-            }
-    }
-}
-
-@MainActor
-struct CommentReplySheetFeedback {
-    let action: NativeHapticFeedbackAction
-
-    func edgeDismissDidCommit(_ committed: Bool) {
-        guard committed else { return }
-        action(.dismiss)
-    }
-}
-
-struct CommentReplySheetSwipePolicy {
-    static let minimumDistance: CGFloat = 14
-    static let leadingEdgeWidth: CGFloat = 44
-    static let horizontalIntentRatio: CGFloat = 1.25
-    static let minimumCommitDistance: CGFloat = 72
-    static let commitWidthRatio: CGFloat = 0.22
-
-    static func shouldDismiss(
-        startLocation: CGPoint,
-        translation: CGSize,
-        predictedEndTranslation: CGSize,
-        containerWidth: CGFloat
-    ) -> Bool {
-        guard containerWidth > 0,
-              startLocation.x <= leadingEdgeWidth,
-              translation.width > 0,
-              translation.width > abs(translation.height) * horizontalIntentRatio
-        else { return false }
-
-        let threshold = max(minimumCommitDistance, containerWidth * commitWidthRatio)
-        return translation.width >= threshold || predictedEndTranslation.width >= threshold
     }
 }
 
