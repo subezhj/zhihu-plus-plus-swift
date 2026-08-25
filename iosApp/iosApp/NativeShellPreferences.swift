@@ -139,16 +139,16 @@ enum NativeFeedDensity: String, CaseIterable, Identifiable {
 }
 
 enum NativeFeedCardStyle: String, CaseIterable, Identifiable {
-    case standard = "STANDARD"
     case lightLiquidGlass = "LIGHT_LIQUID_GLASS"
+    case standard = "STANDARD"
     case plain = "PLAIN"
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .standard: return "常规卡片边框（推荐）"
-        case .lightLiquidGlass: return "轻度液态玻璃（实验性）"
+        case .lightLiquidGlass: return "常规卡片（推荐）"
+        case .standard: return "常规卡片（无分割线）"
         case .plain: return "无边框平铺"
         }
     }

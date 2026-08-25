@@ -266,31 +266,16 @@ private struct NativeFeedCardModifier: ViewModifier {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
                 .background(
-                    ZStack {
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .fill(Color.nativeSecondarySystemGroupedBackground)
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .fill(.ultraThinMaterial.opacity(0.85))
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [
-                                        Color.white.opacity(colorScheme == .dark ? 0.25 : 0.45),
-                                        Color.white.opacity(0.05)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 0.5
-                            )
-                    }
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(Color.nativeSecondarySystemGroupedBackground)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                                .stroke(Color.primary.opacity(colorScheme == .dark ? 0.12 : 0.06), lineWidth: 0.5)
+                        )
                 )
         case .plain:
-            VStack(alignment: .leading, spacing: 0) {
-                content
-                    .padding(.vertical, 10)
-                NativeThinDivider()
-            }
+            content
+                .padding(.vertical, 10)
         }
     }
 }

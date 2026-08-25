@@ -564,7 +564,7 @@ private struct CommentRow: View {
 
             if !comment.media.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 8) {
+                    HStack(spacing: 8) {
                         ForEach(comment.media) { media in
                             Button { store.openMedia(commentID: comment.id, mediaID: media.id) } label: {
                                 Group {
@@ -888,7 +888,14 @@ private struct CommentRichText: View {
 }
 
 private enum CommentAttributedText {
+    private static let cache = NSCache<NSString, NSAttributedString>()
+
     static func value(from html: String, bodyFont: Font) -> AttributedString {
+        let key = html as NSString
+        if let cached = cache.object(forKey: key) {
+            return AttributedString(cached)
+        }
+
         let source = CommentHTMLMediaParser.project(html).textHTML
         var result = AttributedString()
         for block in QARichContentParser.blocks(from: source) {
@@ -911,9 +918,14 @@ private enum CommentAttributedText {
                 break
             }
         }
-        return result.characters.isEmpty
+        let finalResult = result.characters.isEmpty
             ? AttributedString(CommentEmojiCatalog.renderedText(QARichContentParser.plainText(source)))
             : result
+
+        if let ns = try? NSAttributedString(finalResult, including: \.uiKit) {
+            cache.setObject(ns, forKey: key)
+        }
+        return finalResult
     }
 
     private static func append(_ runs: [QAInlineRun], bodyFont: Font, to result: inout AttributedString) {
