@@ -354,12 +354,14 @@ private struct NativeContentPosterView: View {
 
             Spacer(minLength: 12)
 
-            Image(uiImage: prepared.qrCode)
-                .interpolation(.none)
-                .resizable()
-                .frame(width: 64, height: 64)
-                .padding(5)
-                .background(.white)
+            if let qrCode = prepared.qrCode {
+                Image(uiImage: qrCode)
+                    .interpolation(.none)
+                    .resizable()
+                    .frame(width: 64, height: 64)
+                    .padding(5)
+                    .background(.white)
+            }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
