@@ -77,6 +77,11 @@ struct CommentNavigationPage: View {
 }
 
 
+private enum CommentThreadActiveDestination: Hashable {
+    case person
+    case replies(String)
+}
+
 private struct CommentThreadContainer: View {
     @ObservedObject var store: CommentSessionStore
     let personModel: PersonHostModel?
@@ -87,9 +92,25 @@ private struct CommentThreadContainer: View {
             .navigationDestination(isPresented: personBinding) {
                 if let personModel { PersonNativeView(model: personModel) }
             }
-            .navigationDestination(isPresented: replyDestinationBinding) {
+            .background {
                 if case let .replies(rootCommentID) = store.activeLevel {
-                    CommentLevelView(store: store, level: .replies(rootCommentID: rootCommentID), close: nil)
+                    NavigationLink(
+                        destination: CommentLevelView(store: store, level: .replies(rootCommentID: rootCommentID), close: nil),
+                        isActive: Binding(
+                            get: {
+                                if case .replies = store.activeLevel { return true }
+                                return false
+                            },
+                            set: { isPresented in
+                                if !isPresented {
+                                    store.dismissReplies()
+                                }
+                            }
+                        )
+                    ) {
+                        EmptyView()
+                    }
+                    .hidden()
                 }
             }
             .alert(
@@ -113,20 +134,6 @@ private struct CommentThreadContainer: View {
             set: { isPresented in
                 if !isPresented {
                     personBindingChanged(false)
-                }
-            }
-        )
-    }
-
-    private var replyDestinationBinding: Binding<Bool> {
-        Binding(
-            get: {
-                if case .replies = store.activeLevel { return true }
-                return false
-            },
-            set: { isPresented in
-                if !isPresented {
-                    store.dismissReplies()
                 }
             }
         )
