@@ -409,12 +409,120 @@ enum QARichTextFormatter {
     }
 }
 
+private final class FullScreenOrientationPlayerViewController: AVPlayerViewController, AVPlayerViewControllerDelegate {
+    private var orientationButton: UIButton?
+    private var isLandscape = false
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.delegate = self
+        setupOrientationButton()
+    }
+
+    private func setupOrientationButton() {
+        guard let overlay = contentOverlayView else { return }
+
+        // Safari-style liquid glass capsule button
+        var config = UIButton.Configuration.plain()
+        config.image = UIImage(systemName: "iphone.landscape")
+        config.imagePadding = 5
+        config.imagePlacement = .leading
+        config.baseForegroundColor = .white
+        config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10)
+
+        var titleAttr = AttributedString("横屏")
+        titleAttr.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        config.attributedTitle = titleAttr
+
+        let button = UIButton(configuration: config)
+        button.translatesAutoresizingMaskIntoConstraints = false
+
+        // UltraThinMaterial effect background
+        let blurEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        let blurView = UIVisualEffectView(effect: blurEffect)
+        blurView.isUserInteractionEnabled = false
+        blurView.translatesAutoresizingMaskIntoConstraints = false
+        blurView.layer.cornerRadius = 14
+        blurView.layer.masksToBounds = true
+        blurView.layer.borderWidth = 0.5
+        blurView.layer.borderColor = UIColor.white.withAlphaComponent(0.2).cgColor
+
+        button.insertSubview(blurView, at: 0)
+        NSLayoutConstraint.activate([
+            blurView.leadingAnchor.constraint(equalTo: button.leadingAnchor),
+            blurView.trailingAnchor.constraint(equalTo: button.trailingAnchor),
+            blurView.topAnchor.constraint(equalTo: button.topAnchor),
+            blurView.bottomAnchor.constraint(equalTo: button.bottomAnchor)
+        ])
+
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowOpacity = 0.3
+        button.layer.shadowOffset = CGSize(width: 0, height: 2)
+        button.layer.shadowRadius = 4
+
+        button.addTarget(self, action: #selector(handleOrientationToggle), for: .touchUpInside)
+        button.isHidden = true // Only visible when in full screen
+
+        overlay.addSubview(button)
+        NSLayoutConstraint.activate([
+            button.leadingAnchor.constraint(equalTo: overlay.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            button.bottomAnchor.constraint(equalTo: overlay.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+            button.heightAnchor.constraint(equalToConstant: 28)
+        ])
+
+        self.orientationButton = button
+    }
+
+    @objc private func handleOrientationToggle() {
+        isLandscape.toggle()
+        updateButtonAppearance()
+
+        guard let windowScene = view.window?.windowScene ?? UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        let targetOrientation: UIInterfaceOrientationMask = isLandscape ? .landscapeRight : .portrait
+        let geometryPreferences = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: targetOrientation)
+        windowScene.requestGeometryUpdate(geometryPreferences) { _ in }
+    }
+
+    private func updateButtonAppearance() {
+        guard let button = orientationButton else { return }
+        var config = button.configuration ?? UIButton.Configuration.plain()
+        config.image = UIImage(systemName: isLandscape ? "iphone.portrait" : "iphone.landscape")
+        var titleAttr = AttributedString(isLandscape ? "竖屏" : "横屏")
+        titleAttr.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        config.attributedTitle = titleAttr
+        button.configuration = config
+    }
+
+    // MARK: - AVPlayerViewControllerDelegate
+    func playerViewController(
+        _ playerViewController: AVPlayerViewController,
+        willBeginFullScreenPresentationWithAnimationCoordinator coordinator: UIViewControllerTransitionCoordinator
+    ) {
+        orientationButton?.isHidden = false
+        isLandscape = false
+        updateButtonAppearance()
+    }
+
+    func playerViewController(
+        _ playerViewController: AVPlayerViewController,
+        willEndFullScreenPresentationWithAnimationCoordinator coordinator: UIViewControllerTransitionCoordinator
+    ) {
+        orientationButton?.isHidden = true
+        if isLandscape {
+            isLandscape = false
+            guard let windowScene = view.window?.windowScene ?? UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+            let geometryPreferences = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: .portrait)
+            windowScene.requestGeometryUpdate(geometryPreferences) { _ in }
+        }
+    }
+}
+
 private struct NativeInlineVideoPlayer: UIViewControllerRepresentable {
     let player: AVPlayer
     var showsPlaybackControls: Bool = true
 
     func makeUIViewController(context: Context) -> AVPlayerViewController {
-        let controller = AVPlayerViewController()
+        let controller = FullScreenOrientationPlayerViewController()
         controller.player = player
         controller.showsPlaybackControls = showsPlaybackControls
         controller.allowsPictureInPicturePlayback = true
@@ -437,7 +545,6 @@ private struct QANativeVideoPlayer: View {
     @State private var player: AVPlayer?
     @State private var isLoading = false
     @State private var errorMessage: String?
-    @State private var isLandscape = false
 
     var body: some View {
         ZStack {
@@ -502,60 +609,16 @@ private struct QANativeVideoPlayer: View {
                 }
                 .padding(10)
             }
-
-            if player != nil {
-                VStack {
-                    Spacer()
-                    HStack {
-                        Button(action: toggleOrientation) {
-                            HStack(spacing: 5) {
-                                Image(systemName: isLandscape ? "iphone.portrait" : "iphone.landscape")
-                                    .font(.system(size: 13, weight: .semibold))
-                                Text(isLandscape ? "竖屏" : "横屏")
-                                    .font(.caption2.weight(.medium))
-                            }
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 10)
-                            .frame(height: 28)
-                            .background(.ultraThinMaterial, in: Capsule())
-                            .overlay(Capsule().stroke(.white.opacity(0.2), lineWidth: 0.5))
-                            .shadow(color: .black.opacity(0.25), radius: 4, y: 1)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.leading, 12)
-                        .padding(.bottom, 12)
-                        .accessibilityLabel(isLandscape ? "切换竖屏" : "切换横屏")
-
-                        Spacer()
-                    }
-                }
-            }
         }
-        .aspectRatio(isLandscape ? 16 / 9 : 16 / 9, contentMode: .fit)
+        .aspectRatio(16 / 9, contentMode: .fit)
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .task {
             if let playbackURL = video.playbackURL {
                 player = AVPlayer(url: playbackURL)
             }
         }
-        .onDisappear {
-            player?.pause()
-            if isLandscape {
-                requestDeviceOrientation(.portrait)
-            }
-        }
+        .onDisappear { player?.pause() }
         .accessibilityLabel("视频播放器")
-    }
-
-    private func toggleOrientation() {
-        isLandscape.toggle()
-        requestDeviceOrientation(isLandscape ? .landscapeRight : .portrait)
-    }
-
-    private func requestDeviceOrientation(_ mask: UIInterfaceOrientationMask) {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-        let geometryPreferences = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: mask)
-        windowScene.requestGeometryUpdate(geometryPreferences) { _ in }
     }
 
     @MainActor
