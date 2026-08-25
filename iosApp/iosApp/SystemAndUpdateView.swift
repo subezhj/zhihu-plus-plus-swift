@@ -96,7 +96,7 @@ struct SystemAndUpdateView: View {
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
-        .background(Color.nativeSystemBackground.ignoresSafeArea())
+        .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .navigationTitle("系统与更新")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarHidden(false)

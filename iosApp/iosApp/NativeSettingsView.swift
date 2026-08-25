@@ -223,7 +223,7 @@ struct NativeSettingsView: View {
             .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
         }
         .scrollContentBackground(.hidden)
-        .background(Color.nativeSystemBackground.ignoresSafeArea())
+        .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .navigationTitle("设置")
         .navigationBarTitleDisplayMode(.inline)
         .task { await performanceDiagnostics.refreshLogs() }
