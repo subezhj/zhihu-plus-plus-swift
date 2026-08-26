@@ -570,16 +570,17 @@ private struct CommentRow: View {
                             ProgressView().controlSize(.small)
                             Spacer()
                         }
-                        .padding(.vertical, 4)
+                        .padding(.vertical, 6)
                     } else if !page.isEnd, !page.items.isEmpty {
+                        let remaining = max(0, comment.childCommentCount - page.items.count)
                         Button {
                             store.loadMoreInlineReplies(rootCommentID: comment.id)
                         } label: {
-                            HStack(spacing: 4) {
-                                Text("加载更多回复")
-                                    .font(NativeTypography.footnote(scale: presentation.fontScale))
+                            HStack(spacing: 5) {
+                                Text(remaining > 0 ? "展开更多回复（余 \(remaining) 条）" : "加载更多回复")
+                                    .font(NativeTypography.footnote(scale: presentation.fontScale).weight(.medium))
                                 Image(systemName: "chevron.down")
-                                    .font(.system(size: 9, weight: .bold))
+                                    .font(.system(size: 8.5, weight: .bold))
                             }
                             .foregroundStyle(Color.accentColor)
                             .padding(.vertical, 4)
@@ -589,22 +590,40 @@ private struct CommentRow: View {
                 }
             }
 
-            // 展开 / 收起 控制行 (清晰独立、呼吸感强)
-            Button {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    store.toggleInlineReplies(rootCommentID: comment.id)
+            // 展开 / 收起 控制行
+            if !isExpanded {
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        store.toggleInlineReplies(rootCommentID: comment.id)
+                    }
+                } label: {
+                    HStack(spacing: 5) {
+                        Text("展开 \(comment.childCommentCount) 条回复")
+                            .font(NativeTypography.footnote(scale: presentation.fontScale).weight(.medium))
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 8.5, weight: .bold))
+                    }
+                    .foregroundStyle(Color.accentColor)
+                    .padding(.vertical, 2)
                 }
-            } label: {
-                HStack(spacing: 5) {
-                    Text(isExpanded ? "收起回复" : "展开 \(comment.childCommentCount) 条回复")
-                        .font(NativeTypography.footnote(scale: presentation.fontScale).weight(.medium))
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 9, weight: .bold))
+                .buttonStyle(.plain)
+            } else {
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        store.toggleInlineReplies(rootCommentID: comment.id)
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("收起回复")
+                            .font(NativeTypography.caption(scale: presentation.fontScale).weight(.medium))
+                        Image(systemName: "chevron.up")
+                            .font(.system(size: 8, weight: .bold))
+                    }
+                    .foregroundStyle(.secondary)
+                    .padding(.vertical, 3)
                 }
-                .foregroundStyle(Color.accentColor)
-                .padding(.vertical, 2)
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

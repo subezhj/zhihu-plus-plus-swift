@@ -493,26 +493,16 @@ private struct CommentResponse: Decodable {
     let childComments: [CommentResponse]?
     let addressText: String?
     let ipLocation: String?
-
-    enum CodingKeys: String, CodingKey {
-        case id
-        case content
-        case createdTime
-        case author
-        case replyToAuthor
-        case liked
-        case likeCount
-        case childCommentCount
-        case childComments
-        case addressText
-        case ipLocation
-    }
+    let location: String?
+    let ipText: String?
 
     struct Author: Decodable {
         let id: String
         let urlToken: String?
         let name: String
         let avatarUrl: String?
+        let addressText: String?
+        let ipLocation: String?
 
         var dto: CommentAuthorDTO {
             CommentAuthorDTO(
@@ -526,8 +516,9 @@ private struct CommentResponse: Decodable {
 
     func dto(blockedMemberIDs: Set<String>) -> CommentDTO {
         let projection = CommentHTMLMediaParser.project(content)
-        let resolvedLocation = (addressText ?? ipLocation)?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let cleanLocation = resolvedLocation?.isEmpty == false ? resolvedLocation : nil
+        let rawLocation = addressText ?? ipLocation ?? location ?? ipText ?? author.addressText ?? author.ipLocation
+        let trimmed = rawLocation?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanLocation = trimmed?.isEmpty == false ? trimmed : nil
         return CommentDTO(
             id: id,
             contentHTML: content,
