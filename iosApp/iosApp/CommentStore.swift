@@ -106,17 +106,33 @@ final class CommentSessionStore: ObservableObject {
         loadNext(level: level ?? activeLevel)
     }
 
-    func openReplies(rootCommentID: String) {
-        guard !isDisposed,
-              activeLevel == .root,
-              comment(withID: rootCommentID, in: pages[.root]?.items ?? []) != nil
-        else { return }
-        let level = CommentLevelKey.replies(rootCommentID: rootCommentID)
-        navigationPathChanged([level])
-        if pages[level] == nil {
-            pages[level] = newPage(for: level, generation: 0)
+    @Published private(set) var expandedReplyIDs: Set<String> = []
+
+    func isRepliesExpanded(for rootCommentID: String) -> Bool {
+        expandedReplyIDs.contains(rootCommentID)
+    }
+
+    func toggleInlineReplies(rootCommentID: String) {
+        guard !isDisposed else { return }
+        if expandedReplyIDs.contains(rootCommentID) {
+            expandedReplyIDs.remove(rootCommentID)
+        } else {
+            expandedReplyIDs.insert(rootCommentID)
+            let level = CommentLevelKey.replies(rootCommentID: rootCommentID)
+            if pages[level] == nil {
+                pages[level] = newPage(for: level, generation: 0)
+                loadInitial(level: level, invalidating: false)
+            }
         }
-        loadInitial(level: level, invalidating: false)
+    }
+
+    func loadMoreInlineReplies(rootCommentID: String) {
+        let level = CommentLevelKey.replies(rootCommentID: rootCommentID)
+        loadNext(level: level)
+    }
+
+    func openReplies(rootCommentID: String) {
+        toggleInlineReplies(rootCommentID: rootCommentID)
     }
 
     func dismissReplies() {

@@ -291,9 +291,9 @@ private struct CommentLevelView: View {
                         .accessibilityIdentifier("comment_swipe_share_\(comment.id)")
                     }
                     .onAppear { store.loadNextIfNeeded(after: comment.id, level: level) }
-                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                     .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+                    .listRowBackground(Color.nativeSystemBackground)
             }
             pageFooter(page)
         }
@@ -362,6 +362,8 @@ private struct CommentRow: View {
     let comment: CommentDTO
     let interactionLevel: CommentLevelKey?
     let onShare: () -> Void
+    @Environment(\.nativeContentPresentation) private var presentation
+    @Environment(\.nativeHapticFeedback) private var hapticFeedback
 
     init(
         store: CommentSessionStore,
@@ -375,31 +377,7 @@ private struct CommentRow: View {
         self.onShare = onShare
     }
 
-    @Environment(\.nativeContentPresentation) private var presentation
-    @Environment(\.nativeHapticFeedback) private var hapticFeedback
-
     var body: some View {
-        rowContent
-            .nativeFeedCard(cornerRadius: 14)
-            .contextMenu {
-            Button(action: beginReply) {
-                Label("回复 @\(comment.author.displayName)", systemImage: "arrowshape.turn.up.left")
-            }
-            Button {
-                UIPasteboard.general.string = CommentPlainText.value(from: comment.contentHTML)
-            } label: {
-                Label("复制评论", systemImage: "doc.on.doc")
-            }
-            Button(action: onShare) {
-                Label("分享", systemImage: "square.and.arrow.up")
-            }
-            .accessibilityIdentifier("comment_context_share_\(comment.id)")
-        }
-        .accessibilityIdentifier("comment_row_\(comment.id)")
-        .accessibilityHint("长按或左滑可回复、复制或分享")
-    }
-
-    private var rowContent: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 10) {
                 Button { store.openAuthor(commentID: comment.id) } label: {
@@ -412,22 +390,23 @@ private struct CommentRow: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    .frame(width: 34, height: 34)
+                    .frame(width: 32, height: 32)
                     .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("打开 \(comment.author.displayName) 的主页")
 
-                VStack(alignment: .leading, spacing: 3) {
-                    HStack(spacing: 5) {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 4) {
                         Button(comment.author.displayName) { store.openAuthor(commentID: comment.id) }
                             .buttonStyle(.plain)
                             .font(NativeTypography.authorName(scale: presentation.fontScale))
+                            .foregroundStyle(.primary)
 
                         if let reply = comment.replyToAuthor {
-                            HStack(spacing: 3) {
-                                Image(systemName: "arrowshape.turn.up.left.fill")
-                                    .font(.system(size: 9))
+                            HStack(spacing: 2) {
+                                Image(systemName: "arrowtriangle.right.fill")
+                                    .font(.system(size: 7))
                                     .foregroundStyle(.tertiary)
                                 Text(reply.displayName)
                                     .font(NativeTypography.footnote(scale: presentation.fontScale))
@@ -442,11 +421,39 @@ private struct CommentRow: View {
                         .font(NativeTypography.caption(scale: presentation.fontScale))
                         .foregroundStyle(.secondary)
                 }
+
+                Spacer(minLength: 8)
+
+                // 右上角极简点赞
+                Button {
+                    hapticFeedback(.selection)
+                    store.toggleLike(commentID: comment.id, level: interactionLevel)
+                } label: {
+                    HStack(spacing: 3) {
+                        Image(systemName: comment.isLiked ? "heart.fill" : "heart")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(comment.isLiked ? Color.red : Color.secondary)
+                        if comment.likeCount > 0 {
+                            Text("\(comment.likeCount)")
+                                .font(NativeTypography.caption2(scale: presentation.fontScale))
+                                .foregroundStyle(comment.isLiked ? Color.red : Color.secondary)
+                        }
+                    }
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 4)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .disabled(store.pages[interactionLevel ?? store.activeLevel]?.activeLikeMutation != nil)
+                .accessibilityLabel("点赞评论")
             }
 
+            // 评论正文
             CommentRichText(html: comment.contentHTML)
                 .contentShape(Rectangle())
+                .padding(.leading, 42)
 
+            // 评论图片
             if !comment.media.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
@@ -469,66 +476,195 @@ private struct CommentRow: View {
                                         }
                                     }
                                 }
-                                .frame(width: 120, height: 88)
-                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("查看评论图片")
+                .padding(.leading, 42)
+            }
+
+            // 内嵌子回复区域 (仅在主楼且有回复时展示)
+            if interactionLevel == .root, comment.childCommentCount > 0 {
+                inlineRepliesSection
+                    .padding(.leading, 42)
+            }
+
+            // 轻量底部细分割线
+            NativeThinDivider()
+                .padding(.top, 4)
+        }
+        .padding(.vertical, 8)
+        .contextMenu {
+            Button(action: beginReply) {
+                Label("回复 @\(comment.author.displayName)", systemImage: "arrowshape.turn.up.left")
+            }
+            Button {
+                UIPasteboard.general.string = CommentPlainText.value(from: comment.contentHTML)
+            } label: {
+                Label("复制评论", systemImage: "doc.on.doc")
+            }
+            Button(action: onShare) {
+                Label("分享", systemImage: "square.and.arrow.up")
+            }
+            .accessibilityIdentifier("comment_context_share_\(comment.id)")
+        }
+        .accessibilityIdentifier("comment_row_\(comment.id)")
+    }
+
+    @ViewBuilder
+    private var inlineRepliesSection: some View {
+        let isExpanded = store.isRepliesExpanded(for: comment.id)
+        let replyLevel = CommentLevelKey.replies(rootCommentID: comment.id)
+        let replyPage = store.pages[replyLevel]
+
+        VStack(alignment: .leading, spacing: 8) {
+            if isExpanded, let page = replyPage {
+                if page.initialLoad == .loading && page.items.isEmpty {
+                    HStack {
+                        Spacer()
+                        ProgressView().controlSize(.small)
+                        Text("加载回复…")
+                            .font(NativeTypography.caption(scale: presentation.fontScale))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                    }
+                    .padding(.vertical, 6)
+                } else if case let .failed(msg) = page.initialLoad, page.items.isEmpty {
+                    HStack {
+                        Text("未能加载回复：\(msg)")
+                            .font(NativeTypography.caption(scale: presentation.fontScale))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Button("重试") { store.retryInitial(level: replyLevel) }
+                            .font(NativeTypography.caption(scale: presentation.fontScale))
+                    }
+                } else {
+                    ForEach(page.items) { reply in
+                        SubReplyRow(store: store, reply: reply, rootCommentID: comment.id)
+                    }
+                    if page.nextPage == .loading {
+                        HStack {
+                            Spacer()
+                            ProgressView().controlSize(.small)
+                            Spacer()
                         }
+                    } else if !page.isEnd, !page.items.isEmpty {
+                        Button {
+                            store.loadMoreInlineReplies(rootCommentID: comment.id)
+                        } label: {
+                            Text("加载更多回复 ⌄")
+                                .font(NativeTypography.footnote(scale: presentation.fontScale))
+                                .foregroundStyle(Color.accentColor)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }
 
-            HStack(alignment: .center) {
+            // 展开 / 收起 控制行
+            HStack(spacing: 6) {
                 Button {
-                    hapticFeedback(.selection)
-                    store.toggleLike(commentID: comment.id, level: interactionLevel)
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        store.toggleInlineReplies(rootCommentID: comment.id)
+                    }
                 } label: {
                     HStack(spacing: 4) {
-                        Image(systemName: comment.isLiked ? "hand.thumbsup.fill" : "hand.thumbsup")
-                            .font(.system(size: 11.5, weight: .semibold))
-                            .scaleEffect(comment.isLiked ? 1.08 : 1.0)
-                            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: comment.isLiked)
-                        if comment.likeCount > 0 {
-                            Text("\(comment.likeCount)")
-                                .font(.caption2.weight(.semibold).monospacedDigit())
-                        }
+                        Text(isExpanded ? "收起回复 ⌃" : "── 展开 \(comment.childCommentCount) 条回复 ⌄")
+                            .font(NativeTypography.footnote(scale: presentation.fontScale))
+                            .foregroundStyle(Color.accentColor)
                     }
-                    .foregroundStyle(comment.isLiked ? Color.accentColor : Color.secondary)
-                    .padding(.horizontal, 9)
-                    .frame(height: 26)
-                    .background(Color.secondary.opacity(comment.isLiked ? 0.12 : 0.08), in: Capsule())
                 }
-                .disabled(store.pages[interactionLevel ?? store.activeLevel]?.activeLikeMutation != nil)
-                .accessibilityLabel("点赞评论")
+                .buttonStyle(.plain)
 
-                Spacer(minLength: 12)
+                Spacer()
 
-                if interactionLevel == .root, comment.childCommentCount > 0 {
-                    Button {
-                        store.openReplies(rootCommentID: comment.id)
-                    } label: {
-                        HStack(spacing: 3) {
-                            Text("共 \(comment.childCommentCount) 条回复")
-                                .font(.caption2.weight(.semibold))
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 8.5, weight: .bold))
-                        }
-                        .foregroundStyle(Color.accentColor)
-                        .padding(.horizontal, 9)
-                        .frame(height: 26)
-                        .background(Color.secondary.opacity(0.08), in: Capsule())
-                    }
-                    .accessibilityIdentifier("reply_count_open_\(comment.id)")
+                Button {
+                    beginReply()
+                } label: {
+                    Text("回复")
+                        .font(NativeTypography.footnote(scale: presentation.fontScale))
+                        .foregroundStyle(.secondary)
                 }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
+            .padding(.top, 2)
         }
-        .contentShape(Rectangle())
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(Color.secondary.opacity(0.05), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
     private func beginReply() {
         store.beginReply(to: comment.id, level: interactionLevel)
+    }
+}
+
+private struct SubReplyRow: View {
+    @ObservedObject var store: CommentSessionStore
+    let reply: CommentDTO
+    let rootCommentID: String
+    @Environment(\.nativeContentPresentation) private var presentation
+    @Environment(\.nativeHapticFeedback) private var hapticFeedback
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Button { store.openAuthor(commentID: reply.id) } label: {
+                AsyncImage(url: reply.author.avatarURL) { phase in
+                    if case let .success(image) = phase {
+                        image.resizable().scaledToFill()
+                    } else {
+                        Image(systemName: "person.crop.circle.fill")
+                            .resizable()
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .frame(width: 20, height: 20)
+                .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Button(reply.author.displayName) { store.openAuthor(commentID: reply.id) }
+                        .buttonStyle(.plain)
+                        .font(NativeTypography.authorName(scale: presentation.fontScale))
+                        .foregroundStyle(.primary)
+
+                    if let toAuthor = reply.replyToAuthor {
+                        Image(systemName: "arrowtriangle.right.fill")
+                            .font(.system(size: 6))
+                            .foregroundStyle(.tertiary)
+                        Text(toAuthor.displayName)
+                            .font(NativeTypography.footnote(scale: presentation.fontScale))
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    // 子回复轻量点赞
+                    Button {
+                        hapticFeedback(.selection)
+                        store.toggleLike(commentID: reply.id, level: .replies(rootCommentID: rootCommentID))
+                    } label: {
+                        HStack(spacing: 2) {
+                            Image(systemName: reply.isLiked ? "heart.fill" : "heart")
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundStyle(reply.isLiked ? Color.red : Color.secondary)
+                            if reply.likeCount > 0 {
+                                Text("\(reply.likeCount)")
+                                    .font(.system(size: 9).monospacedDigit())
+                                    .foregroundStyle(reply.isLiked ? Color.red : Color.secondary)
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                CommentRichText(html: reply.contentHTML)
+                    .font(NativeTypography.footnote(scale: presentation.fontScale))
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        store.beginReply(to: reply.id, level: .replies(rootCommentID: rootCommentID))
+                    }
+            }
+        }
+        .padding(.vertical, 3)
     }
 }
 
