@@ -194,6 +194,7 @@ private struct CommentLevelView: View {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
+        .environment(\.defaultMinListRowHeight, 1)
         .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .background(CommentScrollViewAccessor { scrollView = $0 })
         .onChange(of: store.scrollToStartLevel) { target in
@@ -593,6 +594,7 @@ private struct CommentRow: View {
                                 .foregroundStyle(.secondary)
                             Spacer()
                         }
+                        .frame(minHeight: 40)
                         .padding(.vertical, 8)
                     } else if case let .failed(msg) = page.initialLoad, page.items.isEmpty {
                         HStack {
@@ -755,6 +757,8 @@ private struct SubReplyRow: View {
                     store.beginReply(to: reply.id, level: .replies(rootCommentID: rootCommentID))
                 }
             }
+            // 占满 HStack 剩余宽度：子回复正文才能正常换行，避免长文本单行溢出被裁剪
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.vertical, 4)
         .contentShape(Rectangle())
@@ -1021,6 +1025,8 @@ private struct CommentRichText: View {
             .font(bodyFont)
             .lineSpacing(contentPresentation.extraLineSpacing(for: pointSize))
             .tint(Color.accentColor)
+            // 占满可用宽度：保证行内重排时换行/行高稳定，并修复子回复文本不换行被裁剪的问题
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -1135,20 +1141,35 @@ private extension CommentSubmissionState {
 }
 
 private enum CommentDateFormatter {
+    // 性能：DateFormatter 创建昂贵，评论每行渲染都会调用，必须静态缓存复用
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss"
+        return formatter
+    }()
+
+    private static let monthDayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MM-dd HH:mm:ss"
+        return formatter
+    }()
+
+    private static let fullFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return formatter
+    }()
+
     static func string(seconds: Int64) -> String {
         let date = Date(timeIntervalSince1970: TimeInterval(seconds))
         let calendar = Calendar.current
-        let formatter = DateFormatter()
         if calendar.isDateInToday(date) {
-            formatter.dateFormat = "HH:mm:ss"
-            return formatter.string(from: date)
+            return timeFormatter.string(from: date)
         }
         if calendar.component(.year, from: date) == calendar.component(.year, from: Date()) {
-            formatter.dateFormat = "MM-dd HH:mm:ss"
-            return formatter.string(from: date)
+            return monthDayFormatter.string(from: date)
         }
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        return formatter.string(from: date)
+        return fullFormatter.string(from: date)
     }
 }
 
