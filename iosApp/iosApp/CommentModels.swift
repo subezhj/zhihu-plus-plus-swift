@@ -113,6 +113,32 @@ struct CommentDTO: Hashable, Identifiable {
     let media: [CommentMediaDTO]
     let ipLocation: String?
 
+    init(
+        id: String,
+        contentHTML: String,
+        createdTimeSeconds: Int64,
+        author: CommentAuthorDTO,
+        replyToAuthor: CommentAuthorDTO? = nil,
+        isLiked: Bool = false,
+        likeCount: Int = 0,
+        childCommentCount: Int = 0,
+        embeddedReplies: [CommentDTO] = [],
+        media: [CommentMediaDTO] = [],
+        ipLocation: String? = nil
+    ) {
+        self.id = id
+        self.contentHTML = contentHTML
+        self.createdTimeSeconds = createdTimeSeconds
+        self.author = author
+        self.replyToAuthor = replyToAuthor
+        self.isLiked = isLiked
+        self.likeCount = likeCount
+        self.childCommentCount = childCommentCount
+        self.embeddedReplies = embeddedReplies
+        self.media = media
+        self.ipLocation = ipLocation
+    }
+
     func replacingLikeState(isLiked: Bool, likeCount: Int) -> Self {
         Self(
             id: id,

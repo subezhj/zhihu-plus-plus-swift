@@ -584,7 +584,8 @@ final class CommentSessionStore: ObservableObject {
                 likeCount: comment.likeCount,
                 childCommentCount: comment.childCommentCount,
                 embeddedReplies: replies,
-                media: comment.media
+                media: comment.media,
+                ipLocation: comment.ipLocation
             )
         }
     }
