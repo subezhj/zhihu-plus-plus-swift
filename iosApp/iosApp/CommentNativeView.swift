@@ -448,9 +448,12 @@ private struct CommentRow: View {
                 .accessibilityLabel("点赞评论")
             }
 
-            // 评论正文
+            // 评论正文 (点击正文直接触发针对该作者的回复)
             CommentRichText(html: comment.contentHTML)
                 .contentShape(Rectangle())
+                .onTapGesture {
+                    beginReply()
+                }
                 .padding(.leading, 42)
 
             // 评论图片
@@ -495,9 +498,9 @@ private struct CommentRow: View {
 
             // 轻量底部细分割线
             NativeThinDivider()
-                .padding(.top, 4)
+                .padding(.top, 6)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
         .contextMenu {
             Button(action: beginReply) {
                 Label("回复 @\(comment.author.displayName)", systemImage: "arrowshape.turn.up.left")
@@ -521,7 +524,7 @@ private struct CommentRow: View {
         let replyLevel = CommentLevelKey.replies(rootCommentID: comment.id)
         let replyPage = store.pages[replyLevel]
 
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             if isExpanded, let page = replyPage {
                 if page.initialLoad == .loading && page.items.isEmpty {
                     HStack {
@@ -532,7 +535,7 @@ private struct CommentRow: View {
                             .foregroundStyle(.secondary)
                         Spacer()
                     }
-                    .padding(.vertical, 6)
+                    .padding(.vertical, 8)
                 } else if case let .failed(msg) = page.initialLoad, page.items.isEmpty {
                     HStack {
                         Text("未能加载回复：\(msg)")
@@ -542,60 +545,57 @@ private struct CommentRow: View {
                         Button("重试") { store.retryInitial(level: replyLevel) }
                             .font(NativeTypography.caption(scale: presentation.fontScale))
                     }
+                    .padding(.vertical, 4)
                 } else {
                     ForEach(page.items) { reply in
                         SubReplyRow(store: store, reply: reply, rootCommentID: comment.id)
                     }
+
                     if page.nextPage == .loading {
                         HStack {
                             Spacer()
                             ProgressView().controlSize(.small)
                             Spacer()
                         }
+                        .padding(.vertical, 4)
                     } else if !page.isEnd, !page.items.isEmpty {
                         Button {
                             store.loadMoreInlineReplies(rootCommentID: comment.id)
                         } label: {
-                            Text("加载更多回复 ⌄")
-                                .font(NativeTypography.footnote(scale: presentation.fontScale))
-                                .foregroundStyle(Color.accentColor)
+                            HStack(spacing: 4) {
+                                Text("加载更多回复")
+                                    .font(NativeTypography.footnote(scale: presentation.fontScale))
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 9, weight: .bold))
+                            }
+                            .foregroundStyle(Color.accentColor)
+                            .padding(.vertical, 4)
                         }
                         .buttonStyle(.plain)
                     }
                 }
             }
 
-            // 展开 / 收起 控制行
-            HStack(spacing: 6) {
-                Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                        store.toggleInlineReplies(rootCommentID: comment.id)
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Text(isExpanded ? "收起回复 ⌃" : "── 展开 \(comment.childCommentCount) 条回复 ⌄")
-                            .font(NativeTypography.footnote(scale: presentation.fontScale))
-                            .foregroundStyle(Color.accentColor)
-                    }
+            // 展开 / 收起 控制行 (清晰独立、呼吸感强)
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    store.toggleInlineReplies(rootCommentID: comment.id)
                 }
-                .buttonStyle(.plain)
-
-                Spacer()
-
-                Button {
-                    beginReply()
-                } label: {
-                    Text("回复")
-                        .font(NativeTypography.footnote(scale: presentation.fontScale))
-                        .foregroundStyle(.secondary)
+            } label: {
+                HStack(spacing: 5) {
+                    Text(isExpanded ? "收起回复" : "展开 \(comment.childCommentCount) 条回复")
+                        .font(NativeTypography.footnote(scale: presentation.fontScale).weight(.medium))
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 9, weight: .bold))
                 }
-                .buttonStyle(.plain)
+                .foregroundStyle(Color.accentColor)
+                .padding(.vertical, 2)
             }
-            .padding(.top, 2)
+            .buttonStyle(.plain)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(Color.secondary.opacity(0.05), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     private func beginReply() {
@@ -622,12 +622,12 @@ private struct SubReplyRow: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .frame(width: 20, height: 20)
+                .frame(width: 22, height: 22)
                 .clipShape(Circle())
             }
             .buttonStyle(.plain)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Button(reply.author.displayName) { store.openAuthor(commentID: reply.id) }
                         .buttonStyle(.plain)
@@ -664,6 +664,7 @@ private struct SubReplyRow: View {
                     .buttonStyle(.plain)
                 }
 
+                // 点击子回复文本，直接唤起回复该子回复作者
                 CommentRichText(html: reply.contentHTML)
                     .font(NativeTypography.footnote(scale: presentation.fontScale))
                     .contentShape(Rectangle())
@@ -672,7 +673,7 @@ private struct SubReplyRow: View {
                     }
             }
         }
-        .padding(.vertical, 3)
+        .padding(.vertical, 4)
     }
 }
 
@@ -737,14 +738,15 @@ private struct CommentComposerBar: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "square.and.pencil")
-                    .font(.system(size: 17, weight: .medium))
-                Text(level == .root ? "写评论…" : "回复这条评论…")
-                    .font(.subheadline)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(Color.accentColor)
+                Text(level == .root ? "写评论，发表你的看法…" : "回复这条评论…")
+                    .font(NativeTypography.feedBody())
                     .foregroundStyle(.secondary)
                 Spacer()
             }
-            .padding(.horizontal, 14)
-            .frame(minHeight: 44)
+            .padding(.horizontal, 16)
+            .frame(minHeight: 48)
             .liquidGlassCapsule(isProminent: false)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -755,14 +757,14 @@ private struct CommentComposerBar: View {
     }
 
     private var activeComposer: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
             HStack(alignment: .center) {
-                HStack(spacing: 5) {
+                HStack(spacing: 6) {
                     Image(systemName: "bubble.and.pencil")
-                        .font(.caption.weight(.semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(Color.accentColor)
                     Text(store.activeReplyTargetName.map { "回复 @\($0)" } ?? (level == .root ? "发表评论" : "发表回复"))
-                        .font(.subheadline.weight(.semibold))
+                        .font(NativeTypography.feedTitle())
                         .foregroundStyle(.primary)
                 }
                 Spacer()
@@ -770,7 +772,7 @@ private struct CommentComposerBar: View {
                     dismissComposer()
                 } label: {
                     Text("取消")
-                        .font(.caption.weight(.medium))
+                        .font(NativeTypography.caption())
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
@@ -778,9 +780,8 @@ private struct CommentComposerBar: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 14)
-            .padding(.top, 12)
-            .padding(.bottom, 2)
+            .padding(.horizontal, 16)
+            .padding(.top, 10)
 
             if let imageData = store.draft.imageData, let image = UIImage(data: imageData) {
                 HStack {
@@ -796,12 +797,13 @@ private struct CommentComposerBar: View {
                     Button("移除", role: .destructive) { store.setDraftImage(nil) }
                         .font(.caption)
                 }
-                .padding(.horizontal, 12)
+                .padding(.horizontal, 16)
             }
+
             HStack(alignment: .center, spacing: 8) {
                 Button { showsEmojiPicker = true } label: {
                     Image(systemName: "face.smiling")
-                        .font(.system(size: 21, weight: .medium))
+                        .font(.system(size: 22, weight: .medium))
                         .frame(width: 38, height: 38)
                         .contentShape(Rectangle())
                 }
@@ -813,7 +815,7 @@ private struct CommentComposerBar: View {
                     matching: .images
                 ) {
                     Image(systemName: "photo")
-                        .font(.system(size: 21, weight: .medium))
+                        .font(.system(size: 22, weight: .medium))
                         .frame(width: 38, height: 38)
                         .contentShape(Rectangle())
                 }
@@ -821,10 +823,12 @@ private struct CommentComposerBar: View {
                 .accessibilityIdentifier("comment_photo_picker")
 
                 CommentDraftField(store: store, isFocused: $isDraftFocused)
-                .textFieldStyle(.plain)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .liquidGlassCapsule(isProminent: false)
+                    .textFieldStyle(.plain)
+                    .font(NativeTypography.feedBody())
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .frame(minHeight: 44)
+                    .liquidGlassCapsule(isProminent: false)
 
                 Button {
                     if case .failed = store.draft.submissionState {
