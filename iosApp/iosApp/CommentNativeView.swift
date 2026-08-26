@@ -741,7 +741,7 @@ private struct CommentComposerBar: View {
                     .font(.system(size: 18, weight: .medium))
                     .foregroundStyle(Color.accentColor)
                 Text(level == .root ? "写评论，发表你的看法…" : "回复这条评论…")
-                    .font(NativeTypography.feedBody())
+                    .font(NativeTypography.commentBody())
                     .foregroundStyle(.secondary)
                 Spacer()
             }
@@ -824,7 +824,7 @@ private struct CommentComposerBar: View {
 
                 CommentDraftField(store: store, isFocused: $isDraftFocused)
                     .textFieldStyle(.plain)
-                    .font(NativeTypography.feedBody())
+                    .font(NativeTypography.commentBody())
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .frame(minHeight: 44)
