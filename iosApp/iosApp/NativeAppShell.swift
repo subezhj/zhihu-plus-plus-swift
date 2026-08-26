@@ -601,7 +601,8 @@ struct NativeAppShell: View {
             NativeCommentNavigationRouteView(
                 route: route,
                 accountStore: hostModel.accountStore,
-                onPersonNavigate: { handlePersonIntent($0, in: tab) }
+                onPersonNavigate: { handlePersonIntent($0, in: tab) },
+                onNavigate: { handleQAIntent($0, in: tab) }
             )
         case let .search(route):
             SearchNativeView(
@@ -1110,11 +1111,17 @@ private struct NativePersonConnectionsRouteView: View {
 private struct NativeCommentNavigationRouteView: View {
     @StateObject private var model: CommentHostModel
 
-    init(route: CommentThreadRouteDTO, accountStore: AccountJSONStore, onPersonNavigate: @escaping (PersonNavigationIntent) -> Void) {
+    init(
+        route: CommentThreadRouteDTO,
+        accountStore: AccountJSONStore,
+        onPersonNavigate: @escaping (PersonNavigationIntent) -> Void,
+        onNavigate: @escaping (QANavigationIntent) -> Void
+    ) {
         _model = StateObject(wrappedValue: CommentHostModel(
             route: route,
             accountStore: accountStore,
-            onPersonNavigate: onPersonNavigate
+            onPersonNavigate: onPersonNavigate,
+            onNavigate: onNavigate
         ))
     }
 

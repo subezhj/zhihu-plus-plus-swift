@@ -31,12 +31,13 @@ private struct NativeHomeFeedScrollTracking: ViewModifier {
 
 enum NativeHomeFeedScrollMetrics {
     static let collapseDistance = NativeHomeHeaderLayoutPolicy.expandedHeaderHeight
-    static let fallbackCollapseDistance: CGFloat = collapseDistance
+    static let fallbackCollapseDistance: CGFloat = max(collapseDistance, 1)
 
     static func collapseProgress(
         contentOffsetY: CGFloat,
         contentInsetTop: CGFloat
     ) -> CGFloat {
+        guard collapseDistance > 0 else { return 1 }
         let effectiveOffset = contentOffsetY + contentInsetTop
         return min(max(effectiveOffset / collapseDistance, 0), 1)
     }
@@ -222,8 +223,13 @@ struct NativeRootLargeTitle: View {
     private func reportCollapseProgress(minY: CGFloat) {
         guard isActive else { return }
         if #available(iOS 18.0, *) { return }
+        let distance = NativeHomeFeedScrollMetrics.fallbackCollapseDistance
+        guard distance > 0 else {
+            collapseProgress = 1
+            return
+        }
         let progress = min(
-            max(-minY / NativeHomeFeedScrollMetrics.fallbackCollapseDistance, 0),
+            max(-minY / distance, 0),
             1
         )
         if progress >= 1 {

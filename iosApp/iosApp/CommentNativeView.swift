@@ -11,17 +11,20 @@ final class CommentHostModel: ObservableObject, Identifiable {
 
     private let accountStore: AccountJSONStore
     private let onPersonNavigate: (PersonNavigationIntent) -> Void
+    let onNavigate: (QANavigationIntent) -> Void
 
     init(
         route: CommentThreadRouteDTO,
         accountStore: AccountJSONStore,
         repository: CommentRepository? = nil,
-        onPersonNavigate: @escaping (PersonNavigationIntent) -> Void
+        onPersonNavigate: @escaping (PersonNavigationIntent) -> Void,
+        onNavigate: @escaping (QANavigationIntent) -> Void = { _ in }
     ) {
         let sessionID = CommentSessionID()
         id = sessionID
         self.accountStore = accountStore
         self.onPersonNavigate = onPersonNavigate
+        self.onNavigate = onNavigate
         var openPerson: ((PersonRoutePayload) -> Void)?
         store = CommentSessionStore(
             route: route,
@@ -70,7 +73,8 @@ struct CommentNavigationPage: View {
         CommentThreadContainer(
             store: model.store,
             personModel: model.personModel,
-            personBindingChanged: model.personBindingChanged
+            personBindingChanged: model.personBindingChanged,
+            onNavigate: model.onNavigate
         )
         .accessibilityIdentifier("comment_navigation_page")
     }
@@ -86,6 +90,7 @@ private struct CommentThreadContainer: View {
     @ObservedObject var store: CommentSessionStore
     let personModel: PersonHostModel?
     let personBindingChanged: (Bool) -> Void
+    let onNavigate: (QANavigationIntent) -> Void
 
     var body: some View {
         CommentLevelView(store: store, level: .root, close: nil)
@@ -125,7 +130,26 @@ private struct CommentThreadContainer: View {
                     dismissButton: .default(Text("知道了"))
                 )
             }
+            .environment(\.openURL, OpenURLAction { url in
+                handleCommentURL(url)
+            })
             .task { store.start() }
+    }
+
+    private func handleCommentURL(_ url: URL) -> OpenURLAction.Result {
+        if let link = QABodyLinkResolver.resolve(url) {
+            switch link {
+            case .external(let externalURL):
+                return .systemAction(externalURL)
+            default:
+                onNavigate(.link(link))
+                return .handled
+            }
+        }
+        guard let scheme = url.scheme?.lowercased(), scheme == "https" || scheme == "http" else {
+            return .discarded
+        }
+        return .systemAction(url)
     }
 
     private var personBinding: Binding<Bool> {
@@ -998,12 +1022,6 @@ private struct CommentRichText: View {
             .font(bodyFont)
             .lineSpacing(contentPresentation.extraLineSpacing(for: pointSize))
             .tint(Color.accentColor)
-            .environment(\.openURL, OpenURLAction { url in
-                guard let scheme = url.scheme?.lowercased(), scheme == "https" || scheme == "http" else {
-                    return .discarded
-                }
-                return .systemAction(url)
-            })
     }
 }
 
