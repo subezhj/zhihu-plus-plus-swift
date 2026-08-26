@@ -628,7 +628,7 @@ private struct SubReplyRow: View {
             }
             .buttonStyle(.plain)
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Button(reply.author.displayName) { store.openAuthor(commentID: reply.id) }
                         .buttonStyle(.plain)
@@ -676,7 +676,8 @@ private struct SubReplyRow: View {
                 // 点击子回复文本，按比例缩小为 footnote(12.5pt)，直接唤起回复该子回复作者
                 CommentRichText(
                     html: reply.contentHTML,
-                    font: NativeTypography.footnote(scale: presentation.fontScale)
+                    font: NativeTypography.footnote(scale: presentation.fontScale),
+                    basePointSize: 12.5
                 )
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -684,7 +685,7 @@ private struct SubReplyRow: View {
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 5)
         .contentShape(Rectangle())
         .onTapGesture {
             store.beginReply(to: reply.id, level: .replies(rootCommentID: rootCommentID))
@@ -939,11 +940,11 @@ private struct CommentComposerBackground: View {
 private struct CommentRichText: View {
     let html: String
     var font: Font? = nil
+    var basePointSize: CGFloat = 14
     @Environment(\.nativeContentPresentation) private var contentPresentation
-    @ScaledMetric(relativeTo: .body) private var bodyPointSize: CGFloat = 14
 
     var body: some View {
-        let pointSize = bodyPointSize * contentPresentation.fontScale
+        let pointSize = basePointSize * contentPresentation.fontScale
         let bodyFont = font ?? NativeTypography.commentBody(scale: contentPresentation.fontScale)
         Text(CommentAttributedText.value(from: html, bodyFont: bodyFont))
             .font(bodyFont)
