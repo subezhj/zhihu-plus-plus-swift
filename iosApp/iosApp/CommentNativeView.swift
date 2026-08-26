@@ -628,29 +628,29 @@ private struct SubReplyRow: View {
             }
             .buttonStyle(.plain)
 
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Button(reply.author.displayName) { store.openAuthor(commentID: reply.id) }
-                        .buttonStyle(.plain)
-                        .font(NativeTypography.footnote(scale: presentation.fontScale).weight(.medium))
-                        .foregroundStyle(.primary)
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(alignment: .top, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 1) {
+                        HStack(spacing: 3) {
+                            Button(reply.author.displayName) { store.openAuthor(commentID: reply.id) }
+                                .buttonStyle(.plain)
+                                .font(.system(size: 12 * presentation.fontScale, weight: .medium))
+                                .foregroundStyle(.primary)
 
-                    if let toAuthor = reply.replyToAuthor {
-                        Image(systemName: "arrowtriangle.right.fill")
-                            .font(.system(size: 6))
-                            .foregroundStyle(.tertiary)
-                        Text(toAuthor.displayName)
-                            .font(NativeTypography.caption(scale: presentation.fontScale))
+                            if let toAuthor = reply.replyToAuthor {
+                                Image(systemName: "arrowtriangle.right.fill")
+                                    .font(.system(size: 5.5))
+                                    .foregroundStyle(.tertiary)
+                                Text(toAuthor.displayName)
+                                    .font(NativeTypography.caption2(scale: presentation.fontScale))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+
+                        Text(CommentDateFormatter.string(seconds: reply.createdTimeSeconds))
+                            .font(NativeTypography.caption2(scale: presentation.fontScale))
                             .foregroundStyle(.secondary)
                     }
-
-                    Text("·")
-                        .font(NativeTypography.caption(scale: presentation.fontScale))
-                        .foregroundStyle(.tertiary)
-
-                    Text(CommentDateFormatter.string(seconds: reply.createdTimeSeconds))
-                        .font(NativeTypography.caption(scale: presentation.fontScale))
-                        .foregroundStyle(.secondary)
 
                     Spacer()
 
@@ -661,11 +661,11 @@ private struct SubReplyRow: View {
                     } label: {
                         HStack(spacing: 2) {
                             Image(systemName: reply.isLiked ? "heart.fill" : "heart")
-                                .font(.system(size: 10, weight: .medium))
+                                .font(.system(size: 9.5, weight: .medium))
                                 .foregroundStyle(reply.isLiked ? Color.red : Color.secondary)
                             if reply.likeCount > 0 {
                                 Text("\(reply.likeCount)")
-                                    .font(.system(size: 9).monospacedDigit())
+                                    .font(.system(size: 8.5).monospacedDigit())
                                     .foregroundStyle(reply.isLiked ? Color.red : Color.secondary)
                             }
                         }
@@ -685,7 +685,7 @@ private struct SubReplyRow: View {
                 }
             }
         }
-        .padding(.vertical, 5)
+        .padding(.vertical, 4)
         .contentShape(Rectangle())
         .onTapGesture {
             store.beginReply(to: reply.id, level: .replies(rootCommentID: rootCommentID))
