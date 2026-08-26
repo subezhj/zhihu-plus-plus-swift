@@ -328,17 +328,6 @@ struct HomeNativeView: View {
     var body: some View {
         ScrollViewReader { proxy in
             List {
-                NativeRootLargeTitle(
-                    "首页",
-                    displaysTitle: false,
-                    isActive: isActiveChannel,
-                    isRefreshing: store.isRefreshing,
-                    collapseProgress: $collapseProgress
-                )
-                .id(NativeHomeHeaderLayoutPolicy.scrollAnchor(for: .recommendation))
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.nativeSystemGroupedBackground)
-
                 if store.items.isEmpty, store.isLoading {
                     HStack { Spacer(); ProgressView("正在加载推荐"); Spacer() }
                         .listRowSeparator(.hidden)
@@ -422,18 +411,14 @@ struct HomeNativeView: View {
 
     private func scrollToTop(_ proxy: ScrollViewProxy, animated: Bool) {
         DispatchQueue.main.async {
+            // 首页已移除拱顶占位行，直接用第一条信息流行 id 作为回顶锚点
+            guard let target = visibleItems.first?.id else { return }
             if animated {
                 withAnimation {
-                    proxy.scrollTo(
-                        NativeHomeHeaderLayoutPolicy.scrollAnchor(for: .recommendation),
-                        anchor: .top
-                    )
+                    proxy.scrollTo(target, anchor: .top)
                 }
             } else {
-                proxy.scrollTo(
-                    NativeHomeHeaderLayoutPolicy.scrollAnchor(for: .recommendation),
-                    anchor: .top
-                )
+                proxy.scrollTo(target, anchor: .top)
             }
         }
     }

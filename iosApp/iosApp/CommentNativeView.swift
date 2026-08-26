@@ -402,138 +402,140 @@ private struct CommentRow: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .top, spacing: 10) {
-                Button { store.openAuthor(commentID: comment.id) } label: {
-                    AsyncImage(url: comment.author.avatarURL) { phase in
-                        if case let .success(image) = phase {
-                            image.resizable().scaledToFill()
-                        } else {
-                            Image(systemName: "person.crop.circle.fill")
-                                .resizable()
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .frame(width: 32, height: 32)
-                    .clipShape(Circle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("打开 \(comment.author.displayName) 的主页")
-
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 4) {
-                        Button(comment.author.displayName) { store.openAuthor(commentID: comment.id) }
-                            .buttonStyle(.plain)
-                            .font(NativeTypography.authorName(scale: presentation.fontScale))
-                            .foregroundStyle(.primary)
-
-                        if let reply = comment.replyToAuthor {
-                            HStack(spacing: 2) {
-                                Image(systemName: "arrowtriangle.right.fill")
-                                    .font(.system(size: 7))
-                                    .foregroundStyle(.tertiary)
-                                Text(reply.displayName)
-                                    .font(NativeTypography.footnote(scale: presentation.fontScale))
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .top, spacing: 10) {
+                    Button { store.openAuthor(commentID: comment.id) } label: {
+                        AsyncImage(url: comment.author.avatarURL) { phase in
+                            if case let .success(image) = phase {
+                                image.resizable().scaledToFill()
+                            } else {
+                                Image(systemName: "person.crop.circle.fill")
+                                    .resizable()
                                     .foregroundStyle(.secondary)
                             }
-                            .onTapGesture {
-                                store.openAuthor(commentID: comment.id, replyToAuthor: true)
+                        }
+                        .frame(width: 32, height: 32)
+                        .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("打开 \(comment.author.displayName) 的主页")
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 4) {
+                            Button(comment.author.displayName) { store.openAuthor(commentID: comment.id) }
+                                .buttonStyle(.plain)
+                                .font(NativeTypography.authorName(scale: presentation.fontScale))
+                                .foregroundStyle(.primary)
+
+                            if let reply = comment.replyToAuthor {
+                                HStack(spacing: 2) {
+                                    Image(systemName: "arrowtriangle.right.fill")
+                                        .font(.system(size: 7))
+                                        .foregroundStyle(.tertiary)
+                                    Text(reply.displayName)
+                                        .font(NativeTypography.footnote(scale: presentation.fontScale))
+                                        .foregroundStyle(.secondary)
+                                }
+                                .onTapGesture {
+                                    store.openAuthor(commentID: comment.id, replyToAuthor: true)
+                                }
+                            }
+                        }
+
+                        HStack(spacing: 4) {
+                            Text(CommentDateFormatter.string(seconds: comment.createdTimeSeconds))
+                                .font(NativeTypography.caption(scale: presentation.fontScale))
+                                .foregroundStyle(.secondary)
+
+                            if let ipLocation = comment.ipLocation, !ipLocation.isEmpty {
+                                Text("·")
+                                    .font(NativeTypography.caption(scale: presentation.fontScale))
+                                    .foregroundStyle(.tertiary)
+                                Text(ipLocation.hasPrefix("IP 属地") ? ipLocation : "IP 属地\(ipLocation)")
+                                    .font(NativeTypography.caption(scale: presentation.fontScale))
+                                    .foregroundStyle(.secondary)
                             }
                         }
                     }
 
-                    HStack(spacing: 4) {
-                        Text(CommentDateFormatter.string(seconds: comment.createdTimeSeconds))
-                            .font(NativeTypography.caption(scale: presentation.fontScale))
-                            .foregroundStyle(.secondary)
+                    Spacer(minLength: 8)
 
-                        if let ipLocation = comment.ipLocation, !ipLocation.isEmpty {
-                            Text("·")
-                                .font(NativeTypography.caption(scale: presentation.fontScale))
-                                .foregroundStyle(.tertiary)
-                            Text(ipLocation.hasPrefix("IP 属地") ? ipLocation : "IP 属地\(ipLocation)")
-                                .font(NativeTypography.caption(scale: presentation.fontScale))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-
-                Spacer(minLength: 8)
-
-                // 右上角极简点赞
-                Button {
-                    hapticFeedback(.selection)
-                    store.toggleLike(commentID: comment.id, level: interactionLevel)
-                } label: {
-                    HStack(spacing: 3) {
-                        Image(systemName: comment.isLiked ? "heart.fill" : "heart")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(comment.isLiked ? Color.red : Color.secondary)
-                        if comment.likeCount > 0 {
-                            Text("\(comment.likeCount)")
-                                .font(NativeTypography.caption2(scale: presentation.fontScale))
+                    // 右上角极简点赞
+                    Button {
+                        hapticFeedback(.selection)
+                        store.toggleLike(commentID: comment.id, level: interactionLevel)
+                    } label: {
+                        HStack(spacing: 3) {
+                            Image(systemName: comment.isLiked ? "heart.fill" : "heart")
+                                .font(.system(size: 13, weight: .medium))
                                 .foregroundStyle(comment.isLiked ? Color.red : Color.secondary)
+                            if comment.likeCount > 0 {
+                                Text("\(comment.likeCount)")
+                                    .font(NativeTypography.caption2(scale: presentation.fontScale))
+                                    .foregroundStyle(comment.isLiked ? Color.red : Color.secondary)
+                            }
                         }
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 4)
+                        .contentShape(Rectangle())
                     }
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 4)
+                    .buttonStyle(.plain)
+                    .disabled(store.pages[interactionLevel ?? store.activeLevel]?.activeLikeMutation != nil)
+                    .accessibilityLabel("点赞评论")
+                }
+
+                // 评论正文 (点击正文直接触发针对该作者的回复)
+                CommentRichText(html: comment.contentHTML)
                     .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .disabled(store.pages[interactionLevel ?? store.activeLevel]?.activeLikeMutation != nil)
-                .accessibilityLabel("点赞评论")
-            }
+                    .onTapGesture {
+                        beginReply()
+                    }
+                    .padding(.leading, 42)
 
-            // 评论正文 (点击正文直接触发针对该作者的回复)
-            CommentRichText(html: comment.contentHTML)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    beginReply()
-                }
-                .padding(.leading, 42)
-
-            // 评论图片
-            if !comment.media.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(comment.media) { media in
-                            Button { store.openMedia(commentID: comment.id, mediaID: media.id) } label: {
-                                Group {
-                                    if media.kind == .animatedImage ||
-                                        NativeRemoteMediaPolicy.isAnimatedImage(media.url) {
-                                        NativeAnimatedRemoteImage(url: media.url, contentMode: .fill)
-                                    } else {
-                                        AsyncImage(url: media.url) { phase in
-                                            if case let .success(image) = phase {
-                                                image.resizable().scaledToFill()
-                                            } else {
-                                                ZStack {
-                                                    Color.secondary.opacity(0.12)
-                                                    ProgressView()
+                // 评论图片
+                if !comment.media.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(comment.media) { media in
+                                Button { store.openMedia(commentID: comment.id, mediaID: media.id) } label: {
+                                    Group {
+                                        if media.kind == .animatedImage ||
+                                            NativeRemoteMediaPolicy.isAnimatedImage(media.url) {
+                                            NativeAnimatedRemoteImage(url: media.url, contentMode: .fill)
+                                        } else {
+                                            AsyncImage(url: media.url) { phase in
+                                                if case let .success(image) = phase {
+                                                    image.resizable().scaledToFill()
+                                                } else {
+                                                    ZStack {
+                                                        Color.secondary.opacity(0.12)
+                                                        ProgressView()
+                                                    }
                                                 }
                                             }
                                         }
                                     }
+                                    .frame(width: 110, height: 80)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                                 }
-                                .frame(width: 110, height: 80)
-                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                .buttonStyle(.plain)
+                                .accessibilityLabel("查看评论图片")
                             }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("查看评论图片")
                         }
                     }
-                }
-                .padding(.leading, 42)
-            }
-
-            // 内嵌子回复区域 (仅在主楼且有回复时展示)
-            if interactionLevel == .root, comment.childCommentCount > 0 {
-                inlineRepliesSection
                     .padding(.leading, 42)
+                }
+
+                // 内嵌子回复区域 (仅在主楼且有回复时展示)
+                if interactionLevel == .root, comment.childCommentCount > 0 {
+                    inlineRepliesSection
+                        .padding(.leading, 42)
+                }
             }
-        }
-        .padding(.vertical, 10)
-        .overlay(alignment: .bottom) {
+            .padding(.vertical, 10)
+
+            // 分割线紧贴内容底部，作为外层容器的末尾子视图，避免 overlay 在行高变化时出现偏移
             NativeThinDivider()
         }
         .contextMenu {
@@ -561,10 +563,9 @@ private struct CommentRow: View {
 
         if !isExpanded {
             // 未展开状态：极简轻量胶囊按钮（不占大框，清爽通透）
+            // 不使用 withAnimation：List 行高动画中间态会让后续评论与分割线持续偏移
             Button {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    store.toggleInlineReplies(rootCommentID: comment.id)
-                }
+                store.toggleInlineReplies(rootCommentID: comment.id)
             } label: {
                 HStack(spacing: 4) {
                     Text("展开 \(comment.childCommentCount) 条回复")
@@ -636,9 +637,7 @@ private struct CommentRow: View {
 
                 // 收起控制行
                 Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                        store.toggleInlineReplies(rootCommentID: comment.id)
-                    }
+                    store.toggleInlineReplies(rootCommentID: comment.id)
                 } label: {
                     HStack(spacing: 4) {
                         Text("收起回复")

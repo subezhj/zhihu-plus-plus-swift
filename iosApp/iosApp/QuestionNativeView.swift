@@ -188,12 +188,18 @@ struct QuestionNativeView: View {
                     .background(Color.clear)
                     .textCase(nil)
                 }
+
+                // 底部安全空隙：为悬浮操作栏预留内容展示空间
+                Color.clear
+                    .frame(height: 88)
+                    .listRowBackground(Color.nativeSystemGroupedBackground)
+                    .listRowSeparator(.hidden)
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
             .refreshable { await store.refresh() }
-            .safeAreaInset(edge: .bottom) {
+            .overlay(alignment: .bottom) {
                 QuestionActionBar(
                     question: question,
                     followInFlight: store.isFollowMutationInFlight,
@@ -359,13 +365,17 @@ private struct QuestionActionBar: View {
                 action: onShare
             )
         }
+        // 悬浮液态玻璃胶囊操作栏：不再全宽铺底，彻底去掉底部白条
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .liquidGlassCapsule(ignoreToggle: true)
+        .overlay(
+            Capsule()
+                .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+        )
+        .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 4)
         .padding(.horizontal, 16)
-        .padding(.top, 6)
-        .padding(.bottom, 6)
-        .background(.ultraThinMaterial)
-        .overlay(alignment: .top) {
-            NativeThinDivider()
-        }
+        .padding(.bottom, 10)
     }
 
     private func action(

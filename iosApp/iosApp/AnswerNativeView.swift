@@ -143,13 +143,13 @@ struct AnswerNativeView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.bottom, 20)
+                .padding(.bottom, 76)
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
         }
         .background(Color.nativeSystemBackground.ignoresSafeArea())
-        .safeAreaInset(edge: .bottom, spacing: 0) {
+        .overlay(alignment: .bottom) {
             AnswerActionBar(
                 content: content,
                 voteInFlight: store.isVoteMutationInFlight,
@@ -335,13 +335,17 @@ private struct AnswerActionBar: View {
                 action: onComments
             )
         }
+        // 悬浮液态玻璃胶囊操作栏：不再全宽铺底，彻底去掉底部白条
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .liquidGlassCapsule(ignoreToggle: true)
+        .overlay(
+            Capsule()
+                .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+        )
+        .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 4)
         .padding(.horizontal, 16)
-        .padding(.top, 6)
-        .padding(.bottom, 6)
-        .background(.ultraThinMaterial)
-        .overlay(alignment: .top) {
-            NativeThinDivider()
-        }
+        .padding(.bottom, 10)
     }
 
     private func action(
