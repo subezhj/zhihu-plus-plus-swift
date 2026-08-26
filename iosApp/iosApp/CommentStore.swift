@@ -106,33 +106,16 @@ final class CommentSessionStore: ObservableObject {
         loadNext(level: level ?? activeLevel)
     }
 
-    @Published private(set) var expandedReplyIDs: Set<String> = []
-
-    func isRepliesExpanded(for rootCommentID: String) -> Bool {
-        expandedReplyIDs.contains(rootCommentID)
-    }
-
-    func toggleInlineReplies(rootCommentID: String) {
-        guard !isDisposed else { return }
-        if expandedReplyIDs.contains(rootCommentID) {
-            expandedReplyIDs.remove(rootCommentID)
-        } else {
-            expandedReplyIDs.insert(rootCommentID)
-            let level = CommentLevelKey.replies(rootCommentID: rootCommentID)
-            if pages[level] == nil {
-                pages[level] = newPage(for: level, generation: 0)
-                loadInitial(level: level, invalidating: false)
-            }
-        }
-    }
-
-    func loadMoreInlineReplies(rootCommentID: String) {
-        let level = CommentLevelKey.replies(rootCommentID: rootCommentID)
-        loadNext(level: level)
-    }
-
+    /// 打开独立的回复页（类似知乎官方评论页：顶部主评论 + 底部回复列表）。
+    /// 通过 navigationPath 驱动 NavigationStack push，避免行内展开造成的行高抖动/偏移。
     func openReplies(rootCommentID: String) {
-        toggleInlineReplies(rootCommentID: rootCommentID)
+        guard !isDisposed else { return }
+        let level = CommentLevelKey.replies(rootCommentID: rootCommentID)
+        if pages[level] == nil {
+            pages[level] = newPage(for: level, generation: 0)
+        }
+        loadInitial(level: level, invalidating: false)
+        navigationPathChanged([level])
     }
 
     func dismissReplies() {
