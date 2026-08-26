@@ -291,7 +291,7 @@ private struct CommentLevelView: View {
                         .accessibilityIdentifier("comment_swipe_share_\(comment.id)")
                     }
                     .onAppear { store.loadNextIfNeeded(after: comment.id, level: level) }
-                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.nativeSystemBackground)
             }
@@ -507,13 +507,11 @@ private struct CommentRow: View {
                 inlineRepliesSection
                     .padding(.leading, 42)
             }
-
-            // 轻量底部细分割线
-            NativeThinDivider()
-                .padding(.top, 10)
         }
-        .padding(.top, 10)
-        .padding(.bottom, 2)
+        .padding(.vertical, 10)
+        .overlay(alignment: .bottom) {
+            NativeThinDivider()
+        }
         .contextMenu {
             Button(action: beginReply) {
                 Label("回复 @\(comment.author.displayName)", systemImage: "arrowshape.turn.up.left")
