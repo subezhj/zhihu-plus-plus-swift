@@ -171,14 +171,14 @@ final class CommentSessionStore: ObservableObject {
     }
 
     func beginReply(to commentID: String, level requestedLevel: CommentLevelKey? = nil) {
-        let level = requestedLevel ?? activeLevel
-        guard !isDisposed,
-              level == activeLevel,
-              (comment(withID: commentID, in: pages[level]?.items ?? []) != nil
-                || commentInSession(withID: commentID) != nil)
+        guard !isDisposed else { return }
+        let targetLevel = requestedLevel ?? activeLevel
+        // 如果当前是根列表，或者当前 level 不匹配，则激活 activeLevel（通常为 .root）的回复草稿
+        guard comment(withID: commentID, in: pages[targetLevel]?.items ?? []) != nil
+                || commentInSession(withID: commentID) != nil
         else { return }
         draft.replyTargetCommentID = commentID
-        composerPresentation = .active(level: level)
+        composerPresentation = .active(level: activeLevel)
     }
 
     func beginComment(level requestedLevel: CommentLevelKey? = nil) {

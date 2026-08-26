@@ -498,9 +498,10 @@ private struct CommentRow: View {
 
             // 轻量底部细分割线
             NativeThinDivider()
-                .padding(.top, 6)
+                .padding(.top, 10)
         }
-        .padding(.vertical, 10)
+        .padding(.top, 10)
+        .padding(.bottom, 2)
         .contextMenu {
             Button(action: beginReply) {
                 Label("回复 @\(comment.author.displayName)", systemImage: "arrowshape.turn.up.left")
@@ -622,7 +623,7 @@ private struct SubReplyRow: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .frame(width: 22, height: 22)
+                .frame(width: 20, height: 20)
                 .clipShape(Circle())
             }
             .buttonStyle(.plain)
@@ -631,7 +632,7 @@ private struct SubReplyRow: View {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Button(reply.author.displayName) { store.openAuthor(commentID: reply.id) }
                         .buttonStyle(.plain)
-                        .font(NativeTypography.authorName(scale: presentation.fontScale))
+                        .font(NativeTypography.footnote(scale: presentation.fontScale).weight(.medium))
                         .foregroundStyle(.primary)
 
                     if let toAuthor = reply.replyToAuthor {
@@ -639,9 +640,17 @@ private struct SubReplyRow: View {
                             .font(.system(size: 6))
                             .foregroundStyle(.tertiary)
                         Text(toAuthor.displayName)
-                            .font(NativeTypography.footnote(scale: presentation.fontScale))
+                            .font(NativeTypography.caption(scale: presentation.fontScale))
                             .foregroundStyle(.secondary)
                     }
+
+                    Text("·")
+                        .font(NativeTypography.caption(scale: presentation.fontScale))
+                        .foregroundStyle(.tertiary)
+
+                    Text(CommentDateFormatter.string(seconds: reply.createdTimeSeconds))
+                        .font(NativeTypography.caption(scale: presentation.fontScale))
+                        .foregroundStyle(.secondary)
 
                     Spacer()
 
@@ -664,16 +673,22 @@ private struct SubReplyRow: View {
                     .buttonStyle(.plain)
                 }
 
-                // 点击子回复文本，直接唤起回复该子回复作者
-                CommentRichText(html: reply.contentHTML)
-                    .font(NativeTypography.footnote(scale: presentation.fontScale))
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        store.beginReply(to: reply.id, level: .replies(rootCommentID: rootCommentID))
-                    }
+                // 点击子回复文本，按比例缩小为 footnote(12.5pt)，直接唤起回复该子回复作者
+                CommentRichText(
+                    html: reply.contentHTML,
+                    font: NativeTypography.footnote(scale: presentation.fontScale)
+                )
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    store.beginReply(to: reply.id, level: .replies(rootCommentID: rootCommentID))
+                }
             }
         }
         .padding(.vertical, 4)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            store.beginReply(to: reply.id, level: .replies(rootCommentID: rootCommentID))
+        }
     }
 }
 
@@ -923,12 +938,13 @@ private struct CommentComposerBackground: View {
 
 private struct CommentRichText: View {
     let html: String
+    var font: Font? = nil
     @Environment(\.nativeContentPresentation) private var contentPresentation
-    @ScaledMetric(relativeTo: .body) private var bodyPointSize: CGFloat = 15
+    @ScaledMetric(relativeTo: .body) private var bodyPointSize: CGFloat = 14
 
     var body: some View {
         let pointSize = bodyPointSize * contentPresentation.fontScale
-        let bodyFont = NativeTypography.commentBody(scale: contentPresentation.fontScale)
+        let bodyFont = font ?? NativeTypography.commentBody(scale: contentPresentation.fontScale)
         Text(CommentAttributedText.value(from: html, bodyFont: bodyFont))
             .font(bodyFont)
             .lineSpacing(contentPresentation.extraLineSpacing(for: pointSize))
