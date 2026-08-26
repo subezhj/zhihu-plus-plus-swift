@@ -417,9 +417,21 @@ private struct CommentRow: View {
                             }
                         }
                     }
-                    Text(CommentDateFormatter.string(seconds: comment.createdTimeSeconds))
-                        .font(NativeTypography.caption(scale: presentation.fontScale))
-                        .foregroundStyle(.secondary)
+
+                    HStack(spacing: 4) {
+                        Text(CommentDateFormatter.string(seconds: comment.createdTimeSeconds))
+                            .font(NativeTypography.caption(scale: presentation.fontScale))
+                            .foregroundStyle(.secondary)
+
+                        if let ipLocation = comment.ipLocation, !ipLocation.isEmpty {
+                            Text("·")
+                                .font(NativeTypography.caption(scale: presentation.fontScale))
+                                .foregroundStyle(.tertiary)
+                            Text(ipLocation.hasPrefix("IP 属地") ? ipLocation : "IP 属地\(ipLocation)")
+                                .font(NativeTypography.caption(scale: presentation.fontScale))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
 
                 Spacer(minLength: 8)
@@ -647,9 +659,20 @@ private struct SubReplyRow: View {
                             }
                         }
 
-                        Text(CommentDateFormatter.string(seconds: reply.createdTimeSeconds))
-                            .font(NativeTypography.caption2(scale: presentation.fontScale))
-                            .foregroundStyle(.secondary)
+                        HStack(spacing: 3) {
+                            Text(CommentDateFormatter.string(seconds: reply.createdTimeSeconds))
+                                .font(NativeTypography.caption2(scale: presentation.fontScale))
+                                .foregroundStyle(.secondary)
+
+                            if let ipLocation = reply.ipLocation, !ipLocation.isEmpty {
+                                Text("·")
+                                    .font(NativeTypography.caption2(scale: presentation.fontScale))
+                                    .foregroundStyle(.tertiary)
+                                Text(ipLocation.hasPrefix("IP 属地") ? ipLocation : "IP 属地\(ipLocation)")
+                                    .font(NativeTypography.caption2(scale: presentation.fontScale))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
 
                     Spacer()
@@ -949,11 +972,11 @@ private struct CommentRichText: View {
         Text(CommentAttributedText.value(from: html, bodyFont: bodyFont))
             .font(bodyFont)
             .lineSpacing(contentPresentation.extraLineSpacing(for: pointSize))
+            .tint(Color.accentColor)
             .environment(\.openURL, OpenURLAction { url in
                 guard let scheme = url.scheme?.lowercased(), scheme == "https" || scheme == "http" else {
                     return .discarded
                 }
-                guard !CommentAttributedText.isKnownInternalZhihuURL(url) else { return .discarded }
                 return .systemAction(url)
             })
     }
@@ -1010,8 +1033,7 @@ private enum CommentAttributedText {
             if run.style.contains(.strikethrough) { part.strikethroughStyle = .single }
             if run.style.contains(.code) { part.font = bodyFont.monospaced() }
             if let destination = run.link,
-               let url = QABodyLinkResolver.url(destination),
-               !isKnownInternalZhihuURL(url) {
+               let url = QABodyLinkResolver.url(destination) {
                 part.link = url
             }
             result.append(part)

@@ -111,6 +111,7 @@ struct CommentDTO: Hashable, Identifiable {
     let childCommentCount: Int
     let embeddedReplies: [CommentDTO]
     let media: [CommentMediaDTO]
+    let ipLocation: String?
 
     func replacingLikeState(isLiked: Bool, likeCount: Int) -> Self {
         Self(
@@ -123,7 +124,8 @@ struct CommentDTO: Hashable, Identifiable {
             likeCount: max(0, likeCount),
             childCommentCount: childCommentCount,
             embeddedReplies: embeddedReplies,
-            media: media
+            media: media,
+            ipLocation: ipLocation
         )
     }
 
@@ -140,7 +142,8 @@ struct CommentDTO: Hashable, Identifiable {
             likeCount: likeCount,
             childCommentCount: max(replies.count, childCommentCount + (incrementingCount ? 1 : 0)),
             embeddedReplies: replies,
-            media: media
+            media: media,
+            ipLocation: ipLocation
         )
     }
 }
