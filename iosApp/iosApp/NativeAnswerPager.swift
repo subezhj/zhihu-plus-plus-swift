@@ -400,11 +400,7 @@ private struct QAAnswerPageController: UIViewControllerRepresentable {
             if let cached = controllers[store.id] { return cached }
             let root = hostedRoot(for: store)
             let created = QAHostedAnswerController(answerID: store.id, rootView: root)
-            created.view.backgroundColor = UIColor { traits in
-                traits.userInterfaceStyle == .dark
-                    ? UIColor(red: 25.0 / 255.0, green: 25.0 / 255.0, blue: 25.0 / 255.0, alpha: 1.0)
-                    : .systemBackground
-            }
+            created.view.backgroundColor = .clear
             controllers[store.id] = created
             return created
         }

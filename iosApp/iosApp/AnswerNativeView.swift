@@ -143,13 +143,13 @@ struct AnswerNativeView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.bottom, 68)
+                .padding(.bottom, 20)
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
         }
         .background(Color.nativeSystemBackground.ignoresSafeArea())
-        .overlay(alignment: .bottom) {
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             AnswerActionBar(
                 content: content,
                 voteInFlight: store.isVoteMutationInFlight,
@@ -304,32 +304,43 @@ private struct AnswerActionBar: View {
     let onComments: () -> Void
 
     var body: some View {
-        actions
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
-            .liquidGlassCapsule(ignoreToggle: true)
-            .overlay(
-                Capsule()
-                    .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+        HStack(spacing: 0) {
+            action(
+                content.voteState == .up ? "hand.thumbsup.fill" : "hand.thumbsup",
+                count: content.voteUpCount,
+                selected: content.voteState == .up,
+                action: onVoteUp
             )
-            .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 3)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 6)
-    }
+            .disabled(voteInFlight)
 
-    private var actions: some View {
-        HStack(spacing: 4) {
-            action("hand.thumbsup", count: content.voteUpCount, selected: content.voteState == .up, action: onVoteUp)
-                .disabled(voteInFlight)
-            action("hand.thumbsdown", label: "反对", selected: content.voteState == .down, action: onVoteDown)
-                .disabled(voteInFlight || content.route.kind == .article)
+            action(
+                content.voteState == .down ? "hand.thumbsdown.fill" : "hand.thumbsdown",
+                label: "反对",
+                selected: content.voteState == .down,
+                action: onVoteDown
+            )
+            .disabled(voteInFlight || content.route.kind == .article)
+
             action(
                 content.favoriteState == .favorited ? "star.fill" : "star",
                 count: content.favoriteCount,
                 selected: content.favoriteState == .favorited,
                 action: onFavorite
             )
-            action("bubble.left", count: content.commentCount, selected: false, action: onComments)
+
+            action(
+                "bubble.left",
+                count: content.commentCount,
+                selected: false,
+                action: onComments
+            )
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 6)
+        .padding(.bottom, 6)
+        .background(.ultraThinMaterial)
+        .overlay(alignment: .top) {
+            NativeThinDivider()
         }
     }
 
@@ -342,12 +353,13 @@ private struct AnswerActionBar: View {
     ) -> some View {
         Button(action: action) {
             VStack(spacing: 2) {
-                Image(systemName: systemName).font(.system(size: 20, weight: selected ? .semibold : .regular))
+                Image(systemName: systemName)
+                    .font(.system(size: 19, weight: selected ? .semibold : .regular))
                 Text(label ?? count.map(String.init) ?? "")
-                    .font(.caption2.monospacedDigit())
+                    .font(.system(size: 10.5, weight: .regular).monospacedDigit())
                     .lineLimit(1)
             }
-            .frame(maxWidth: .infinity, minHeight: 44)
+            .frame(maxWidth: .infinity, minHeight: 40)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

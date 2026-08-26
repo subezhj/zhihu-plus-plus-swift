@@ -321,21 +321,7 @@ private struct QuestionActionBar: View {
     let onShare: () -> Void
 
     var body: some View {
-        actions
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
-            .liquidGlassCapsule(ignoreToggle: true)
-            .overlay(
-                Capsule()
-                    .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
-            )
-            .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 3)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
-    }
-
-    private var actions: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 12) {
             action(
                 question.isFollowing ? "checkmark" : "plus",
                 label: question.isFollowing ? "已关注" : "关注",
@@ -345,27 +331,19 @@ private struct QuestionActionBar: View {
             .disabled(followInFlight)
 
             Button(action: onWrite) {
-                HStack(spacing: 4) {
+                HStack(spacing: 5) {
                     Image(systemName: "square.and.pencil")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                     Text("写回答")
                         .font(.subheadline.weight(.semibold))
                 }
                 .foregroundStyle(Color.white)
-                .padding(.horizontal, 14)
-                .frame(minHeight: 38)
-                .liquidGlassCapsule(isProminent: true, ignoreToggle: true)
-                .overlay(
-                    Capsule()
-                        .stroke(Color.white.opacity(0.3), lineWidth: 0.5)
-                )
-                .shadow(color: Color.black.opacity(0.18), radius: 5, x: 0, y: 2)
-                .contentShape(Capsule())
+                .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity, minHeight: 38)
+                .background(Color.accentColor, in: Capsule())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("写回答")
-
-            Spacer(minLength: 2)
 
             action(
                 "bubble.left",
@@ -381,6 +359,13 @@ private struct QuestionActionBar: View {
                 action: onShare
             )
         }
+        .padding(.horizontal, 16)
+        .padding(.top, 6)
+        .padding(.bottom, 6)
+        .background(.ultraThinMaterial)
+        .overlay(alignment: .top) {
+            NativeThinDivider()
+        }
     }
 
     private func action(
@@ -395,10 +380,10 @@ private struct QuestionActionBar: View {
                 Image(systemName: systemName)
                     .font(.system(size: 19, weight: selected ? .semibold : .regular))
                 Text(label ?? count.map(String.init) ?? "")
-                    .font(.caption2.monospacedDigit())
+                    .font(.system(size: 10.5, weight: .regular).monospacedDigit())
                     .lineLimit(1)
             }
-            .frame(minWidth: 44, minHeight: 44)
+            .frame(minWidth: 44, minHeight: 40)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
