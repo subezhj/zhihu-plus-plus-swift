@@ -537,77 +537,82 @@ private struct CommentRow: View {
         let replyLevel = CommentLevelKey.replies(rootCommentID: comment.id)
         let replyPage = store.pages[replyLevel]
 
-        VStack(alignment: .leading, spacing: 10) {
-            if isExpanded, let page = replyPage {
-                if page.initialLoad == .loading && page.items.isEmpty {
-                    HStack {
-                        Spacer()
-                        ProgressView().controlSize(.small)
-                        Text("加载回复…")
-                            .font(NativeTypography.caption(scale: presentation.fontScale))
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                    }
-                    .padding(.vertical, 8)
-                } else if case let .failed(msg) = page.initialLoad, page.items.isEmpty {
-                    HStack {
-                        Text("未能加载回复：\(msg)")
-                            .font(NativeTypography.caption(scale: presentation.fontScale))
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Button("重试") { store.retryInitial(level: replyLevel) }
-                            .font(NativeTypography.caption(scale: presentation.fontScale))
-                    }
-                    .padding(.vertical, 4)
-                } else {
-                    ForEach(page.items) { reply in
-                        SubReplyRow(store: store, reply: reply, rootCommentID: comment.id)
-                    }
-
-                    if page.nextPage == .loading {
+        if !isExpanded {
+            // 未展开状态：极简轻量胶囊按钮（不占大框，清爽通透）
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    store.toggleInlineReplies(rootCommentID: comment.id)
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Text("展开 \(comment.childCommentCount) 条回复")
+                        .font(.system(size: 11.5 * presentation.fontScale, weight: .medium))
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 7.5, weight: .bold))
+                }
+                .foregroundStyle(Color.accentColor)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(Color.accentColor.opacity(0.08), in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 2)
+        } else {
+            // 已展开状态：在轻灰底色卡片内展示子回复列表
+            VStack(alignment: .leading, spacing: 10) {
+                if let page = replyPage {
+                    if page.initialLoad == .loading && page.items.isEmpty {
                         HStack {
                             Spacer()
                             ProgressView().controlSize(.small)
+                            Text("加载回复…")
+                                .font(NativeTypography.caption(scale: presentation.fontScale))
+                                .foregroundStyle(.secondary)
                             Spacer()
                         }
-                        .padding(.vertical, 6)
-                    } else if !page.isEnd, !page.items.isEmpty {
-                        let remaining = max(0, comment.childCommentCount - page.items.count)
-                        Button {
-                            store.loadMoreInlineReplies(rootCommentID: comment.id)
-                        } label: {
-                            HStack(spacing: 5) {
-                                Text(remaining > 0 ? "展开更多回复（余 \(remaining) 条）" : "加载更多回复")
-                                    .font(NativeTypography.footnote(scale: presentation.fontScale).weight(.medium))
-                                Image(systemName: "chevron.down")
-                                    .font(.system(size: 8.5, weight: .bold))
-                            }
-                            .foregroundStyle(Color.accentColor)
-                            .padding(.vertical, 4)
+                        .padding(.vertical, 8)
+                    } else if case let .failed(msg) = page.initialLoad, page.items.isEmpty {
+                        HStack {
+                            Text("未能加载回复：\(msg)")
+                                .font(NativeTypography.caption(scale: presentation.fontScale))
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Button("重试") { store.retryInitial(level: replyLevel) }
+                                .font(NativeTypography.caption(scale: presentation.fontScale))
                         }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
+                        .padding(.vertical, 4)
+                    } else {
+                        ForEach(page.items) { reply in
+                            SubReplyRow(store: store, reply: reply, rootCommentID: comment.id)
+                        }
 
-            // 展开 / 收起 控制行
-            if !isExpanded {
-                Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                        store.toggleInlineReplies(rootCommentID: comment.id)
+                        if page.nextPage == .loading {
+                            HStack {
+                                Spacer()
+                                ProgressView().controlSize(.small)
+                                Spacer()
+                            }
+                            .padding(.vertical, 6)
+                        } else if !page.isEnd, !page.items.isEmpty {
+                            let remaining = max(0, comment.childCommentCount - page.items.count)
+                            Button {
+                                store.loadMoreInlineReplies(rootCommentID: comment.id)
+                            } label: {
+                                HStack(spacing: 5) {
+                                    Text(remaining > 0 ? "展开更多回复（余 \(remaining) 条）" : "加载更多回复")
+                                        .font(.system(size: 11.5 * presentation.fontScale, weight: .medium))
+                                    Image(systemName: "chevron.down")
+                                        .font(.system(size: 8, weight: .bold))
+                                }
+                                .foregroundStyle(Color.accentColor)
+                                .padding(.vertical, 4)
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
-                } label: {
-                    HStack(spacing: 5) {
-                        Text("展开 \(comment.childCommentCount) 条回复")
-                            .font(NativeTypography.footnote(scale: presentation.fontScale).weight(.medium))
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 8.5, weight: .bold))
-                    }
-                    .foregroundStyle(Color.accentColor)
-                    .padding(.vertical, 2)
                 }
-                .buttonStyle(.plain)
-            } else {
+
+                // 收起控制行
                 Button {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                         store.toggleInlineReplies(rootCommentID: comment.id)
@@ -624,10 +629,10 @@ private struct CommentRow: View {
                 }
                 .buttonStyle(.plain)
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     private func beginReply() {
