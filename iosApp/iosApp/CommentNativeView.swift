@@ -672,9 +672,12 @@ private struct SubReplyRow: View {
                                 Image(systemName: "arrowtriangle.right.fill")
                                     .font(.system(size: 5.5))
                                     .foregroundStyle(.tertiary)
-                                Text(toAuthor.displayName)
-                                    .font(NativeTypography.caption2(scale: presentation.fontScale))
-                                    .foregroundStyle(.secondary)
+                                Button(toAuthor.displayName) {
+                                    store.openAuthor(commentID: reply.id, replyToAuthor: true)
+                                }
+                                .buttonStyle(.plain)
+                                .font(NativeTypography.caption2(scale: presentation.fontScale))
+                                .foregroundStyle(.secondary)
                             }
                         }
 

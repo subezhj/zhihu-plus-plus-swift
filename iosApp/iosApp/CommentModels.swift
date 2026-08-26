@@ -276,12 +276,37 @@ enum CommentEmojiCatalog {
         .init(placeholder: "[发呆]", symbol: "😶"),
         .init(placeholder: "[魔性笑]", symbol: "😆"),
         .init(placeholder: "[开心]", symbol: "🥳"),
+        .init(placeholder: "[doge]", symbol: "🐶"),
+        .init(placeholder: "[Doge]", symbol: "🐶"),
+        .init(placeholder: "[狗头]", symbol: "🐶"),
+        .init(placeholder: "[为难]", symbol: "😣"),
+        .init(placeholder: "[摊手]", symbol: "🤷"),
+        .init(placeholder: "[机智]", symbol: "😏"),
+        .init(placeholder: "[滑稽]", symbol: "😏"),
+        .init(placeholder: "[阴险]", symbol: "😈"),
+        .init(placeholder: "[汗]", symbol: "😓"),
+        .init(placeholder: "[冷汗]", symbol: "😰"),
+        .init(placeholder: "[吐血]", symbol: "🤮"),
+        .init(placeholder: "[鼓掌]", symbol: "👏"),
+        .init(placeholder: "[衰]", symbol: "🥺"),
+        .init(placeholder: "[疑问]", symbol: "❓"),
+        .init(placeholder: "[抱抱]", symbol: "🫂"),
+        .init(placeholder: "[加油]", symbol: "💪"),
+        .init(placeholder: "[锦鲤]", symbol: "🐟"),
+        .init(placeholder: "[心碎]", symbol: "💔"),
+        .init(placeholder: "[晕]", symbol: "😵"),
+        .init(placeholder: "[闭嘴]", symbol: "🤐"),
+        .init(placeholder: "[傲娇]", symbol: "😤"),
+        .init(placeholder: "[难过]", symbol: "😞"),
+        .init(placeholder: "[委屈]", symbol: "🥺"),
     ]
 
     static func renderedText(_ source: String) -> String {
-        entries.reduce(source) { text, entry in
-            text.replacingOccurrences(of: entry.placeholder, with: entry.symbol)
+        var text = source
+        for entry in entries {
+            text = text.replacingOccurrences(of: entry.placeholder, with: entry.symbol)
         }
+        return text
     }
 }
 
