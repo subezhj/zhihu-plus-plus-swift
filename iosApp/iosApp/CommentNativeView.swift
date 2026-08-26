@@ -476,6 +476,14 @@ private struct CommentRow: View {
                                         }
                                     }
                                 }
+                                .frame(width: 110, height: 80)
+                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("查看评论图片")
+                        }
+                    }
+                }
                 .padding(.leading, 42)
             }
 
