@@ -353,7 +353,8 @@ struct SearchNativeView: View {
                 ForEach(SearchSort.allCases) { value in
                     Text(value.title).tag(value)
                 }
-            }            Picker("内容类型", selection: contentTypeBinding) {
+            }
+            Picker("内容类型", selection: contentTypeBinding) {
                 ForEach(SearchContentType.allCases) { value in
                     Text(value.title).tag(value)
                 }
