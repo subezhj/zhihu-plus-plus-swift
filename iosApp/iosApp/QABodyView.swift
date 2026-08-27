@@ -486,7 +486,7 @@ private struct QARichTextView: UIViewRepresentable {
             foregroundColor: foregroundColor
         )
         textView.font = UIFont.systemFont(ofSize: pointSize, weight: isBold ? .semibold : .regular)
-        textView.invalidateIntrinsicContentSize()
+        textView.markNeedsRemeasure()
         context.coordinator.openURL = openURL
     }
 
@@ -555,8 +555,10 @@ private struct QARichTextView: UIViewRepresentable {
 }
 
 /// 高度随内容自适应的只读 UITextView（长按系统文本选择）
+/// 高度缓存在 measuredHeight，仅宽度变化时测量，避免 intrinsicContentSize 内强制布局导致选中/pop 闪退
 private final class QASelectionTextView: UITextView {
-    private var lastMeasuredWidth: CGFloat = 0
+    private var lastLayoutWidth: CGFloat = 0
+    private var measuredHeight: CGFloat = 18
 
     override init(frame: CGRect, textContainer: NSTextContainer?) {
         super.init(frame: frame, textContainer: textContainer)
@@ -570,17 +572,25 @@ private final class QASelectionTextView: UITextView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        if bounds.width.isFinite, abs(bounds.width - lastMeasuredWidth) > 0.5 {
-            lastMeasuredWidth = bounds.width
+        let width = bounds.width
+        guard width > 1, abs(width - lastLayoutWidth) > 0.5 else { return }
+        lastLayoutWidth = width
+        let height = ceil(sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height)
+        if abs(height - measuredHeight) > 0.5 {
+            measuredHeight = max(height, 18)
             invalidateIntrinsicContentSize()
         }
     }
 
     override var intrinsicContentSize: CGSize {
-        layoutIfNeeded()
-        let width = bounds.width > 1 ? bounds.width : 320
-        let height = ceil(sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height)
-        return CGSize(width: UIView.noIntrinsicMetric, height: max(height, 18))
+        CGSize(width: UIView.noIntrinsicMetric, height: measuredHeight)
+    }
+
+    /// 内容更新后调用：重置宽度标记，使下次 layoutSubviews 重新测量
+    func markNeedsRemeasure() {
+        lastLayoutWidth = 0
+        measuredHeight = 18
+        setNeedsLayout()
     }
 }
 

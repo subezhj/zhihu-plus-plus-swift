@@ -938,9 +938,11 @@ private struct CommentRichText: UIViewRepresentable {
 }
 
 /// 禁用滚动的 UITextView：高度随内容自适应，长按保持系统标准文本选择（复制/翻译/查找）。
-/// 高度基于实际布局宽度通过 sizeThatFits 计算，宽度变化时失效并重新测量。
+/// 高度缓存在 measuredHeight，仅在宽度变化时于 layoutSubviews 中重新测量——
+/// 避免在 intrinsicContentSize 内调用 layoutIfNeeded（布局期间强制布局会递归/死锁导致选中拖动或 pop 时闪退）。
 private final class SelectionTextView: UITextView {
-    private var lastMeasuredWidth: CGFloat = 0
+    private var lastLayoutWidth: CGFloat = 0
+    private var measuredHeight: CGFloat = 18
 
     override init(frame: CGRect, textContainer: NSTextContainer?) {
         super.init(frame: frame, textContainer: textContainer)
@@ -954,18 +956,29 @@ private final class SelectionTextView: UITextView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        if bounds.width.isFinite, abs(bounds.width - lastMeasuredWidth) > 0.5 {
-            lastMeasuredWidth = bounds.width
+        remeasureIfWidthChanged()
+    }
+
+    override var intrinsicContentSize: CGSize {
+        CGSize(width: UIView.noIntrinsicMetric, height: measuredHeight)
+    }
+
+    private func remeasureIfWidthChanged() {
+        let width = bounds.width
+        guard width > 1, abs(width - lastLayoutWidth) > 0.5 else { return }
+        lastLayoutWidth = width
+        let height = ceil(sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height)
+        if abs(height - measuredHeight) > 0.5 {
+            measuredHeight = max(height, 18)
             invalidateIntrinsicContentSize()
         }
     }
 
-    override var intrinsicContentSize: CGSize {
-        layoutIfNeeded()
-        let width = bounds.width > 1 ? bounds.width : 320
-        let target = CGSize(width: width, height: .greatestFiniteMagnitude)
-        let height = ceil(sizeThatFits(target).height)
-        return CGSize(width: UIView.noIntrinsicMetric, height: max(height, 18))
+    /// 内容更新后调用：重置宽度标记，使下次 layoutSubviews 重新测量
+    func markNeedsRemeasure() {
+        lastLayoutWidth = 0
+        measuredHeight = 18
+        setNeedsLayout()
     }
 }
 
