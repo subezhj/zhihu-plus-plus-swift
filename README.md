@@ -32,6 +32,7 @@
 > **版本与系统支持说明**：
 > - **Build 77 / Tag `v1.0.0-ui-perfect` 之后**：本项目全面转向 **iOS / iPadOS 26 及更高版本** 标准开发，彻底移除历史向下兼容补丁与老旧垫片，直接采用现代 Apple 原生语义与 API（如 `NavigationStack`、`ContentUnavailableView`、`ShareLink`、原生滚动几何监听等），全面释放性能。
 > - **如需快速恢复对 iOS 26 以下旧版本的支持**：可以回退或参考里程碑 Tag [`v1.0.0-ui-perfect`](https://github.com/subezhj/zhihu-plus-plus-swift/tree/v1.0.0-ui-perfect)（Commit `d7d6206`），该版本保留了完整适配 iOS 16–18 的降级垫片与兼容实现。
+> - **当前评论主页优化方案（Tag [`v1.3.0-person-cover-sheet`](https://github.com/subezhj/zhihu-plus-plus-swift/tree/v1.3.0-person-cover-sheet)）**：用户主页弹窗内点内容先收起弹窗、再全屏打开详情（方案 B，可复用 `personCoverSheet` 修饰器）；长按文本选中/拖动闪退修复；话题页热门内容加载修复；搜索创作页改版；回答/文章页顶栏恢复标准高斯模糊；评论写评论改为液态玻璃悬浮胶囊。
 
 ### 运行
 
