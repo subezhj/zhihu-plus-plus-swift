@@ -484,7 +484,21 @@ struct PinNativeView: View {
         case let .text(_, text, links):
             VStack(alignment: .leading, spacing: 8) {
                 if !text.isEmpty { Text(text).fixedSize(horizontal: false, vertical: true) }
-                ForEach(links, id: \.self) { url in Link(url.host ?? url.absoluteString, destination: url) }
+                ForEach(links, id: \.self) { url in
+                    // 想法正文链接：知乎内容（想法/回答/文章/问题）解析为原生页面打开，
+                    // 避免落入内部浏览器（SFSafari）时显示网页版点赞/评论而不是当前内容
+                    Button {
+                        onOpenLink(pinLinkDestination(for: url))
+                    } label: {
+                        Text(pinLinkDisplayTitle(for: url))
+                            .font(.subheadline)
+                            .foregroundStyle(Color.accentColor)
+                            .underline()
+                            .multilineTextAlignment(.leading)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("打开链接")
+                }
             }
         case let .image(_, url, _):
             Button { openGallery(at: url) } label: {
@@ -548,6 +562,39 @@ struct PinNativeView: View {
             value += " · 编辑于 \(formatter.string(from: Date(timeIntervalSince1970: TimeInterval(detail.updatedTime))))"
         }
         return value
+    }
+
+    private func pinLinkDestination(for url: URL) -> PinLinkDestination {
+        guard let destination = NativeContentDestinationResolver.resolve(url.absoluteString) else {
+            return .external(url)
+        }
+        switch destination {
+        case let .article(id, kind):
+            if kind == .answer {
+                return .feed(.answer(answerID: id, questionID: nil, questionTitle: "关联回答"))
+            }
+            return .feed(.article(articleID: id, title: "关联文章"))
+        case let .question(id):
+            return .feed(.question(questionID: id, title: "关联问题"))
+        case let .pin(id):
+            return .feed(.pin(pinID: id))
+        case .person, .special, .column, .search, .external:
+            return .external(url)
+        }
+    }
+
+    private func pinLinkDisplayTitle(for url: URL) -> String {
+        guard let destination = NativeContentDestinationResolver.resolve(url.absoluteString) else {
+            return url.host ?? url.absoluteString
+        }
+        switch destination {
+        case let .article(_, kind): return kind == .answer ? "关联回答" : "关联文章"
+        case .question: return "关联问题"
+        case .pin: return "关联想法"
+        case let .person(_, _, name): return name.isEmpty ? "用户主页" : name
+        case let .external(externalURL): return externalURL.host ?? externalURL.absoluteString
+        case .special, .column, .search: return url.host ?? url.absoluteString
+        }
     }
 
     private func openGallery(at selectedURL: URL) {
