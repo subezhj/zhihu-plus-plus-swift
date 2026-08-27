@@ -131,7 +131,7 @@ struct NativeContentPosterDocument: Identifiable {
 
     private static func pinBlocks(_ block: PinContentBlockDTO) -> [NativeContentPosterBlock] {
         switch block {
-        case let .text(_, text, _):
+        case let .text(_, _, text, _):
             return text.isEmpty ? [] : [.text(text, style: .body)]
         case let .image(_, url, originalURL):
             return [.image(originalURL ?? url, caption: nil)]
