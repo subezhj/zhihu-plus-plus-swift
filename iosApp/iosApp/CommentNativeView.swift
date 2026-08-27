@@ -142,7 +142,7 @@ private struct CommentThreadContainer: View {
                                 } label: {
                                     Image(systemName: "xmark.circle.fill")
                                         .font(.system(size: 17))
-                                        .foregroundStyle(.tertiary)
+                                        .foregroundStyle(Color.accentColor)
                                 }
                                 .accessibilityLabel("关闭")
                             }
@@ -933,10 +933,34 @@ private struct CommentRichText: UIViewRepresentable {
 }
 
 /// 禁用滚动的 UITextView：高度随内容自适应，长按保持系统标准文本选择（复制/翻译/查找）。
+/// 高度基于实际布局宽度通过 sizeThatFits 计算，宽度变化时失效并重新测量。
 private final class SelectionTextView: UITextView {
+    private var lastMeasuredWidth: CGFloat = 0
+
+    override init(frame: CGRect, textContainer: NSTextContainer?) {
+        super.init(frame: frame, textContainer: textContainer)
+        textContainer?.widthTracksTextView = true
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        if bounds.width.isFinite, abs(bounds.width - lastMeasuredWidth) > 0.5 {
+            lastMeasuredWidth = bounds.width
+            invalidateIntrinsicContentSize()
+        }
+    }
+
     override var intrinsicContentSize: CGSize {
         layoutIfNeeded()
-        return CGSize(width: UIView.noIntrinsicMetric, height: contentSize.height)
+        let width = bounds.width > 1 ? bounds.width : 320
+        let target = CGSize(width: width, height: .greatestFiniteMagnitude)
+        let height = ceil(sizeThatFits(target).height)
+        return CGSize(width: UIView.noIntrinsicMetric, height: max(height, 18))
     }
 }
 
