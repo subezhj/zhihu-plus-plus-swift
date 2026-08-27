@@ -551,9 +551,12 @@ private struct CommentRow: View {
                             ForEach(comment.media) { media in
                                 Button { store.openMedia(commentID: comment.id, mediaID: media.id) } label: {
                                     Group {
-                                        if media.kind == .animatedImage ||
+                                        if media.kind == .sticker ||
+                                            media.kind == .animatedImage ||
                                             NativeRemoteMediaPolicy.isAnimatedImage(media.url) {
-                                            NativeAnimatedRemoteImage(url: media.url, contentMode: .fill)
+                                            // 动态表情/动图：等比完整显示（不被 110x80 裁剪），限最大尺寸
+                                            NativeAnimatedRemoteImage(url: media.url, contentMode: .fit)
+                                                .frame(maxWidth: 120, maxHeight: 120)
                                         } else {
                                             AsyncImage(url: media.url) { phase in
                                                 if case let .success(image) = phase {
@@ -565,13 +568,13 @@ private struct CommentRow: View {
                                                     }
                                                 }
                                             }
+                                            .frame(width: 110, height: 80)
                                         }
                                     }
-                                    .frame(width: 110, height: 80)
                                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                                 }
                                 .buttonStyle(.plain)
-                                .accessibilityLabel("查看评论图片")
+                                .accessibilityLabel(media.kind == .sticker ? "查看评论动态表情" : "查看评论图片")
                             }
                         }
                     }
