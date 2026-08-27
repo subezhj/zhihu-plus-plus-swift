@@ -42,8 +42,7 @@ private struct QAAnswerPagerSurface: View {
                 pinAnswerDate: preferences.pinAnswerDate,
                 hapticFeedback: hapticFeedback,
                 onNavigate: onNavigate
-            )
-            if let error = pager.switchError {
+            )            if let error = pager.switchError {
                 Button {
                     Task { await pager.retrySwitch() }
                 } label: {
@@ -66,6 +65,9 @@ private struct QAAnswerPagerSurface: View {
                     .padding(.top, 8)
             }
         }
+        // 统一深浅色底色（nativeSystemBackground：浅 #EDEDED / 深 #181818）：
+        // UIKit 分页容器透明后透出此底色，顶栏导航栏模糊与其同色、底部 home indicator 不再露白条
+        .background(Color.nativeSystemBackground.ignoresSafeArea())
         .navigationTitle(answer.initialRoute.kind == .answer ? "回答" : "文章")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

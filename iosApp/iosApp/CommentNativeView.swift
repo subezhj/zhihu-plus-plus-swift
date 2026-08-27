@@ -687,10 +687,10 @@ private struct CommentComposerBar: View {
                 Spacer()
             }
             .padding(.horizontal, 16)
-            .frame(minHeight: 48)
+            .frame(minHeight: 54)
             .liquidGlassCapsule(isProminent: false)
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 10)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -739,12 +739,12 @@ private struct CommentComposerBar: View {
                 .padding(.horizontal, 16)
             }
 
-            // 操作行：表情 + 选图 + 输入框 + 发送（液态玻璃组合）
-            HStack(alignment: .center, spacing: 10) {
+            // 操作行：表情 + 选图 + 输入框 + 发送（液态玻璃组合，图标小、输入框为主体）
+            HStack(alignment: .center, spacing: 8) {
                 Button { showsEmojiPicker = true } label: {
                     Image(systemName: "face.smiling")
-                        .font(.system(size: 20, weight: .medium))
-                        .frame(width: 36, height: 36)
+                        .font(.system(size: 17, weight: .medium))
+                        .frame(width: 26, height: 26)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.glass)
@@ -756,8 +756,8 @@ private struct CommentComposerBar: View {
                     matching: .images
                 ) {
                     Image(systemName: "photo")
-                        .font(.system(size: 20, weight: .medium))
-                        .frame(width: 36, height: 36)
+                        .font(.system(size: 17, weight: .medium))
+                        .frame(width: 26, height: 26)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.glass)
@@ -767,9 +767,9 @@ private struct CommentComposerBar: View {
                 CommentDraftField(store: store, isFocused: $isDraftFocused)
                     .textFieldStyle(.plain)
                     .font(NativeTypography.commentBody())
+                    .frame(maxWidth: .infinity, minHeight: 48)
                     .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .frame(minHeight: 44)
+                    .padding(.vertical, 8)
                     .liquidGlassCapsule(isProminent: false)
 
                 Button {
@@ -780,12 +780,12 @@ private struct CommentComposerBar: View {
                     }
                 } label: {
                     if case .submitting = store.draft.submissionState {
-                        ProgressView().frame(width: 36, height: 36)
+                        ProgressView().frame(width: 28, height: 28)
                     } else {
                         Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 26, weight: .semibold))
+                            .font(.system(size: 22, weight: .semibold))
                             .foregroundStyle(.white)
-                            .frame(width: 36, height: 36)
+                            .frame(width: 28, height: 28)
                             .contentShape(Rectangle())
                     }
                 }
@@ -801,10 +801,10 @@ private struct CommentComposerBar: View {
             .padding(.horizontal, 12)
             .padding(.bottom, 12)
         }
-        // 液态玻璃悬浮胶囊容器：替代全宽 ultraThinMaterial 底条
-        .liquidGlassCard(cornerRadius: 24, isProminent: false)
+        // 液态玻璃悬浮胶囊（与回答页底部操作栏 AnswerActionBar 同款样式）
+        .liquidGlassCapsule(isProminent: false)
         .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            Capsule()
                 .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
         )
         .padding(.horizontal, 12)
