@@ -74,7 +74,8 @@ struct CommentNavigationPage: View {
             store: model.store,
             personModel: model.personModel,
             personBindingChanged: model.personBindingChanged,
-            onNavigate: model.onNavigate
+            onNavigate: model.onNavigate,
+            onPersonNavigate: model.onPersonNavigate
         )
         .accessibilityIdentifier("comment_navigation_page")
     }
@@ -91,6 +92,7 @@ private struct CommentThreadContainer: View {
     let personModel: PersonHostModel?
     let personBindingChanged: (Bool) -> Void
     let onNavigate: (QANavigationIntent) -> Void
+    let onPersonNavigate: (PersonNavigationIntent) -> Void
 
     var body: some View {
         CommentLevelView(store: store, level: .root, close: nil)
