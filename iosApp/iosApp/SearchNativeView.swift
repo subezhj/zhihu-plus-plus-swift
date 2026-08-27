@@ -83,7 +83,7 @@ struct SearchNativeView: View {
             if store.route.isMemberRestricted {
                 // 创作搜索：返回按钮在左，搜索框右侧对齐（右上角无“更多”按钮）
                 ToolbarItem(placement: .topBarTrailing) {
-                    searchField(isMemberSearch: true)
+                    memberSearchField
                 }
             } else {
                 ToolbarItem(placement: .principal) {
@@ -103,7 +103,27 @@ struct SearchNativeView: View {
         .accessibilityIdentifier("search_screen")
     }
 
-    private func searchField(isMemberSearch: Bool = false) -> some View {
+    /// 普通搜索页（热搜/搜索 tab）搜索框：居中占满宽度
+    private var searchField: some View {
+        searchFieldBody
+            .frame(minWidth: 320, maxWidth: .infinity)
+            .frame(height: 40)
+            .liquidGlassCapsule(isProminent: false)
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("search_field")
+    }
+
+    /// 创作搜索（memberRestricted）搜索框：右侧对齐窄版
+    private var memberSearchField: some View {
+        searchFieldBody
+            .frame(minWidth: 0, maxWidth: 300)
+            .frame(height: 40)
+            .liquidGlassCapsule(isProminent: false)
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("member_search_field")
+    }
+
+    private var searchFieldBody: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 15, weight: .medium))
@@ -131,14 +151,6 @@ struct SearchNativeView: View {
             }
         }
         .padding(.horizontal, 14)
-        .frame(
-            minWidth: isMemberSearch ? 0 : 320,
-            maxWidth: isMemberSearch ? 300 : .infinity
-        )
-        .frame(height: 40)
-        .liquidGlassCapsule(isProminent: false)
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("search_field")
     }
 
     private func submitKeyboardQuery() {
