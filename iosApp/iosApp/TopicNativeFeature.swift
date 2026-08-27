@@ -26,6 +26,7 @@ protocol TopicRepository: Sendable {
     func fetchInfo(topicID: Int64) async throws -> TopicInfoDTO
     func fetchFeeds(topicID: Int64, offset: Int, limit: Int) async throws -> [TopicFeedDTO]
     func rawInfo(topicID: Int64) async throws -> Data
+    func rawFeedsDebug(topicID: Int64) async -> String
 }
 
 /// 话题页数据（登录态下通过 APIClient 访问；未登录或接口调整时由调用方兜底）
@@ -45,6 +46,34 @@ actor URLSessionTopicRepository: TopicRepository {
     func rawInfo(topicID: Int64) async throws -> Data {
         let url = URL(string: "https://www.zhihu.com/api/v4/topics/\(topicID)")!
         return try await client.data(for: url)
+    }
+
+    private static let feedBaseCandidates: (Int64) -> [String] = { topicID in
+        [
+            "https://www.zhihu.com/api/v4/topics/\(topicID)/feeds/essence",
+            "https://www.zhihu.com/api/v4/topics/\(topicID)/feeds/hot",
+            "https://api.zhihu.com/topics/\(topicID)/feeds/essence"
+        ]
+    }
+
+    func rawFeedsDebug(topicID: Int64) async -> String {
+        var lines: [String] = []
+        for base in Self.feedBaseCandidates(topicID) {
+            guard var components = URLComponents(string: base) else { continue }
+            components.queryItems = [URLQueryItem(name: "limit", value: "5"), URLQueryItem(name: "offset", value: "0")]
+            guard let url = components.url else { continue }
+            do {
+                let data = try await client.data(for: url)
+                let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+                let keys = root?.keys.sorted().joined(separator: ",") ?? "?"
+                let dataCount = (root?["data"] as? [Any])?.count ?? -1
+                let firstKeys = ((root?["data"] as? [[String: Any]])?.first?.keys.sorted().joined(separator: ",")) ?? ""
+                lines.append("\(base) -> keys:[\(keys)] dataCount=\(dataCount) first:[\\(firstKeys)]")
+            } catch {
+                lines.append("\(base) -> error \(error)")
+            }
+        }
+        return lines.joined(separator: "\n")
     }
 
     func fetchFeeds(topicID: Int64, offset: Int, limit: Int) async throws -> [TopicFeedDTO] {
@@ -91,7 +120,7 @@ enum TopicResponseMapper {
             excerpt: excerpt,
             avatarURL: avatarURL,
             followersCount: firstInt(root, keys: "followers_count", "follower_count", "followers"),
-            answersCount: firstInt(root, keys: "answers_count", "answer_count", "best_answers_count"),
+            answersCount: firstInt(root, keys: "best_answers_count", "answers_count", "answer_count"),
             questionsCount: firstInt(root, keys: "questions_count", "question_count")
         )
     }
@@ -229,9 +258,14 @@ final class TopicStore: ObservableObject {
     }
 
     /// 调试：记录话题信息接口返回的顶层结构（仅字段名/数值，不含正文内容），用于定位字段差异
-    func infoDebugSummary() async -> String? {
-        guard let data = try? await repository.rawInfo(topicID: route.topicID) else { return nil }
-        return TopicResponseMapper.debugSummary(data)
+    /// 调试：话题信息 + 热门内容接口的真实结构（仅字段名/计数，不含正文）
+    func debugSummary() async -> String {
+        var parts: [String] = []
+        if let data = try? await repository.rawInfo(topicID: route.topicID) {
+            parts.append("INFO:\n" + TopicResponseMapper.debugSummary(data))
+        }
+        parts.append("FEEDS:\n" + await repository.rawFeedsDebug(topicID: route.topicID))
+        return parts.joined(separator: "\n\n")
     }
 
     func retry() async {
@@ -285,7 +319,7 @@ struct TopicNativeView: View {
     private var debugCopyButton: some View {
         Button {
             Task {
-                guard let summary = await store.infoDebugSummary() else { return }
+                let summary = await store.debugSummary()
                 UIPasteboard.general.string = summary
                 copiedDebug = true
             }
@@ -372,7 +406,7 @@ struct TopicNativeView: View {
                     Text(info.name)
                         .font(.headline)
                         .foregroundStyle(.primary)
-                    Text("\(info.followersCount) 位关注者")
+                    Text("\(info.followersCount) 位关注者 · \(info.questionsCount) 个问题 · \(info.answersCount) 条优秀回答")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
