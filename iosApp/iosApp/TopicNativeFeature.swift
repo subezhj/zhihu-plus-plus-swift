@@ -166,16 +166,17 @@ enum TopicResponseMapper {
     }
 
     private static func topicRoute(type: String, target: [String: Any]) -> FeedItemRoute? {
-        let id = ((target["id"] as? NSNumber) ?? (target["id"] as? NSString)).flatMap { Int64($0.description) }
-        guard let id else { return nil }
+        let idText = (target["id"] as? NSNumber)?.stringValue ?? (target["id"] as? String) ?? ""
+        guard let id = Int64(idText) else { return nil }
         switch type {
         case "question", "normal_question", "topic_question":
             return .question(questionID: id, title: (target["title"] as? String) ?? "")
         case "answer":
             let question = target["question"] as? [String: Any]
+            let questionIDText = (question?["id"] as? NSNumber)?.stringValue ?? (question?["id"] as? String) ?? ""
             return .answer(
                 answerID: id,
-                questionID: (question?["id"] as? NSNumber).flatMap { Int64($0.description) },
+                questionID: Int64(questionIDText),
                 questionTitle: (question?["title"] as? String) ?? ""
             )
         case "article":
@@ -319,7 +320,10 @@ struct TopicNativeView: View {
         }
         .navigationTitle(store.info?.name ?? "话题")
         .navigationBarTitleDisplayMode(.inline)
-        .task { await store.loadInfoIfNeeded() }
+        .task {
+            await store.loadInfoIfNeeded()
+            if store.feeds.isEmpty { await store.loadMoreIfNeeded() }
+        }
         .accessibilityIdentifier("topic_native")
     }
 
