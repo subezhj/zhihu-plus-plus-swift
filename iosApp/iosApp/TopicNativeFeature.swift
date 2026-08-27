@@ -264,7 +264,8 @@ final class TopicStore: ObservableObject {
         if let data = try? await repository.rawInfo(topicID: route.topicID) {
             parts.append("INFO:\n" + TopicResponseMapper.debugSummary(data))
         }
-        parts.append("FEEDS:\n" + await repository.rawFeedsDebug(topicID: route.topicID))
+        let feedsSummary = await repository.rawFeedsDebug(topicID: route.topicID)
+        parts.append("FEEDS:\n" + feedsSummary)
         return parts.joined(separator: "\n\n")
     }
 
