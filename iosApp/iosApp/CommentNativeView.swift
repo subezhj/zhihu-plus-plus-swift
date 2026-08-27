@@ -924,13 +924,10 @@ private struct CommentRichText: UIViewRepresentable {
             in characterRange: NSRange,
             interaction: UITextItemInteraction
         ) -> Bool {
-            switch openURL(url) {
-            case .handled, .discarded:
-                return false
-            case let .systemAction(chosenURL):
-                UIApplication.shared.open(chosenURL)
-                return false
-            }
+            // OpenURLAction.callAsFunction 返回 Void：直接触发应用内/系统链接处理，
+            // 返回 false 表示由我们接管（内链跳转、外链系统打开）
+            openURL(url)
+            return false
         }
     }
 }
