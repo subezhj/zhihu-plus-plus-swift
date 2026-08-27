@@ -225,34 +225,7 @@ struct SearchNativeView: View {
         if store.showsHotSearch {
             Section {
                 ForEach(Array(store.suggestions.enumerated()), id: \.element.id) { index, suggestion in
-                    Button {
-                        Task { await store.submitQuery(suggestion.query) }
-                    } label: {
-                        HStack(spacing: 14) {
-                            Text("\(index + 1)")
-                                .font(NativeTypography.feedTitle().weight(.bold).monospacedDigit())
-                                .foregroundStyle(index < 3 ? Color.accentColor : Color.secondary)
-                                .frame(minWidth: 20, alignment: .leading)
-                            Text(suggestion.query)
-                                .font(NativeTypography.feedTitle())
-                                .foregroundStyle(.primary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            if let popularity = suggestion.popularityText {
-                                Text(popularity)
-                                    .font(NativeTypography.caption())
-                                    .foregroundStyle(.secondary.opacity(0.8))
-                            }
-                        }
-                        .padding(.vertical, 3)
-                        .frame(maxWidth: .infinity, minHeight: 38, alignment: .leading)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.horizontal, 12)
-                    .liquidGlassCard(cornerRadius: 14)
-                    .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
+                    hotSearchRow(index: index, suggestion: suggestion)
                 }
 
                 if store.isRefreshingSuggestions {
@@ -342,14 +315,45 @@ struct SearchNativeView: View {
         )
     }
 
+    /// 热搜条目：液态玻璃卡片（排名 + 关键词 + 热度）
+    private func hotSearchRow(index: Int, suggestion: SearchSuggestionDTO) -> some View {
+        Button {
+            Task { await store.submitQuery(suggestion.query) }
+        } label: {
+            HStack(spacing: 14) {
+                Text("\(index + 1)")
+                    .font(NativeTypography.feedTitle().weight(.bold).monospacedDigit())
+                    .foregroundStyle(index < 3 ? Color.accentColor : Color.secondary)
+                    .frame(minWidth: 20, alignment: .leading)
+                Text(suggestion.query)
+                    .font(NativeTypography.feedTitle())
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if let popularity = suggestion.popularityText {
+                    Text(popularity)
+                        .font(NativeTypography.caption())
+                        .foregroundStyle(.secondary.opacity(0.8))
+                }
+            }
+            .padding(.vertical, 3)
+            .frame(maxWidth: .infinity, minHeight: 38, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 12)
+        .liquidGlassCard(cornerRadius: 14)
+        .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+    }
+
     private var filterMenu: some View {
         Menu {
             Picker("排序", selection: sortBinding) {
                 ForEach(SearchSort.allCases) { value in
                     Text(value.title).tag(value)
                 }
-            }
-            Picker("内容类型", selection: contentTypeBinding) {
+            }            Picker("内容类型", selection: contentTypeBinding) {
                 ForEach(SearchContentType.allCases) { value in
                     Text(value.title).tag(value)
                 }
