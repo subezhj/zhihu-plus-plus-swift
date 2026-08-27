@@ -130,12 +130,27 @@ private struct CommentThreadContainer: View {
             .environment(\.openURL, OpenURLAction { url in
                 handleCommentURL(url)
             })
-            // 用户主页用全屏模态呈现：无论从根评论页还是子回复页进入，返回都回到原层级
-            // （navigationDestination(isPresented:) 在 push 深层时会让返回层级错乱）
-            .fullScreenCover(item: personCoverBinding) { model in
+            // 用户主页用标准 sheet 呈现（上弹 + 下滑关闭 + 左上角关闭按钮，同回答页收藏弹层方案）：
+            // 无论从根评论页还是子回复页进入，下滑/关闭后都回到原层级
+            .sheet(item: personCoverBinding) { model in
                 NavigationStack {
                     PersonHostView(model: model)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarLeading) {
+                                Button {
+                                    personCoverBinding.wrappedValue = nil
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.system(size: 17))
+                                        .foregroundStyle(.tertiary)
+                                }
+                                .accessibilityLabel("关闭")
+                            }
+                        }
                 }
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationBackground(Color.nativeSystemGroupedBackground)
             }
             .task { store.start() }
     }
@@ -524,12 +539,8 @@ private struct CommentRow: View {
                     .accessibilityLabel("点赞评论")
                 }
 
-                // 评论正文 (点击正文直接触发针对该作者的回复)
+                // 评论正文：UITextView 支持长按选择文本/复制/翻译；链接点击走系统链接处理
                 CommentRichText(html: comment.contentHTML)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        beginReply()
-                    }
                     .padding(.leading, 42)
 
                 // 评论图片
@@ -866,107 +877,207 @@ private struct CommentComposerBackground: View {
     }
 }
 
-private struct CommentRichText: View {
+private struct CommentRichText: UIViewRepresentable {
     let html: String
     var font: Font? = nil
     var basePointSize: CGFloat = 14
     @Environment(\.nativeContentPresentation) private var contentPresentation
+    @Environment(\.openURL) private var openURL
 
-    var body: some View {
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    func makeUIView(context: Context) -> SelectionTextView {
+        let textView = SelectionTextView()
+        textView.isEditable = false
+        textView.isSelectable = true
+        textView.backgroundColor = .clear
+        textView.isScrollEnabled = false
+        textView.textContainerInset = .zero
+        textView.textContainer.lineFragmentPadding = 0
+        textView.delegate = context.coordinator
+        // 链接样式走系统默认（tint 强调色 + 下划线）
+        textView.isAccessibilityElement = true
+        return textView
+    }
+
+    func updateUIView(_ textView: SelectionTextView, context: Context) {
         let pointSize = basePointSize * contentPresentation.fontScale
-        let bodyFont = font ?? NativeTypography.commentBody(scale: contentPresentation.fontScale)
-        Text(CommentAttributedText.value(from: html, bodyFont: bodyFont))
-            .font(bodyFont)
-            .lineSpacing(contentPresentation.extraLineSpacing(for: pointSize))
-            .tint(Color.accentColor)
-            .textSelection(.enabled)
-            // 占满可用宽度：保证行内重排时换行/行高稳定，并修复子回复文本不换行被裁剪的问题
-            .frame(maxWidth: .infinity, alignment: .leading)
+        let lineSpacing = contentPresentation.extraLineSpacing(for: pointSize)
+        textView.attributedText = CommentAttributedText.attributed(
+            from: html,
+            fallbackPointSize: pointSize,
+            lineSpacing: lineSpacing
+        )
+        textView.font = UIFont.systemFont(ofSize: pointSize)
+        textView.invalidateIntrinsicContentSize()
+        context.coordinator.openURL = openURL
+    }
+
+    final class Coordinator: NSObject, UITextViewDelegate {
+        var openURL: OpenURLAction = OpenURLAction { url in .systemAction(url) }
+
+        func textView(
+            _ textView: UITextView,
+            shouldInteractWith url: URL,
+            in characterRange: NSRange,
+            interaction: UITextItemInteraction
+        ) -> Bool {
+            switch openURL(url) {
+            case .handled, .discarded:
+                return false
+            case let .systemAction(chosenURL):
+                UIApplication.shared.open(chosenURL)
+                return false
+            }
+        }
+    }
+}
+
+/// 禁用滚动的 UITextView：高度随内容自适应，长按保持系统标准文本选择（复制/翻译/查找）。
+private final class SelectionTextView: UITextView {
+    override var intrinsicContentSize: CGSize {
+        layoutIfNeeded()
+        return CGSize(width: UIView.noIntrinsicMetric, height: contentSize.height)
     }
 }
 
 private enum CommentAttributedText {
-    /// 直接缓存最终构建的 AttributedString（禁止 NSAttributedString 往返缓存）：
-    /// `NSAttributedString(finalResult, including: \.uiKit)` 与 `AttributedString(back)`
-    /// 的往返转换在个别 attribute（如内链 URL 含特殊字符）下会丢失后续文本，导致二次渲染"内容省略"。
+    /// 直接缓存最终构建的 NSAttributedString（UTF8 外的 [NSString] key），供 UITextView 渲染。
     private final class Box {
-        let value: AttributedString
-        init(_ value: AttributedString) { self.value = value }
+        let value: NSAttributedString
+        init(_ value: NSAttributedString) { self.value = value }
     }
 
     private static let cache = NSCache<NSString, Box>()
 
-    static func value(from html: String, bodyFont: Font) -> AttributedString {
+    /// 构建 UITextView 可用的富文本（显式字体/行距/链接），
+    /// 使长按评论正文可以通过系统标准交互选择文本、复制、翻译。
+    static func attributed(
+        from html: String,
+        fallbackPointSize: CGFloat,
+        lineSpacing: CGFloat
+    ) -> NSAttributedString {
         let key = html as NSString
-        if let cached = cache.object(forKey: key) {
-            return cached.value
-        }
+        if let box = cache.object(forKey: key) { return box.value }
 
         let source = CommentHTMLMediaParser.project(html).textHTML
-        var result = AttributedString()
-        for block in QARichContentParser.blocks(from: source) {
-            if !result.characters.isEmpty {
-                var newline = AttributedString("\n")
-                newline.font = bodyFont
-                result.append(newline)
+        let blocks = QARichContentParser.blocks(from: source)
+        let result = NSMutableAttributedString()
+        for block in blocks {
+            if result.length > 0 {
+                appendNewline(to: result, pointSize: fallbackPointSize, lineSpacing: lineSpacing)
             }
             switch block {
             case let .paragraph(_, runs), let .heading(_, _, runs), let .quote(_, runs), let .segment(_, _, runs):
-                append(runs, bodyFont: bodyFont, to: &result)
+                appendRuns(runs, to: result, pointSize: fallbackPointSize, lineSpacing: lineSpacing)
             case let .list(_, kind, items):
-                append(
-                    list: QAListGroup(kind: kind, items: items),
+                appendList(
+                    QAListGroup(kind: kind, items: items),
                     depth: 0,
-                    bodyFont: bodyFont,
-                    to: &result
+                    to: result,
+                    pointSize: fallbackPointSize,
+                    lineSpacing: lineSpacing
                 )
             case let .code(_, _, text), let .formula(_, text):
-                var code = AttributedString(text)
-                code.font = bodyFont.monospaced()
-                result.append(code)
+                result.append(NSAttributedString(
+                    string: text,
+                    attributes: [.font: UIFont.monospacedSystemFont(ofSize: fallbackPointSize, weight: .regular)]
+                ))
             case .image, .video, .divider:
                 break
             }
         }
-        let finalResult = result.characters.isEmpty
-            ? AttributedString(CommentEmojiCatalog.renderedText(QARichContentParser.plainText(source)))
-            : result
-
-        cache.setObject(Box(finalResult), forKey: key)
-        return finalResult
+        let final: NSAttributedString
+        if result.length == 0 {
+            let text = CommentEmojiCatalog.renderedText(QARichContentParser.plainText(source))
+            final = NSAttributedString(
+                string: text,
+                attributes: [.font: UIFont.systemFont(ofSize: fallbackPointSize)]
+            )
+        } else {
+            final = result
+        }
+        cache.setObject(Box(final), forKey: key)
+        return final
     }
 
-    private static func append(_ runs: [QAInlineRun], bodyFont: Font, to result: inout AttributedString) {
+    private static func paragraphStyle(_ lineSpacing: CGFloat) -> NSParagraphStyle {
+        let style = NSMutableParagraphStyle()
+        style.lineSpacing = lineSpacing
+        return style
+    }
+
+    private static func font(for style: QAInlineStyle, pointSize: CGFloat) -> UIFont {
+        if style.contains(.code) {
+            return .monospacedSystemFont(ofSize: pointSize, weight: .regular)
+        }
+        let bold = style.contains(.strong)
+        let italic = style.contains(.emphasis)
+        if bold, italic {
+            let descriptor = UIFontDescriptor()
+                .withSymbolicTraits([.traitBold, .traitItalic]) ?? UIFontDescriptor()
+            return UIFont(descriptor: descriptor, size: pointSize)
+        }
+        if bold { return .boldSystemFont(ofSize: pointSize) }
+        if italic { return .italicSystemFont(ofSize: pointSize) }
+        return .systemFont(ofSize: pointSize)
+    }
+
+    private static func appendNewline(to result: NSMutableAttributedString, pointSize: CGFloat, lineSpacing: CGFloat) {
+        result.append(NSAttributedString(
+            string: "\n",
+            attributes: [.font: UIFont.systemFont(ofSize: pointSize), .paragraphStyle: paragraphStyle(lineSpacing)]
+        ))
+    }
+
+    private static func appendRuns(
+        _ runs: [QAInlineRun],
+        to result: NSMutableAttributedString,
+        pointSize: CGFloat,
+        lineSpacing: CGFloat
+    ) {
         for run in runs {
-            var part = AttributedString(CommentEmojiCatalog.renderedText(run.text))
-            var presentation: InlinePresentationIntent = []
-            if run.style.contains(.strong) { presentation.insert(.stronglyEmphasized) }
-            if run.style.contains(.emphasis) { presentation.insert(.emphasized) }
-            if !presentation.isEmpty { part.inlinePresentationIntent = presentation }
-            if run.style.contains(.strikethrough) { part.strikethroughStyle = .single }
-            if run.style.contains(.code) { part.font = bodyFont.monospaced() }
-            if let destination = run.link,
-               let url = QABodyLinkResolver.url(destination) {
-                part.link = url
+            var attributes: [NSAttributedString.Key: Any] = [
+                .font: font(for: run.style, pointSize: pointSize),
+                .paragraphStyle: paragraphStyle(lineSpacing)
+            ]
+            if run.style.contains(.strikethrough) {
+                attributes[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
             }
-            result.append(part)
+            if let destination = run.link, let url = QABodyLinkResolver.url(destination) {
+                attributes[.link] = url
+            }
+            result.append(NSAttributedString(
+                string: CommentEmojiCatalog.renderedText(run.text),
+                attributes: attributes
+            ))
         }
     }
 
-    private static func append(
-        list: QAListGroup,
+    private static func appendList(
+        _ list: QAListGroup,
         depth: Int,
-        bodyFont: Font,
-        to result: inout AttributedString
+        to result: NSMutableAttributedString,
+        pointSize: CGFloat,
+        lineSpacing: CGFloat
     ) {
         for (index, item) in list.items.enumerated() {
-            if !result.characters.isEmpty { result.append(AttributedString("\n")) }
+            if result.length > 0 {
+                appendNewline(to: result, pointSize: pointSize, lineSpacing: lineSpacing)
+            }
             let number = item.ordinal ?? list.startIndex + index
             let marker = list.kind == .ordered ? "\(number). " : "• "
-            result.append(AttributedString(String(repeating: "  ", count: depth) + marker))
-            append(item.runs, bodyFont: bodyFont, to: &result)
+            let prefix = String(repeating: "  ", count: depth) + marker
+            let prefixAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: pointSize),
+                .paragraphStyle: paragraphStyle(lineSpacing)
+            ]
+            result.append(NSAttributedString(string: prefix, attributes: prefixAttributes))
+            appendRuns(item.runs, to: result, pointSize: pointSize, lineSpacing: lineSpacing)
             for nestedList in item.nestedLists {
-                append(list: nestedList, depth: depth + 1, bodyFont: bodyFont, to: &result)
+                appendList(nestedList, depth: depth + 1, to: result, pointSize: pointSize, lineSpacing: lineSpacing)
             }
         }
     }

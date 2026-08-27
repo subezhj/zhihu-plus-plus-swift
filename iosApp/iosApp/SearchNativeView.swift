@@ -1,5 +1,10 @@
 import SwiftUI
 
+/// 热搜/搜索历史区块统一间距：顶部与分割线两侧均按此对齐（与账号页 insetGrouped 顶部视觉一致）
+private enum SearchBlockSpacing {
+    static let gap: CGFloat = 20
+}
+
 struct SearchNativeView: View {
     @StateObject private var store: SearchStore
     @EnvironmentObject private var questionAuthorBlocklist: QuestionAuthorBlocklistStore
@@ -193,9 +198,15 @@ struct SearchNativeView: View {
                 .listRowBackground(Color.nativeSystemGroupedBackground)
             }
 
-            // 仅一条分割线，分隔“搜索历史”与“热搜”区块
+            // 仅一条分割线，分隔“搜索历史”与“热搜”区块：
+            // 上方 = gap - 4（历史行底 4），下方由热搜 Section header 的系统间距承接，两侧视觉均为 gap
             NativeThinDivider()
-                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                .listRowInsets(EdgeInsets(
+                    top: SearchBlockSpacing.gap - 4,
+                    leading: 16,
+                    bottom: 0,
+                    trailing: 16
+                ))
                 .listRowBackground(Color.nativeSystemGroupedBackground)
                 .listRowSeparator(.hidden)
         }
@@ -255,7 +266,6 @@ struct SearchNativeView: View {
                     .textCase(nil)
                     .accessibilityLabel("刷新热搜")
                 }
-                .padding(.top, 4)
                 .listRowBackground(Color.nativeSystemGroupedBackground)
             }
         }
