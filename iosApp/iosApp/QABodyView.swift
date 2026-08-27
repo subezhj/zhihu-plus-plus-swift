@@ -50,28 +50,30 @@ struct QABodyView: View {
     private func blockView(_ block: QABodyBlock) -> some View {
         switch block {
         case let .paragraph(_, runs):
-            Text(QARichTextFormatter.attributed(runs))
-                .font(bodyFont)
-                .lineSpacing(bodyLineSpacing)
-                .tint(.accentColor)
-                .textSelection(.enabled)
+            QARichTextView(
+                runs: runs,
+                pointSize: bodyPointSize * presentation.fontScale,
+                lineSpacing: bodyLineSpacing
+            )
         case let .heading(_, level, runs):
-            Text(QARichTextFormatter.attributed(runs))
-                .font(headingFont(level))
-                .fontWeight(.bold)
-                .textSelection(.enabled)
-                .padding(.top, level <= 2 ? 8 : 2)
+            QARichTextView(
+                runs: runs,
+                pointSize: headingPointSize(level),
+                lineSpacing: bodyLineSpacing,
+                isBold: true
+            )
+            .padding(.top, level <= 2 ? 8 : 2)
         case let .quote(_, runs):
             HStack(alignment: .top, spacing: 12) {
                 Capsule()
                     .fill(Color.accentColor.opacity(0.85))
                     .frame(width: 3.5)
-                Text(QARichTextFormatter.attributed(runs))
-                    .font(bodyFont)
-                    .foregroundStyle(.secondary)
-                    .lineSpacing(bodyLineSpacing)
-                    .tint(.accentColor)
-                    .textSelection(.enabled)
+                QARichTextView(
+                    runs: runs,
+                    pointSize: bodyPointSize * presentation.fontScale,
+                    lineSpacing: bodyLineSpacing,
+                    foregroundColor: .secondaryLabel
+                )
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
@@ -79,34 +81,35 @@ struct QABodyView: View {
         case let .list(_, kind, items):
             VStack(alignment: .leading, spacing: 9) {
                 ForEach(listRows(kind: kind, items: items)) { row in
-                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    HStack(alignment: .top, spacing: 10) {
                         Text(row.marker)
+                            .font(bodyFont)
                             .fontWeight(.semibold)
                             .foregroundStyle(.secondary)
                             .frame(minWidth: 18, alignment: .trailing)
-                        Text(QARichTextFormatter.attributed(row.runs))
-                            .font(bodyFont)
-                            .lineSpacing(bodyLineSpacing)
-                            .tint(.accentColor)
-                            .textSelection(.enabled)
+                        QARichTextView(
+                            runs: row.runs,
+                            pointSize: bodyPointSize * presentation.fontScale,
+                            lineSpacing: bodyLineSpacing
+                        )
                     }
                     .padding(.leading, CGFloat(row.depth) * 20)
                 }
             }
         case let .code(_, language, text):
-            ScrollView(.horizontal, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 7) {
-                    if let language, !language.isEmpty {
-                        Text(language.uppercased())
-                            .font(.caption2.monospaced())
-                            .foregroundStyle(.secondary)
-                    }
-                    Text(text)
-                        .font(.system(size: calloutPointSize * presentation.fontScale, design: .monospaced))
-                        .textSelection(.enabled)
+            VStack(alignment: .leading, spacing: 7) {
+                if let language, !language.isEmpty {
+                    Text(language.uppercased())
+                        .font(.caption2.monospaced())
+                        .foregroundStyle(.secondary)
                 }
-                .padding(14)
+                QARichTextView(
+                    runs: [QAInlineRun(text: text, style: [.code])],
+                    pointSize: calloutPointSize * presentation.fontScale,
+                    lineSpacing: 2
+                )
             }
+            .padding(14)
             .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
         case let .formula(_, latex):
             QAKaTeXFormulaView(
@@ -128,16 +131,14 @@ struct QABodyView: View {
             .buttonStyle(.plain)
             .accessibilityLabel(image.altText ?? image.caption ?? "查看图片")
         case let .segment(_, segmentID, runs):
-            if let segmentSubject,
-               let subject = segmentCommentSubject(segmentSubject, segmentID: segmentID) {
-                HStack(alignment: .bottom, spacing: 7) {
-                    Text(QARichTextFormatter.attributed(runs))
-                        .font(bodyFont)
-                        .lineSpacing(bodyLineSpacing)
-                        .tint(.accentColor)
-                        .foregroundStyle(.primary)
-                        .multilineTextAlignment(.leading)
-                        .textSelection(.enabled)
+            HStack(alignment: .top, spacing: 7) {
+                QARichTextView(
+                    runs: runs,
+                    pointSize: bodyPointSize * presentation.fontScale,
+                    lineSpacing: bodyLineSpacing
+                )
+                if let segmentSubject,
+                   let subject = segmentCommentSubject(segmentSubject, segmentID: segmentID) {
                     Button {
                         onNavigate(.segmentComments(CommentThreadRouteDTO(subject: subject)))
                     } label: {
@@ -147,16 +148,6 @@ struct QABodyView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("查看本段评论")
-                }
-            } else {
-                HStack(alignment: .bottom, spacing: 7) {
-                    Text(QARichTextFormatter.attributed(runs))
-                        .font(bodyFont)
-                        .lineSpacing(bodyLineSpacing)
-                        .tint(.accentColor)
-                        .foregroundStyle(.primary)
-                        .multilineTextAlignment(.leading)
-                        .textSelection(.enabled)
                 }
             }
         case let .video(_, video):
@@ -187,6 +178,16 @@ struct QABodyView: View {
         case 2: return .system(size: 20 * scale, weight: .bold)
         case 3: return .system(size: 17 * scale, weight: .semibold)
         default: return .system(size: bodyPointSize * scale, weight: .semibold)
+        }
+    }
+
+    private func headingPointSize(_ level: Int) -> CGFloat {
+        let scale = presentation.fontScale
+        switch level {
+        case 1: return 22 * scale
+        case 2: return 20 * scale
+        case 3: return 17 * scale
+        default: return bodyPointSize * scale
         }
     }
 
@@ -407,6 +408,142 @@ enum QARichTextFormatter {
             }
             value.append(part)
         }
+    }
+}
+
+/// 回答/文章正文的富文本 UITextView：长按走系统标准文本选择（选择/复制/翻译/查找），
+/// 前景色使用 label 与作者名对齐（深浅色自适应），链接可点击。
+private struct QARichTextView: UIViewRepresentable {
+    let runs: [QAInlineRun]
+    var pointSize: CGFloat
+    var lineSpacing: CGFloat
+    var isBold: Bool = false
+    var foregroundColor: UIColor = .label
+
+    @Environment(\.openURL) private var openURL
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    func makeUIView(context: Context) -> QASelectionTextView {
+        let textView = QASelectionTextView()
+        textView.isEditable = false
+        textView.isSelectable = true
+        textView.backgroundColor = .clear
+        textView.isScrollEnabled = false
+        textView.textContainerInset = .zero
+        textView.textContainer.lineFragmentPadding = 0
+        textView.delegate = context.coordinator
+        textView.textColor = foregroundColor
+        textView.isAccessibilityElement = true
+        return textView
+    }
+
+    func updateUIView(_ textView: QASelectionTextView, context: Context) {
+        textView.attributedText = Self.attributed(
+            runs: runs,
+            pointSize: pointSize,
+            lineSpacing: lineSpacing,
+            isBold: isBold,
+            foregroundColor: foregroundColor
+        )
+        textView.font = UIFont.systemFont(ofSize: pointSize, weight: isBold ? .semibold : .regular)
+        textView.invalidateIntrinsicContentSize()
+        context.coordinator.openURL = openURL
+    }
+
+    final class Coordinator: NSObject, UITextViewDelegate {
+        var openURL: OpenURLAction = OpenURLAction { url in .systemAction(url) }
+
+        func textView(
+            _ textView: UITextView,
+            shouldInteractWith url: URL,
+            in characterRange: NSRange,
+            interaction: UITextItemInteraction
+        ) -> Bool {
+            openURL(url)
+            return false
+        }
+    }
+
+    private static func attributed(
+        runs: [QAInlineRun],
+        pointSize: CGFloat,
+        lineSpacing: CGFloat,
+        isBold: Bool,
+        foregroundColor: UIColor
+    ) -> NSAttributedString {
+        let result = NSMutableAttributedString()
+        for run in runs {
+            var attributes: [NSAttributedString.Key: Any] = [
+                .font: font(for: run.style, pointSize: pointSize, baseBold: isBold),
+                .paragraphStyle: paragraphStyle(lineSpacing),
+                .foregroundColor: foregroundColor
+            ]
+            if run.style.contains(.strikethrough) {
+                attributes[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
+            }
+            if run.style.contains(.code) {
+                attributes[.backgroundColor] = UIColor.secondarySystemBackground
+            }
+            if let link = run.link, let url = QABodyLinkResolver.url(link) {
+                attributes[.link] = url
+            }
+            result.append(NSAttributedString(string: run.text, attributes: attributes))
+        }
+        return result
+    }
+
+    private static func font(for style: QAInlineStyle, pointSize: CGFloat, baseBold: Bool) -> UIFont {
+        if style.contains(.code) {
+            return .monospacedSystemFont(ofSize: pointSize, weight: .regular)
+        }
+        let bold = baseBold || style.contains(.strong)
+        let italic = style.contains(.emphasis)
+        if bold, italic {
+            let descriptor = UIFontDescriptor().withSymbolicTraits([.traitBold, .traitItalic]) ?? UIFontDescriptor()
+            return UIFont(descriptor: descriptor, size: pointSize)
+        }
+        if bold { return .boldSystemFont(ofSize: pointSize) }
+        if italic { return .italicSystemFont(ofSize: pointSize) }
+        return .systemFont(ofSize: pointSize)
+    }
+
+    private static func paragraphStyle(_ lineSpacing: CGFloat) -> NSParagraphStyle {
+        let style = NSMutableParagraphStyle()
+        style.lineSpacing = lineSpacing
+        return style
+    }
+}
+
+/// 高度随内容自适应的只读 UITextView（长按系统文本选择）
+private final class QASelectionTextView: UITextView {
+    private var lastMeasuredWidth: CGFloat = 0
+
+    override init(frame: CGRect, textContainer: NSTextContainer?) {
+        super.init(frame: frame, textContainer: textContainer)
+        textContainer?.widthTracksTextView = true
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        if bounds.width.isFinite, abs(bounds.width - lastMeasuredWidth) > 0.5 {
+            lastMeasuredWidth = bounds.width
+            invalidateIntrinsicContentSize()
+        }
+    }
+
+    override var intrinsicContentSize: CGSize {
+        layoutIfNeeded()
+        let width = bounds.width > 1 ? bounds.width : 320
+        let height = ceil(sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height)
+        return CGSize(width: UIView.noIntrinsicMetric, height: max(height, 18))
     }
 }
 

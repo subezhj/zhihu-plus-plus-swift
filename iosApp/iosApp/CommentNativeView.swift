@@ -897,6 +897,7 @@ private struct CommentRichText: UIViewRepresentable {
         textView.isEditable = false
         textView.isSelectable = true
         textView.backgroundColor = .clear
+        textView.textColor = .label
         textView.isScrollEnabled = false
         textView.textContainerInset = .zero
         textView.textContainer.lineFragmentPadding = 0
@@ -1066,7 +1067,8 @@ private enum CommentAttributedText {
         for run in runs {
             var attributes: [NSAttributedString.Key: Any] = [
                 .font: font(for: run.style, pointSize: pointSize),
-                .paragraphStyle: paragraphStyle(lineSpacing)
+                .paragraphStyle: paragraphStyle(lineSpacing),
+                .foregroundColor: UIColor.label
             ]
             if run.style.contains(.strikethrough) {
                 attributes[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
