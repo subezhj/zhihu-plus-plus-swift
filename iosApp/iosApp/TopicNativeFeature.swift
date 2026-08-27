@@ -47,7 +47,7 @@ actor URLSessionTopicRepository: TopicRepository {
             URLQueryItem(name: "limit", value: String(limit)),
             URLQueryItem(name: "offset", value: String(offset))
         ]
-        let url = try components.asURL()
+        guard let url = components.url else { throw ZhihuAPIError.malformedPayload }
         let data = try await client.data(for: url)
         return try TopicResponseMapper.feeds(from: data)
     }
@@ -61,8 +61,9 @@ enum TopicResponseMapper {
         let name = (root["name"] as? String) ?? "话题"
         let excerpt = ((root["excerpt"] as? String)?.nonBlank ?? (root["introduction"] as? String)?.nonBlank)
         let avatarURL = (root["avatar_url"] as? String).flatMap { URL(string: $0) }
+        let parsedID = (root["id"] as? NSNumber)?.int64Value ?? Int64((root["id"] as? String) ?? "")
         return TopicInfoDTO(
-            id: Int64(root["id"] as? NSNumber ?? root["id"] as? String).flatMap { $0 } ?? topicID,
+            id: parsedID ?? topicID,
             name: name,
             excerpt: excerpt,
             avatarURL: avatarURL,
@@ -235,7 +236,7 @@ struct TopicNativeView: View {
                     .foregroundStyle(.secondary)
                     .listRowBackground(Color.nativeSystemGroupedBackground)
             }
-            ForEach(store.feeds) { item in
+            ForEach(store.feeds, id: \.id) { item in
                 if let route = item.route {
                     Button {
                         onOpen(route)
