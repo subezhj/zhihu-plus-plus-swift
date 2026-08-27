@@ -47,8 +47,8 @@ struct QABodyView: View {
         case block(QABodyBlock)
     }
 
-    @ViewBuilder
-    private var groupedBlocks: some View {
+    /// 把连续正文段落合并为一组（跨段选择复制），遇到非段落块断开
+    private var groupedItems: [GroupedBlock] {
         var paragraphs: [QAInlineRun] = []
         var items: [GroupedBlock] = []
         for block in blocks {
@@ -64,9 +64,13 @@ struct QABodyView: View {
             }
         }
         if !paragraphs.isEmpty { items.append(.paragraphGroup(paragraphs)) }
+        return items
+    }
 
-        ForEach(items.indices, id: \.self) { index in
-            switch items[index] {
+    @ViewBuilder
+    private var groupedBlocks: some View {
+        ForEach(groupedItems.indices, id: \.self) { index in
+            switch groupedItems[index] {
             case let .paragraphGroup(runs):
                 QARichTextView(
                     runs: runs,

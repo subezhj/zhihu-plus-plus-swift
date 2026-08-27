@@ -11,6 +11,7 @@ struct SearchNativeView: View {
     @FocusState private var isSearchFieldFocused: Bool
     @State private var lastConsumedFocusRequestToken: UInt = 0
     @Environment(\.nativeSearchPresentation) private var searchPresentation
+    @Environment(\.dismiss) private var dismiss
     private let focusRequest: NativeSearchFocusRequest
     private let onOpen: (FeedItemRoute) -> Void
 
@@ -78,12 +79,22 @@ struct SearchNativeView: View {
                 }
             }
         }
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                searchField
+        // 创作搜索（memberRestricted）：隐藏系统导航栏，用页面顶部固定搜索条（关闭 + 搜索框），
+        // 避免 sheet 内 push 时搜索框被遮挡、返回/过滤按钮残留
+        .toolbar(store.route.isMemberRestricted ? .hidden : .visible, for: .navigationBar)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if store.route.isMemberRestricted {
+                memberSearchTopBar
             }
-            ToolbarItem(placement: .primaryAction) {
-                filterMenu
+        }
+        .toolbar {
+            if !store.route.isMemberRestricted {
+                ToolbarItem(placement: .principal) {
+                    searchField
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    filterMenu
+                }
             }
         }
         .task { await store.loadInitialIfNeeded() }
@@ -294,6 +305,9 @@ struct SearchNativeView: View {
             Text("以下结果来自 \(store.memberDisplayName) 的创作")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 4, trailing: 16))
+                .listRowBackground(Color.nativeSystemGroupedBackground)
+                .listRowSeparator(.hidden)
         }
 
         ForEach(visibleItems) { item in
@@ -324,6 +338,26 @@ struct SearchNativeView: View {
             from: store.items,
             blockedMemberIDs: questionAuthorBlocklist.blockedMemberIDs
         )
+    }
+
+    /// 创作搜索顶部条：关闭按钮 + 搜索框（固定，不被导航栏/弹窗遮挡）
+    private var memberSearchTopBar: some View {
+        HStack(spacing: 10) {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("关闭")
+
+            searchField
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(Color.nativeSystemGroupedBackground.ignoresSafeArea(edges: .top))
     }
 
     private var filterMenu: some View {
