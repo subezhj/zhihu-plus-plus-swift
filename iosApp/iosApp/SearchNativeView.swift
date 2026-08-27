@@ -80,11 +80,19 @@ struct SearchNativeView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .principal) {
-                searchField
-            }
-            ToolbarItem(placement: .primaryAction) {
-                filterMenu
+            if store.route.isMemberRestricted {
+                // 创作搜索：返回按钮在左，搜索框右侧对齐（右上角无“更多”按钮）
+                ToolbarItem(placement: .topBarTrailing) {
+                    searchField
+                        .frame(maxWidth: 300)
+                }
+            } else {
+                ToolbarItem(placement: .principal) {
+                    searchField
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    filterMenu
+                }
             }
         }
         .task { await store.loadInitialIfNeeded() }
@@ -124,7 +132,7 @@ struct SearchNativeView: View {
             }
         }
         .padding(.horizontal, 14)
-        .frame(minWidth: 320, maxWidth: .infinity)
+        .frame(maxWidth: .infinity)
         .frame(height: 40)
         .liquidGlassCapsule(isProminent: false)
         .accessibilityElement(children: .contain)
