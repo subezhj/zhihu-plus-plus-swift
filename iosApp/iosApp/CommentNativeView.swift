@@ -10,7 +10,7 @@ final class CommentHostModel: ObservableObject, Identifiable {
     @Published private(set) var personModel: PersonHostModel?
 
     private let accountStore: AccountJSONStore
-    private let onPersonNavigate: (PersonNavigationIntent) -> Void
+    let onPersonNavigate: (PersonNavigationIntent) -> Void
     let onNavigate: (QANavigationIntent) -> Void
 
     init(
