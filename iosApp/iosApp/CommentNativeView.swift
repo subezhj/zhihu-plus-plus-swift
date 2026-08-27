@@ -698,8 +698,8 @@ private struct CommentComposerBar: View {
     }
 
     private var activeComposer: some View {
-        VStack(spacing: 8) {
-            // 头部行：标题 + 取消（玻璃按钮）
+        VStack(spacing: 10) {
+            // 顶部：左标题 + 右取消
             HStack(alignment: .center) {
                 HStack(spacing: 6) {
                     Image(systemName: "bubble.and.pencil")
@@ -719,7 +719,6 @@ private struct CommentComposerBar: View {
                 }
                 .buttonStyle(.glass)
             }
-            .padding(.horizontal, 14)
 
             if let imageData = store.draft.imageData, let image = UIImage(data: imageData) {
                 HStack {
@@ -735,11 +734,22 @@ private struct CommentComposerBar: View {
                     Button("移除", role: .destructive) { store.setDraftImage(nil) }
                         .font(.caption)
                 }
-                .padding(.horizontal, 14)
             }
 
-            // 操作行：表情 + 选图 + 输入框 + 发送（小圆角输入框，高度受控）
-            HStack(alignment: .center, spacing: 8) {
+            // 主体：全宽输入框（高度 44–96 受控，超出行数在框内滚动）
+            CommentDraftField(store: store, isFocused: $isDraftFocused)
+                .textFieldStyle(.plain)
+                .font(NativeTypography.commentBody())
+                .frame(maxWidth: .infinity, minHeight: 44, maxHeight: 96)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(
+                    Color.primary.opacity(0.06),
+                    in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+                )
+
+            // 工具行：表情/选图居左，发送居右
+            HStack(spacing: 8) {
                 Button { showsEmojiPicker = true } label: {
                     Image(systemName: "face.smiling")
                         .font(.system(size: 15, weight: .medium))
@@ -763,17 +773,7 @@ private struct CommentComposerBar: View {
                 .accessibilityLabel("选择图片")
                 .accessibilityIdentifier("comment_photo_picker")
 
-                CommentDraftField(store: store, isFocused: $isDraftFocused)
-                    .textFieldStyle(.plain)
-                    .font(NativeTypography.commentBody())
-                    .frame(maxWidth: .infinity, minHeight: 44, maxHeight: 110)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    // 小圆角输入底（替代液态玻璃胶囊，避免圆角过大）
-                    .background(
-                        Color.primary.opacity(0.06),
-                        in: RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    )
+                Spacer()
 
                 Button {
                     if case .failed = store.draft.submissionState {
@@ -801,11 +801,9 @@ private struct CommentComposerBar: View {
                 .accessibilityLabel("发送评论")
                 .accessibilityIdentifier("comment_submit")
             }
-            .padding(.horizontal, 12)
-            .padding(.bottom, 10)
         }
-        // 小圆角液态玻璃容器：恢复玻璃质感，但用小圆角（20）避免胶囊全圆角的拥挤感
-        .padding(.vertical, 10)
+        // 小圆角液态玻璃容器（与底部安全区协调）
+        .padding(14)
         .liquidGlassCard(cornerRadius: 20, isProminent: false)
         .overlay(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
