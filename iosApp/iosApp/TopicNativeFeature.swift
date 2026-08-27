@@ -25,6 +25,7 @@ struct TopicFeedDTO: Codable, Hashable, Sendable {
 protocol TopicRepository: Sendable {
     func fetchInfo(topicID: Int64) async throws -> TopicInfoDTO
     func fetchFeeds(topicID: Int64, offset: Int, limit: Int) async throws -> [TopicFeedDTO]
+    func rawInfo(topicID: Int64) async throws -> Data
 }
 
 /// 话题页数据（登录态下通过 APIClient 访问；未登录或接口调整时由调用方兜底）
@@ -39,6 +40,11 @@ actor URLSessionTopicRepository: TopicRepository {
         let url = URL(string: "https://www.zhihu.com/api/v4/topics/\(topicID)")!
         let data = try await client.data(for: url)
         return try TopicResponseMapper.info(from: data, topicID: topicID)
+    }
+
+    func rawInfo(topicID: Int64) async throws -> Data {
+        let url = URL(string: "https://www.zhihu.com/api/v4/topics/\(topicID)")!
+        return try await client.data(for: url)
     }
 
     func fetchFeeds(topicID: Int64, offset: Int, limit: Int) async throws -> [TopicFeedDTO] {
@@ -96,6 +102,18 @@ enum TopicResponseMapper {
             if let string = root[key] as? String, let value = Int(string) { return value }
         }
         return 0
+    }
+
+    static func debugSummary(_ data: Data) -> String {
+        guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return "(无法解析为 JSON)"
+        }
+        let keys = root.keys.sorted().joined(separator: ", ")
+        let numeric = root.compactMap { key, value -> String? in
+            guard let number = value as? NSNumber else { return nil }
+            return "\(key)=\(number)"
+        }.joined(separator: "; ")
+        return "顶层字段: \(keys)\n数字字段: \(numeric)"
     }
 
     static func feeds(from data: Data) throws -> [TopicFeedDTO] {
@@ -210,6 +228,12 @@ final class TopicStore: ObservableObject {
         }
     }
 
+    /// 调试：记录话题信息接口返回的顶层结构（仅字段名/数值，不含正文内容），用于定位字段差异
+    func infoDebugSummary() async -> String? {
+        guard let data = try? await repository.rawInfo(topicID: route.topicID) else { return nil }
+        return TopicResponseMapper.debugSummary(data)
+    }
+
     func retry() async {
         isLoadingInfo = false
         infoErrorMessage = nil
@@ -222,6 +246,7 @@ final class TopicStore: ObservableObject {
 struct TopicNativeView: View {
     @StateObject private var store: TopicStore
     let onOpen: (FeedItemRoute) -> Void
+    @State private var copiedDebug = false
 
     init(
         route: TopicRouteDTO,
@@ -245,6 +270,7 @@ struct TopicNativeView: View {
                     Text(store.infoErrorMessage ?? "话题加载失败")
                         .foregroundStyle(.secondary)
                     Button("重试") { Task { await store.retry() } }
+                    debugCopyButton
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
@@ -254,6 +280,19 @@ struct TopicNativeView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task { await store.loadInfoIfNeeded() }
         .accessibilityIdentifier("topic_native")
+    }
+
+    private var debugCopyButton: some View {
+        Button {
+            Task {
+                guard let summary = await store.infoDebugSummary() else { return }
+                UIPasteboard.general.string = summary
+                copiedDebug = true
+            }
+        } label: {
+            Label(copiedDebug ? "已复制调试信息" : "复制调试信息", systemImage: "doc.on.doc")
+                .font(.footnote)
+        }
     }
 
     private var content: some View {
@@ -269,10 +308,19 @@ struct TopicNativeView: View {
                     .listRowSeparator(.hidden)
             }
             if store.info != nil, store.feeds.isEmpty, !store.isLoadingFeeds {
-                Text("话题内容为空")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .listRowBackground(Color.nativeSystemGroupedBackground)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("话题内容为空")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    if let error = store.feedsErrorMessage {
+                        Text(error)
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
+                    debugCopyButton
+                }
+                .listRowBackground(Color.nativeSystemGroupedBackground)
+                .listRowSeparator(.hidden)
             }
             ForEach(store.feeds, id: \.id) { item in
                 if let route = item.route {
