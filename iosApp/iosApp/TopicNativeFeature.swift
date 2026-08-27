@@ -144,7 +144,7 @@ final class TopicStore: ObservableObject {
             isLoadingInfo = false
             return
         } catch {
-            infoErrorMessage = "话题信息加载失败"
+            infoErrorMessage = Self.presentableMessage(for: error, fallback: "话题信息加载失败")
         }
         isLoadingInfo = false
     }
@@ -168,7 +168,19 @@ final class TopicStore: ObservableObject {
         } catch is CancellationError {
             return
         } catch {
-            feedsErrorMessage = "话题内容加载失败"
+            feedsErrorMessage = Self.presentableMessage(for: error, fallback: "话题内容加载失败")
+        }
+    }
+
+    /// 把服务端常见错误转为对用户友好的提示（话题接口需登录）
+    private static func presentableMessage(for error: Error, fallback: String) -> String {
+        switch error {
+        case ZhihuAPIError.authenticationRequired,
+             ZhihuAPIError.httpStatus(401),
+             ZhihuAPIError.httpStatus(403):
+            return "话题需要登录后查看，请先在 App 内登录"
+        default:
+            return fallback
         }
     }
 

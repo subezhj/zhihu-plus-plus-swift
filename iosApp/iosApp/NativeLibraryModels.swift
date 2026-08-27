@@ -38,6 +38,7 @@ enum NativeContentDestinationResolver {
             case "questions": return segments.first.flatMap(Int64.init).map(NativeContentDestination.question)
             case "articles": return segments.first.flatMap(Int64.init).map { .article(id: $0, kind: .article) }
             case "pin": return segments.first.flatMap(Int64.init).map(NativeContentDestination.pin)
+            case "topics": return segments.first.flatMap(Int64.init).map(NativeContentDestination.topic)
             case "people":
                 return segments.first.map { .person(id: "", urlToken: $0, name: "") }
             case "search":
