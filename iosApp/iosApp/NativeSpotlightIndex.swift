@@ -207,7 +207,7 @@ private extension NativeContentDestination {
             return .question(id)
         case let .pin(id):
             return .pin(id)
-        case .person, .special, .column, .search, .external:
+        case .person, .topic, .special, .column, .search, .external:
             return nil
         }
     }
