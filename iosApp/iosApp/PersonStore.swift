@@ -24,7 +24,7 @@ final class PersonStore: ObservableObject {
 
     private let repository: PersonRepository
     private let diagnostics: PerformanceDiagnosticsClient
-    private let onNavigate: (PersonNavigationIntent) -> Void
+    private var onNavigate: (PersonNavigationIntent) -> Void
     private var profileGeneration: UInt64 = 0
     private var pageGenerations: [PersonPageKey: UInt64] = [:]
     private var profileTask: Task<Void, Never>?
@@ -183,6 +183,11 @@ final class PersonStore: ObservableObject {
     func retryBlock() {
         guard case .failed = blockAction else { return }
         toggleBlock()
+    }
+
+    /// 允许呈现层在弹窗出现后替换导航回调（如：先收起弹窗再转发到底层导航栈）
+    func updateOnNavigate(_ handler: @escaping (PersonNavigationIntent) -> Void) {
+        onNavigate = handler
     }
 
     func open(_ item: PersonPageItem) {

@@ -130,28 +130,8 @@ private struct CommentThreadContainer: View {
             .environment(\.openURL, OpenURLAction { url in
                 handleCommentURL(url)
             })
-            // 用户主页用标准 sheet 呈现（上弹 + 下滑关闭 + 左上角关闭按钮，同回答页收藏弹层方案）：
-            // 无论从根评论页还是子回复页进入，下滑/关闭后都回到原层级
-            .sheet(item: personCoverBinding) { model in
-                NavigationStack {
-                    PersonHostView(model: model)
-                        .toolbar {
-                            ToolbarItem(placement: .topBarLeading) {
-                                Button {
-                                    personCoverBinding.wrappedValue = nil
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .font(.system(size: 17))
-                                        .foregroundStyle(Color.accentColor)
-                                }
-                                .accessibilityLabel("关闭")
-                            }
-                        }
-                }
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
-                .presentationBackground(Color.nativeSystemGroupedBackground)
-            }
+            // 用户主页弹窗（方案 B）：弹窗内点内容先收起弹窗，再由底层导航栈全屏打开详情
+            .personCoverSheet(item: personCoverBinding, onNavigate: onPersonNavigate)
             .task { store.start() }
     }
 

@@ -28,6 +28,11 @@ final class PersonHostModel: ObservableObject, Identifiable {
 
     var navigationTitle: String { store.navigationTitle }
 
+    /// 替换用户主页内所有内容点击的导航处理（由呈现层在弹窗出现时调用）
+    func updateNavigation(_ handler: @escaping (PersonNavigationIntent) -> Void) {
+        store.updateOnNavigate(handler)
+    }
+
     func dispose() {
         guard !isDisposed else { return }
         isDisposed = true
