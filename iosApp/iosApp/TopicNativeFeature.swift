@@ -258,14 +258,14 @@ final class TopicStore: ObservableObject {
     }
 
     /// 调试：记录话题信息接口返回的顶层结构（仅字段名/数值，不含正文内容），用于定位字段差异
-    /// 调试：话题信息 + 热门内容接口的真实结构（仅字段名/计数，不含正文）
+    /// 调试：话题热门内容 + 信息接口的真实结构（仅字段名/计数，不含正文）。FEEDS 置前方便复制。
     func debugSummary() async -> String {
         var parts: [String] = []
+        let feedsSummary = await repository.rawFeedsDebug(topicID: route.topicID)
+        parts.append("FEEDS:\n" + feedsSummary)
         if let data = try? await repository.rawInfo(topicID: route.topicID) {
             parts.append("INFO:\n" + TopicResponseMapper.debugSummary(data))
         }
-        let feedsSummary = await repository.rawFeedsDebug(topicID: route.topicID)
-        parts.append("FEEDS:\n" + feedsSummary)
         return parts.joined(separator: "\n\n")
     }
 
