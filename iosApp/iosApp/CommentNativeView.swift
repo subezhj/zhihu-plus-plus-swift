@@ -698,7 +698,7 @@ private struct CommentComposerBar: View {
     }
 
     private var activeComposer: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
             // 头部行：标题 + 取消（玻璃按钮）
             HStack(alignment: .center) {
                 HStack(spacing: 6) {
@@ -719,8 +719,7 @@ private struct CommentComposerBar: View {
                 }
                 .buttonStyle(.glass)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
+            .padding(.horizontal, 14)
 
             if let imageData = store.draft.imageData, let image = UIImage(data: imageData) {
                 HStack {
@@ -736,11 +735,11 @@ private struct CommentComposerBar: View {
                     Button("移除", role: .destructive) { store.setDraftImage(nil) }
                         .font(.caption)
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 14)
             }
 
-            // 操作行：表情 + 选图 + 输入框 + 发送（图标小而紧凑，输入框为主体）
-            HStack(alignment: .center, spacing: 6) {
+            // 操作行：表情 + 选图 + 输入框 + 发送（小圆角输入框，高度受控）
+            HStack(alignment: .center, spacing: 8) {
                 Button { showsEmojiPicker = true } label: {
                     Image(systemName: "face.smiling")
                         .font(.system(size: 15, weight: .medium))
@@ -767,10 +766,14 @@ private struct CommentComposerBar: View {
                 CommentDraftField(store: store, isFocused: $isDraftFocused)
                     .textFieldStyle(.plain)
                     .font(NativeTypography.commentBody())
-                    .frame(maxWidth: .infinity, minHeight: 48)
-                    .padding(.horizontal, 16)
+                    .frame(maxWidth: .infinity, minHeight: 44, maxHeight: 110)
+                    .padding(.horizontal, 14)
                     .padding(.vertical, 8)
-                    .liquidGlassCapsule(isProminent: false)
+                    // 小圆角输入底（替代液态玻璃胶囊，避免圆角过大）
+                    .background(
+                        Color.primary.opacity(0.06),
+                        in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    )
 
                 Button {
                     if case .failed = store.draft.submissionState {
@@ -799,9 +802,15 @@ private struct CommentComposerBar: View {
                 .accessibilityIdentifier("comment_submit")
             }
             .padding(.horizontal, 12)
-            .padding(.bottom, 8)
+            .padding(.bottom, 10)
         }
-        // 去掉外层液态玻璃“框”（胶囊全圆角过大且拥挤）：内容直接悬浮，输入框胶囊为主体
+        // 小圆角液态玻璃容器：恢复玻璃质感，但用小圆角（20）避免胶囊全圆角的拥挤感
+        .padding(.vertical, 10)
+        .liquidGlassCard(cornerRadius: 20, isProminent: false)
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+        )
         .padding(.horizontal, 12)
         .padding(.bottom, 8)
     }
@@ -1112,7 +1121,8 @@ private struct CommentDraftField: View {
 
     var body: some View {
         TextField("发表评论", text: draftBinding, axis: .vertical)
-            .lineLimit(1...5)
+            // 行数上限 4：展开态容器高度受控，避免输入过长时胶囊/容器无限增高
+            .lineLimit(1...4)
             .focused(isFocused)
     }
 
