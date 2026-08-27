@@ -6,13 +6,13 @@ struct PinRouteDTO: Hashable, Sendable {
 }
 
 enum PinContentBlockDTO: Identifiable, Hashable, Sendable {
-    case text(id: String, text: String, links: [URL])
+    case text(id: String, html: String, text: String, links: [URL])
     case image(id: String, url: URL, originalURL: URL?)
     case link(id: String, title: String, destination: PinLinkDestination)
 
     var id: String {
         switch self {
-        case let .text(id, _, _), let .image(id, _, _), let .link(id, _, _): return id
+        case let .text(id, _, _, _), let .image(id, _, _), let .link(id, _, _): return id
         }
     }
 }
@@ -126,7 +126,7 @@ enum PinResponseMapper {
         let resolvedBlocks: [PinContentBlockDTO]
         if blocks.isEmpty, !html.isEmpty {
             let parsed = PinHTMLParser.parse(html)
-            resolvedBlocks = [.text(id: "html", text: parsed.text, links: parsed.links)]
+            resolvedBlocks = [.text(id: "html", html: html, text: parsed.text, links: parsed.links)]
         } else {
             resolvedBlocks = blocks
         }
@@ -157,7 +157,12 @@ enum PinResponseMapper {
         case "text":
             let parsed = PinHTMLParser.parse(item["content"] as? String ?? "")
             guard !parsed.text.isEmpty || !parsed.links.isEmpty else { return nil }
-            return .text(id: "text-\(index)", text: parsed.text, links: parsed.links)
+            return .text(
+                id: "text-\(index)",
+                html: item["content"] as? String ?? "",
+                text: parsed.text,
+                links: parsed.links
+            )
         case "image":
             guard let url = securePinMediaURL(item["url"] as? String) else { return nil }
             return .image(
@@ -374,6 +379,7 @@ struct PinNativeView: View {
     @StateObject private var store: PinNativeStore
     @State private var gallery: PinGalleryDestination?
     @State private var posterDocument: NativeContentPosterDocument?
+    @Environment(\.nativeContentPresentation) private var contentPresentation
     let onOpenPerson: (PersonRoutePayload) -> Void
     let onOpenLink: (PinLinkDestination) -> Void
     let onOpenComments: (Int64) -> Void
@@ -481,23 +487,26 @@ struct PinNativeView: View {
     @ViewBuilder
     private func content(_ block: PinContentBlockDTO) -> some View {
         switch block {
-        case let .text(_, text, links):
-            VStack(alignment: .leading, spacing: 8) {
-                if !text.isEmpty { Text(text).fixedSize(horizontal: false, vertical: true) }
-                ForEach(links, id: \.self) { url in
-                    // 想法正文链接：知乎内容（想法/回答/文章/问题）解析为原生页面打开，
-                    // 避免落入内部浏览器（SFSafari）时显示网页版点赞/评论而不是当前内容
-                    Button {
-                        onOpenLink(pinLinkDestination(for: url))
-                    } label: {
-                        Text(pinLinkDisplayTitle(for: url))
-                            .font(.subheadline)
-                            .foregroundStyle(Color.accentColor)
-                            .underline()
-                            .multilineTextAlignment(.leading)
+        case let .text(_, html, plainText, links):
+            if !html.isEmpty {
+                // 富文本内联渲染：@用户、#话题 等在正文原位可点，排版与回答页正文一致
+                pinRichBody(html)
+            } else {
+                VStack(alignment: .leading, spacing: 8) {
+                    if !plainText.isEmpty {
+                        Text(plainText).fixedSize(horizontal: false, vertical: true)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("打开链接")
+                    ForEach(links, id: \.self) { url in
+                        Button {
+                            onOpenLink(pinLinkDestination(for: url))
+                        } label: {
+                            Text(pinLinkDisplayTitle(for: url))
+                                .font(.subheadline)
+                                .foregroundStyle(Color.accentColor)
+                                .underline()
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
         case let .image(_, url, _):
@@ -512,6 +521,58 @@ struct PinNativeView: View {
                 Label(title, systemImage: "link").frame(maxWidth: .infinity, alignment: .leading)
             }
             .buttonStyle(.bordered)
+        }
+    }
+
+    /// 想法正文富文本：段落 Text（含内联链接）+ 系统文本选择，排版与回答页正文一致
+    private func pinRichBody(_ html: String) -> some View {
+        let pointSize = 15.5 * contentPresentation.fontScale
+        let lineSpacing = contentPresentation.extraLineSpacing(for: pointSize)
+        let blocks = QARichContentParser.blocks(from: html)
+        return VStack(alignment: .leading, spacing: contentPresentation.blockSpacing()) {
+            ForEach(blocks, id: \.id) { block in
+                blockRichText(block, font: .system(size: pointSize), lineSpacing: lineSpacing)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .textSelection(.enabled)
+        .environment(\.openURL, OpenURLAction { url in
+            guard let destination = QABodyLinkResolver.resolve(url) else { return .discarded }
+            handlePinBodyDestination(destination)
+            return .handled
+        })
+    }
+
+    @ViewBuilder
+    private func blockRichText(_ block: QABodyBlock, font: Font, lineSpacing: CGFloat) -> some View {
+        switch block {
+        case let .paragraph(_, runs), let .heading(_, _, runs), let .quote(_, runs):
+            Text(QARichTextFormatter.attributed(runs))
+                .font(font)
+                .lineSpacing(lineSpacing)
+                .tint(Color.accentColor)
+        default:
+            EmptyView()
+        }
+    }
+
+    private func handlePinBodyDestination(_ destination: QALinkDestination) {
+        switch destination {
+        case let .person(token):
+            // @用户：原生打开个人主页
+            if let payload = PersonRoutePayload(memberID: nil, urlToken: token, displayName: "") {
+                onOpenPerson(payload)
+            }
+        case let .answer(id):
+            onOpenLink(.feed(.answer(answerID: id, questionID: nil, questionTitle: "关联回答")))
+        case let .article(id):
+            onOpenLink(.feed(.article(articleID: id, title: "关联文章")))
+        case let .question(id):
+            onOpenLink(.feed(.question(questionID: id, title: "关联问题")))
+        case let .pin(id):
+            onOpenLink(.feed(.pin(pinID: id)))
+        case let .external(url):
+            onOpenLink(.external(url))
         }
     }
 
