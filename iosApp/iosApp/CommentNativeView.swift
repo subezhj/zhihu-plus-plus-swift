@@ -256,7 +256,8 @@ private struct CommentLevelView: View {
             NativeMediaGallery(
                 urls: destination.urls,
                 initialIndex: destination.initialIndex,
-                accessibilityPrefix: "comment_media"
+                accessibilityPrefix: "comment_media",
+                animatedURLs: destination.animatedURLs
             )
         }
     }

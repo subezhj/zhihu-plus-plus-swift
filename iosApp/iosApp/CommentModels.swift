@@ -338,6 +338,7 @@ struct CommentUserMessage: Identifiable, Equatable {
 struct CommentMediaGalleryDestination: Identifiable, Equatable {
     let id = UUID()
     let urls: [URL]
+    let animatedURLs: Set<URL>
     let initialIndex: Int
 
     init?(media: [CommentMediaDTO], selectedID: CommentMediaDTO.ID) {
@@ -346,6 +347,8 @@ struct CommentMediaGalleryDestination: Identifiable, Equatable {
               let initialIndex = media.firstIndex(where: { $0.id == selectedID })
         else { return nil }
         self.urls = urls
+        // 评论动图（GIF/表情）可能不带 .gif 扩展名，显式记录以便画廊按动图播放
+        self.animatedURLs = Set(media.filter { $0.kind == .animatedImage }.map(\.url))
         self.initialIndex = initialIndex
     }
 }

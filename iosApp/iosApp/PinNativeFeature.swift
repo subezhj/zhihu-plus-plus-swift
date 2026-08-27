@@ -539,18 +539,54 @@ struct PinNativeView: View {
     }
 
     private func actionBar(_ detail: PinDetailDTO) -> some View {
-        HStack(spacing: 24) {
-            Button { Task { await store.toggleLike() } } label: {
-                Label("\(detail.likeCount)", systemImage: detail.isLiked ? "hand.thumbsup.fill" : "hand.thumbsup")
-            }
+        // 悬浮液态玻璃胶囊操作栏（与回答页底栏一致风格）：点赞 / 评论
+        HStack(spacing: 0) {
+            actionButton(
+                systemName: detail.isLiked ? "hand.thumbsup.fill" : "hand.thumbsup",
+                count: detail.likeCount,
+                selected: detail.isLiked,
+                action: { Task { await store.toggleLike() } }
+            )
             .disabled(store.isMutatingLike)
-            Button { onOpenComments(detail.id) } label: {
-                Label("\(detail.commentCount)", systemImage: "bubble.left")
-            }
+
+            actionButton(
+                systemName: "bubble.left",
+                count: detail.commentCount,
+                selected: false,
+                action: { onOpenComments(detail.id) }
+            )
         }
-        .padding(.horizontal, 22)
-        .padding(.vertical, 10)
-        .background(.bar)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .liquidGlassCapsule(ignoreToggle: true)
+        .overlay(
+            Capsule()
+                .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+        )
+        .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 4)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 10)
+    }
+
+    private func actionButton(
+        systemName: String,
+        count: Int,
+        selected: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            VStack(spacing: 2) {
+                Image(systemName: systemName)
+                    .font(.system(size: 19, weight: selected ? .semibold : .regular))
+                Text("\(count)")
+                    .font(.system(size: 10.5, weight: .regular).monospacedDigit())
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity, minHeight: 40)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(selected ? Color.accentColor : Color.primary)
     }
 
     private func metadata(_ detail: PinDetailDTO) -> String {

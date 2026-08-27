@@ -5,6 +5,7 @@ import UIKit
 
 struct NativeMediaGallery: View {
     let urls: [URL]
+    let animatedURLs: Set<URL>
     let initialIndex: Int
     let accessibilityPrefix: String
 
@@ -18,8 +19,14 @@ struct NativeMediaGallery: View {
     @State private var message: NativeMediaMessage?
     @State private var isSaving = false
 
-    init(urls: [URL], initialIndex: Int, accessibilityPrefix: String = "media_gallery") {
+    init(
+        urls: [URL],
+        initialIndex: Int,
+        accessibilityPrefix: String = "media_gallery",
+        animatedURLs: Set<URL> = []
+    ) {
         self.urls = urls
+        self.animatedURLs = animatedURLs
         self.initialIndex = min(max(0, initialIndex), max(0, urls.count - 1))
         self.accessibilityPrefix = accessibilityPrefix
         _selectedIndex = State(initialValue: min(max(0, initialIndex), max(0, urls.count - 1)))
@@ -36,6 +43,7 @@ struct NativeMediaGallery: View {
                     ForEach(urls.indices, id: \.self) { index in
                         NativeZoomableRemoteImage(
                             url: urls[index],
+                            animatedURLs: animatedURLs,
                             store: imageStore,
                             onZoomChanged: { isZoomed in
                                 if isZoomed { zoomedIndices.insert(index) } else { zoomedIndices.remove(index) }
@@ -279,6 +287,7 @@ private struct NativeMediaIndicatorSurface: ViewModifier {
 
 private struct NativeZoomableRemoteImage: View {
     let url: URL
+    let animatedURLs: Set<URL>
     @ObservedObject var store: NativeMediaImageStore
     let onZoomChanged: (Bool) -> Void
 
@@ -289,7 +298,7 @@ private struct NativeZoomableRemoteImage: View {
 
     var body: some View {
         Group {
-            if NativeRemoteMediaPolicy.isAnimatedImage(url) {
+            if NativeRemoteMediaPolicy.isAnimatedImage(url) || animatedURLs.contains(url) {
                 zoomableContent(
                     NativeAnimatedRemoteImage(url: url, contentMode: .fit)
                 )
