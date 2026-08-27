@@ -328,11 +328,9 @@ private struct QAAnswerPageController: UIViewControllerRepresentable {
         )
         controller.dataSource = context.coordinator
         controller.delegate = context.coordinator
-        controller.view.backgroundColor = UIColor { traits in
-            traits.userInterfaceStyle == .dark
-                ? UIColor(red: 25.0 / 255.0, green: 25.0 / 255.0, blue: 25.0 / 255.0, alpha: 1.0)
-                : .systemBackground
-        }
+        // 透明背景：由 SwiftUI 侧的 nativeSystemBackground 统一承担深浅色底色，
+        // 避免 UIKit 自定义色与全局深浅色规范不一致（“特殊涂层”）
+        controller.view.backgroundColor = .clear
         controller.setViewControllers(
             [context.coordinator.controller(for: pager.current)],
             direction: .forward,

@@ -21,7 +21,9 @@ struct AnswerNativeView: View {
                 case .idle, .loading, .loaded:
                     ProgressView("正在加载正文")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color.nativeSystemBackground.ignoresSafeArea())
+                        // 保留深浅色阅读器底色（nativeSystemBackground），仅向底部延伸；
+                        // 顶部交给导航栏材料，避免 ignoresSafeArea 顶到导航栏下盖住高斯模糊
+                        .background(Color.nativeSystemBackground.ignoresSafeArea(edges: .bottom))
                 }
             }
         }
@@ -150,7 +152,11 @@ struct AnswerNativeView: View {
         }
         // 整页启用系统文本选择：正文已支持，标题/元数据等 Text 一并可长按选择/复制（Apple 官方交互）
         .textSelection(.enabled)
-        .background(Color.nativeSystemBackground.ignoresSafeArea())
+        // 保留深浅色阅读器底色（nativeSystemBackground），仅向底部延伸；顶部交还导航栏材料，
+        // 使顶栏恢复标准高斯模糊（与评论页一致），滚动时内容在模糊下穿过
+        .background(Color.nativeSystemBackground.ignoresSafeArea(edges: .bottom))
+        // iOS 26 标准滚动边缘效果：顶栏在滚动到边界时呈现柔和模糊过渡
+        .scrollEdgeEffectStyle(.soft, for: .top)
         .overlay(alignment: .bottom) {
             AnswerActionBar(
                 content: content,
