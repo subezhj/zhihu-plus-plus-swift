@@ -148,6 +148,8 @@ struct AnswerNativeView: View {
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
         }
+        // 整页启用系统文本选择：正文已支持，标题/元数据等 Text 一并可长按选择/复制（Apple 官方交互）
+        .textSelection(.enabled)
         .background(Color.nativeSystemBackground.ignoresSafeArea())
         .overlay(alignment: .bottom) {
             AnswerActionBar(

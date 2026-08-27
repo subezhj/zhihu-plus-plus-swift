@@ -94,17 +94,10 @@ private struct CommentThreadContainer: View {
 
     var body: some View {
         CommentLevelView(store: store, level: .root, close: nil)
-            .navigationDestination(isPresented: personBinding) {
-                personDestination
-            }
             .background {
                 if case let .replies(rootCommentID) = store.activeLevel {
                     NavigationLink(
-                        // 回复页本身也挂载个人页导航目标：从回复页点开用户页，返回时回到回复页而非根评论页
-                        destination: CommentLevelView(store: store, level: .replies(rootCommentID: rootCommentID), close: nil)
-                            .navigationDestination(isPresented: personBinding) {
-                                personDestination
-                            },
+                        destination: CommentLevelView(store: store, level: .replies(rootCommentID: rootCommentID), close: nil),
                         isActive: Binding(
                             get: {
                                 if case .replies = store.activeLevel { return true }
@@ -137,12 +130,14 @@ private struct CommentThreadContainer: View {
             .environment(\.openURL, OpenURLAction { url in
                 handleCommentURL(url)
             })
+            // 用户主页用全屏模态呈现：无论从根评论页还是子回复页进入，返回都回到原层级
+            // （navigationDestination(isPresented:) 在 push 深层时会让返回层级错乱）
+            .fullScreenCover(item: personCoverBinding) { model in
+                NavigationStack {
+                    PersonHostView(model: model)
+                }
+            }
             .task { store.start() }
-    }
-
-    @ViewBuilder
-    private var personDestination: some View {
-        if let personModel { PersonNativeView(model: personModel) }
     }
 
     private func handleCommentURL(_ url: URL) -> OpenURLAction.Result {
@@ -161,11 +156,11 @@ private struct CommentThreadContainer: View {
         return .systemAction(url)
     }
 
-    private var personBinding: Binding<Bool> {
+    private var personCoverBinding: Binding<PersonHostModel?> {
         Binding(
-            get: { personModel != nil },
-            set: { isPresented in
-                if !isPresented {
+            get: { personModel },
+            set: { value in
+                if value == nil {
                     personBindingChanged(false)
                 }
             }
@@ -582,8 +577,21 @@ private struct CommentRow: View {
             // 分割线紧贴内容底部，作为外层容器的末尾子视图，避免 overlay 在行高变化时出现偏移
             NativeThinDivider()
         }
-        // 不挂整行 contextMenu：保持正文 .textSelection(.enabled) 长按即可弹出系统文本选择（复制/翻译/查找）。
-        // 回复/分享仍可通过左滑 swipeActions 或点正文/作者区触发。
+        // 长按正文会优先弹出系统文本选择（复制/翻译/查找）；长按非文本区域弹出快捷菜单（回复/复制评论/分享）
+        .contextMenu {
+            Button(action: beginReply) {
+                Label("回复 @\(comment.author.displayName)", systemImage: "arrowshape.turn.up.left")
+            }
+            Button {
+                UIPasteboard.general.string = CommentPlainText.value(from: comment.contentHTML)
+            } label: {
+                Label("复制评论", systemImage: "doc.on.doc")
+            }
+            Button(action: onShare) {
+                Label("分享", systemImage: "square.and.arrow.up")
+            }
+            .accessibilityIdentifier("comment_context_share_\(comment.id)")
+        }
         .accessibilityIdentifier("comment_row_\(comment.id)")
     }
 

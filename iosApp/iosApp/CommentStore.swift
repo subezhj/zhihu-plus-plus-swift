@@ -192,35 +192,39 @@ final class CommentSessionStore: ObservableObject {
               let current = comment(withID: commentID, in: page.items)
         else { return }
         operationID &+= 1
+        let targetIsLiked = !current.isLiked
         let mutation = CommentLikeMutationDTO(
             operationID: operationID,
             acceptanceKey: page.acceptanceKey,
             commentID: commentID,
-            targetIsLiked: !current.isLiked
+            targetIsLiked: targetIsLiked
         )
         page.activeLikeMutation = mutation
+        // 乐观更新：点击立即翻转点赞与计数（避免反馈延迟、感觉“没点中”），请求失败时回滚
+        page.items = replacingComment(commentID, in: page.items) { comment in
+            comment.replacingLikeState(
+                isLiked: targetIsLiked,
+                likeCount: comment.likeCount + (targetIsLiked ? 1 : -1)
+            )
+        }
         pages[level] = page
         likeTasks[level]?.cancel()
         likeTasks[level] = Task { [weak self] in
             guard let self else { return }
             do {
-                try await repository.setLiked(mutation.targetIsLiked, commentID: commentID)
+                try await repository.setLiked(targetIsLiked, commentID: commentID)
                 guard accepts(mutation, level: level), var acceptedPage = pages[level] else { return }
-                acceptedPage.items = replacingComment(
-                    commentID,
-                    in: acceptedPage.items
-                ) { comment in
-                    comment.replacingLikeState(
-                        isLiked: mutation.targetIsLiked,
-                        likeCount: comment.likeCount + (mutation.targetIsLiked ? 1 : -1)
-                    )
-                }
+                // 服务端确认：保留乐观状态，仅清除进行中的 mutation
                 acceptedPage.activeLikeMutation = nil
                 pages[level] = acceptedPage
             } catch is CancellationError {
                 return
             } catch {
                 guard accepts(mutation, level: level), var acceptedPage = pages[level] else { return }
+                // 失败回滚到点击前的状态
+                acceptedPage.items = replacingComment(commentID, in: acceptedPage.items) { comment in
+                    comment.replacingLikeState(isLiked: current.isLiked, likeCount: current.likeCount)
+                }
                 acceptedPage.activeLikeMutation = nil
                 pages[level] = acceptedPage
                 show(error)

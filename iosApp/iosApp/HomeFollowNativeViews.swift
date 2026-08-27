@@ -334,7 +334,7 @@ struct HomeNativeView: View {
                         .listRowBackground(Color.nativeSystemGroupedBackground)
                 }
 
-                ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in
+                ForEach(visibleItems) { item in
                     FeedItemRow(item: item, showsThumbnail: true) { route in
                         store.opened(item)
                         onOpen(route)
@@ -344,13 +344,6 @@ struct HomeNativeView: View {
                             Task { await store.loadMore() }
                         }
                     }
-                    // 首卡距顶栏 = 卡片间间距标准（12pt），与后续卡片间距保持一致
-                    .listRowInsets(EdgeInsets(
-                        top: index == 0 ? NativeHomeFeedCardSpacing.firstCardTopInset : NativeHomeFeedCardSpacing.standardTopInset,
-                        leading: 16,
-                        bottom: NativeHomeFeedCardSpacing.standardBottomInset,
-                        trailing: 16
-                    ))
                 }
 
                 if let message = store.errorMessage {
@@ -367,6 +360,8 @@ struct HomeNativeView: View {
             .scrollContentBackground(.hidden)
             .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
             .nativeHomeFeedListLayout()
+            // 首卡距顶栏 = 卡片间间距（行 inset 6 + 顶部额外 margin 6 = 12pt），与卡片间间距一致
+            .contentMargins(.top, NativeHomeFeedCardSpacing.firstCardExtraTopMargin, for: .scrollContent)
             .coordinateSpace(name: "home-root-scroll")
             .nativeHomeFeedScrollTracking(
                 collapseProgress: $collapseProgress,

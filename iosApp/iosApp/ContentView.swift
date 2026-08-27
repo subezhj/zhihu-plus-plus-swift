@@ -266,8 +266,9 @@ public extension View {
 public enum NativeHomeFeedCardSpacing {
     public static let standardTopInset: CGFloat = 6
     public static let standardBottomInset: CGFloat = 6
-    /// 首卡距顶栏间距 = 卡片间间距（6 + 6 = 12pt）
-    public static let firstCardTopInset: CGFloat = 12
+    /// 首卡额外顶部边距：配合 List 的 scrollContent 顶部 contentMargin，
+    /// 使首卡距顶栏 = 卡片间间距（6 + 6 = 12pt），且不受 listRowInsets 覆盖顺序影响
+    public static let firstCardExtraTopMargin: CGFloat = 6
 }
 
 private struct NativeFeedCardModifier: ViewModifier {

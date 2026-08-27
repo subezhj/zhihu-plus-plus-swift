@@ -43,18 +43,11 @@ struct NativeCollectionsView: View {
                 if let error = store.errorMessage {
                     NativeInlineRetry(message: error) { Task { await store.loadMore() } }
                 }
-                ForEach(Array(store.collections.enumerated()), id: \.element.id) { index, collection in
+                ForEach(store.collections) { collection in
                     NavigationLink(value: NativeShellRoute.collectionContent(collection.id)) {
                         collectionRow(collection)
                     }
                     .nativeFeedCardItem(cornerRadius: 14)
-                    // 首卡距顶栏 = 卡片间间距标准（12pt），与首页保持一致
-                    .listRowInsets(EdgeInsets(
-                        top: index == 0 ? NativeHomeFeedCardSpacing.firstCardTopInset : NativeHomeFeedCardSpacing.standardTopInset,
-                        leading: 16,
-                        bottom: NativeHomeFeedCardSpacing.standardBottomInset,
-                        trailing: 16
-                    ))
                 }
                 paginationFooter
             }
@@ -62,6 +55,8 @@ struct NativeCollectionsView: View {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
+        // 首卡距顶栏 = 卡片间间距（行 inset 6 + 顶部额外 margin 6 = 12pt），与首页保持一致
+        .contentMargins(.top, NativeHomeFeedCardSpacing.firstCardExtraTopMargin, for: .scrollContent)
         .navigationTitle("我的收藏")
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await store.refresh() }

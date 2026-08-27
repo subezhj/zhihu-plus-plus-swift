@@ -164,10 +164,16 @@ struct SearchNativeView: View {
                     Button {
                         Task { await store.submitQuery(row.query) }
                     } label: {
-                        Label(row.query, systemImage: "clock.arrow.circlepath")
-                            .font(NativeTypography.feedTitle())
-                            .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
-                            .contentShape(Rectangle())
+                        // 图标降为与热搜热度文本一致的小尺寸（caption），文字保持 feedTitle
+                        HStack(spacing: 7) {
+                            Image(systemName: "clock.arrow.circlepath")
+                                .font(NativeTypography.caption())
+                                .foregroundStyle(.secondary)
+                            Text(row.query)
+                                .font(NativeTypography.feedTitle())
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
@@ -186,6 +192,12 @@ struct SearchNativeView: View {
                 .padding(.top, 4)
                 .listRowBackground(Color.nativeSystemGroupedBackground)
             }
+
+            // 仅一条分割线，分隔“搜索历史”与“热搜”区块
+            NativeThinDivider()
+                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                .listRowBackground(Color.nativeSystemGroupedBackground)
+                .listRowSeparator(.hidden)
         }
 
         if store.showsHotSearch {
@@ -236,11 +248,8 @@ struct SearchNativeView: View {
                     Button {
                         Task { await store.refreshSuggestions() }
                     } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "arrow.clockwise")
-                            Text("刷新")
-                        }
-                        .nativeCapsuleBadge(foregroundColor: Color.accentColor)
+                        Text("刷新")
+                            .nativeCapsuleBadge(foregroundColor: Color.accentColor)
                     }
                     .disabled(store.isRefreshingSuggestions)
                     .textCase(nil)
