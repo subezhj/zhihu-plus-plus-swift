@@ -861,6 +861,7 @@ enum QABodyLinkResolver {
         case let .article(id): return URL(string: "zhihu://articles/\(id)")
         case let .question(id): return URL(string: "zhihu://questions/\(id)")
         case let .pin(id): return URL(string: "zhihu://pin/\(id)")
+        case let .topic(id): return URL(string: "zhihu://topics/\(id)")
         case let .person(token): return URL(string: "zhihu://people/\(token)")
         case let .external(url): return url
         }
@@ -877,10 +878,10 @@ enum QABodyLinkResolver {
                 return .person(urlToken: token)
             case let .pin(id):
                 return .pin(id)
-            case .special, .column:
+            case let .topic(id):
+                return .topic(id)
+            case .special, .column, .search:
                 return .external(url)
-            case .search:
-                break
             case let .external(externalURL):
                 return .external(externalURL)
             }

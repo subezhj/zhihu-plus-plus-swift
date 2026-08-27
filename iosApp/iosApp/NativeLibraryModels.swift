@@ -10,6 +10,7 @@ enum NativeContentDestination: Equatable, Hashable {
     case question(id: Int64)
     case person(id: String, urlToken: String, name: String)
     case pin(id: Int64)
+    case topic(id: Int64)
     case special(id: String)
     case column(id: String)
     case search(query: String)
@@ -84,6 +85,9 @@ enum NativeContentDestinationResolver {
             }
             if segments.count == 2, segments[0] == "pin", let id = Int64(segments[1]) {
                 return .pin(id: id)
+            }
+            if segments.count >= 2, segments[0] == "topic", let id = Int64(segments[1]) {
+                return .topic(id: id)
             }
             if segments.count == 2,
                segments[0] == "special",

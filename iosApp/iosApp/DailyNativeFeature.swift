@@ -218,7 +218,7 @@ enum DailyRouteResolver {
                 return .feed(.pin(pinID: id))
             case let .external(externalURL):
                 return .external(externalURL)
-            case .person, .special, .column, .search:
+            case .person, .special, .column, .search, .topic:
                 break
             }
         }

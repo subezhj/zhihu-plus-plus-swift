@@ -19,6 +19,7 @@ enum PinContentBlockDTO: Identifiable, Hashable, Sendable {
 
 enum PinLinkDestination: Hashable, Sendable {
     case feed(FeedItemRoute)
+    case topic(Int64)
     case external(URL)
 }
 
@@ -571,6 +572,8 @@ struct PinNativeView: View {
             onOpenLink(.feed(.question(questionID: id, title: "关联问题")))
         case let .pin(id):
             onOpenLink(.feed(.pin(pinID: id)))
+        case let .topic(id):
+            onOpenLink(.topic(id))
         case let .external(url):
             onOpenLink(.external(url))
         }
@@ -675,6 +678,8 @@ struct PinNativeView: View {
             return .feed(.question(questionID: id, title: "关联问题"))
         case let .pin(id):
             return .feed(.pin(pinID: id))
+        case let .topic(id):
+            return .topic(id)
         case .person, .special, .column, .search, .external:
             return .external(url)
         }
@@ -688,6 +693,7 @@ struct PinNativeView: View {
         case let .article(_, kind): return kind == .answer ? "关联回答" : "关联文章"
         case .question: return "关联问题"
         case .pin: return "关联想法"
+        case .topic: return "话题"
         case let .person(_, _, name): return name.isEmpty ? "用户主页" : name
         case let .external(externalURL): return externalURL.host ?? externalURL.absoluteString
         case .special, .column, .search: return url.host ?? url.absoluteString

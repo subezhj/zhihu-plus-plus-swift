@@ -434,6 +434,8 @@ enum QAMarkdownConverter {
             return URL(string: "https://www.zhihu.com/question/\(id)")
         case let .pin(id):
             return URL(string: "https://www.zhihu.com/pin/\(id)")
+        case let .topic(id):
+            return URL(string: "https://www.zhihu.com/topic/\(id)")
         case let .person(token):
             return URL(string: "https://www.zhihu.com/people/\(token)")
         case let .external(url):
@@ -534,6 +536,7 @@ enum QALinkDestination: Hashable, Sendable {
     case article(Int64)
     case question(Int64)
     case pin(Int64)
+    case topic(Int64)
     case person(urlToken: String)
     case external(URL)
 }

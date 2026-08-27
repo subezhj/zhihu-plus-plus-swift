@@ -42,6 +42,8 @@ enum NativeClipboardZhihuLinkParser {
             return identity.isEmpty ? nil : "person:\(identity)"
         case let .pin(id):
             return "pin:\(id)"
+        case let .topic(id):
+            return "topic:\(id)"
         case let .special(id):
             return "special:\(id)"
         case let .column(id):

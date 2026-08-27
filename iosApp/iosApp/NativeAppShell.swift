@@ -13,6 +13,7 @@ enum NativeShellRoute: Hashable {
     case comments(CommentThreadRouteDTO)
     case search(SearchRouteDTO)
     case hotList
+    case topic(TopicRouteDTO)
     case writeAnswer(WriteAnswerRouteDTO)
     case writePin
     case account
@@ -38,6 +39,7 @@ enum NativeShellRoute: Hashable {
         case .comments: return "comments"
         case .search: return "search"
         case .hotList: return "hot_list"
+        case .topic: return "topic"
         case .writeAnswer: return "write_answer"
         case .writePin: return "write_pin"
         case .account: return "account"
@@ -591,6 +593,12 @@ struct NativeAppShell: View {
                     navigate(.comments(.init(subject: .pin($0))), in: tab)
                 }
             )
+        case let .topic(route):
+            TopicNativeView(
+                route: route,
+                repository: URLSessionTopicRepository(client: hostModel.apiClient),
+                onOpen: { openFeed($0) }
+            )
         case let .video(route):
             NativeVideoPlayerScreen(
                 route: route,
@@ -758,6 +766,7 @@ struct NativeAppShell: View {
                 navigate(.person(payload))
             }
         case let .pin(id): navigate(.pin(.init(pinID: id)))
+        case let .topic(id): navigate(.topic(.init(topicID: id)))
         case let .special(id): navigate(.special(id))
         case let .column(id): navigate(.column(id))
         case let .search(query): navigate(.search(.init(query: query)))
@@ -775,6 +784,7 @@ struct NativeAppShell: View {
     private func handlePinLink(_ destination: PinLinkDestination) {
         switch destination {
         case let .feed(route): openFeed(route)
+        case let .topic(id): navigate(.topic(.init(topicID: id)), in: selectedTab)
         case let .external(url): hostModel.openExternal(url)
         }
     }
@@ -825,6 +835,7 @@ struct NativeAppShell: View {
         case let .article(id): navigate(.answer(.init(contentID: id, kind: .article)), in: tab)
         case let .question(id): navigate(.question(.init(questionID: id)), in: tab)
         case let .pin(id): navigate(.pin(.init(pinID: id)), in: tab)
+        case let .topic(id): navigate(.topic(.init(topicID: id)), in: tab)
         case let .person(token):
             if let payload = PersonRoutePayload(memberID: nil, urlToken: token, displayName: "") {
                 navigate(.person(payload), in: tab)
