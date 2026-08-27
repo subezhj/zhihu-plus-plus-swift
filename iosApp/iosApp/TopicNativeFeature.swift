@@ -51,8 +51,7 @@ actor URLSessionTopicRepository: TopicRepository {
     private static let feedBaseCandidates: (Int64) -> [String] = { topicID in
         [
             "https://www.zhihu.com/api/v4/topics/\(topicID)/feeds/essence",
-            "https://www.zhihu.com/api/v4/topics/\(topicID)/feeds/hot",
-            "https://api.zhihu.com/topics/\(topicID)/feeds/essence"
+            "https://www.zhihu.com/api/v4/topics/\(topicID)/feeds/hot"
         ]
     }
 
@@ -68,7 +67,9 @@ actor URLSessionTopicRepository: TopicRepository {
                 let keys = root?.keys.sorted().joined(separator: ",") ?? "?"
                 let dataCount = (root?["data"] as? [Any])?.count ?? -1
                 let firstKeys = ((root?["data"] as? [[String: Any]])?.first?.keys.sorted().joined(separator: ",")) ?? ""
-                lines.append("\(base) -> keys:[\(keys)] dataCount=\(dataCount) first:[\\(firstKeys)]")
+                let firstType = (root?["data"] as? [[String: Any]])?.first?["type"] as? String ?? ""
+                let targetKeys = ((root?["data"] as? [[String: Any]])?.first?["target"] as? [String: Any])?.keys.sorted().joined(separator: ",") ?? ""
+                lines.append("\(base) -> keys:[\(keys)] dataCount=\(dataCount) first:[\(firstKeys)] type:\(firstType) target:[\(targetKeys)]")
             } catch {
                 lines.append("\(base) -> error \(error)")
             }
@@ -196,6 +197,7 @@ final class TopicStore: ObservableObject {
     @Published private(set) var infoErrorMessage: String?
     @Published private(set) var feedsErrorMessage: String?
     @Published private(set) var isEnd = false
+    @Published var feedsDebugText: String?
 
     let route: TopicRouteDTO
     private let repository: TopicRepository
@@ -267,6 +269,10 @@ final class TopicStore: ObservableObject {
             parts.append("INFO:\n" + TopicResponseMapper.debugSummary(data))
         }
         return parts.joined(separator: "\n\n")
+    }
+
+    func loadFeedsDebug() async {
+        feedsDebugText = await repository.rawFeedsDebug(topicID: route.topicID)
     }
 
     func retry() async {
@@ -352,10 +358,17 @@ struct TopicNativeView: View {
                             .font(.caption2)
                             .foregroundStyle(.tertiary)
                     }
+                    if let debug = store.feedsDebugText {
+                        Text(debug)
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                            .textSelection(.enabled)
+                    }
                     debugCopyButton
                 }
                 .listRowBackground(Color.nativeSystemGroupedBackground)
                 .listRowSeparator(.hidden)
+                .task { await store.loadFeedsDebug() }
             }
             ForEach(store.feeds, id: \.id) { item in
                 if let route = item.route {
