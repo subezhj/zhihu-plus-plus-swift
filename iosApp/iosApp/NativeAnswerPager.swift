@@ -42,7 +42,8 @@ private struct QAAnswerPagerSurface: View {
                 pinAnswerDate: preferences.pinAnswerDate,
                 hapticFeedback: hapticFeedback,
                 onNavigate: onNavigate
-            )            if let error = pager.switchError {
+            )
+            if let error = pager.switchError {
                 Button {
                     Task { await pager.retrySwitch() }
                 } label: {
