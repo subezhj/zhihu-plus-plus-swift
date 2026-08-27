@@ -739,12 +739,12 @@ private struct CommentComposerBar: View {
                 .padding(.horizontal, 16)
             }
 
-            // 操作行：表情 + 选图 + 输入框 + 发送（液态玻璃组合，图标小、输入框为主体）
-            HStack(alignment: .center, spacing: 8) {
+            // 操作行：表情 + 选图 + 输入框 + 发送（图标小而紧凑，输入框为主体）
+            HStack(alignment: .center, spacing: 6) {
                 Button { showsEmojiPicker = true } label: {
                     Image(systemName: "face.smiling")
-                        .font(.system(size: 17, weight: .medium))
-                        .frame(width: 26, height: 26)
+                        .font(.system(size: 15, weight: .medium))
+                        .frame(width: 22, height: 22)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.glass)
@@ -756,8 +756,8 @@ private struct CommentComposerBar: View {
                     matching: .images
                 ) {
                     Image(systemName: "photo")
-                        .font(.system(size: 17, weight: .medium))
-                        .frame(width: 26, height: 26)
+                        .font(.system(size: 15, weight: .medium))
+                        .frame(width: 22, height: 22)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.glass)
@@ -780,12 +780,12 @@ private struct CommentComposerBar: View {
                     }
                 } label: {
                     if case .submitting = store.draft.submissionState {
-                        ProgressView().frame(width: 28, height: 28)
+                        ProgressView().frame(width: 24, height: 24)
                     } else {
                         Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 22, weight: .semibold))
+                            .font(.system(size: 19, weight: .semibold))
                             .foregroundStyle(.white)
-                            .frame(width: 28, height: 28)
+                            .frame(width: 24, height: 24)
                             .contentShape(Rectangle())
                     }
                 }
@@ -799,16 +799,11 @@ private struct CommentComposerBar: View {
                 .accessibilityIdentifier("comment_submit")
             }
             .padding(.horizontal, 12)
-            .padding(.bottom, 12)
+            .padding(.bottom, 8)
         }
-        // 液态玻璃悬浮胶囊（与回答页底部操作栏 AnswerActionBar 同款样式）
-        .liquidGlassCapsule(isProminent: false)
-        .overlay(
-            Capsule()
-                .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
-        )
+        // 去掉外层液态玻璃“框”（胶囊全圆角过大且拥挤）：内容直接悬浮，输入框胶囊为主体
         .padding(.horizontal, 12)
-        .padding(.bottom, 10)
+        .padding(.bottom, 8)
     }
 
     private func dismissComposer() {
