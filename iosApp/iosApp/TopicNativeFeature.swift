@@ -42,14 +42,29 @@ actor URLSessionTopicRepository: TopicRepository {
     }
 
     func fetchFeeds(topicID: Int64, offset: Int, limit: Int) async throws -> [TopicFeedDTO] {
-        var components = URLComponents(string: "https://www.zhihu.com/api/v4/topics/\(topicID)/feeds/hot")!
-        components.queryItems = [
-            URLQueryItem(name: "limit", value: String(limit)),
-            URLQueryItem(name: "offset", value: String(offset))
+        // 话题热点内容端点有多个候选，依次尝试取第一个有数据的（essence 优先）
+        let baseCandidates = [
+            "https://www.zhihu.com/api/v4/topics/\(topicID)/feeds/essence",
+            "https://www.zhihu.com/api/v4/topics/\(topicID)/feeds/hot",
+            "https://api.zhihu.com/topics/\(topicID)/feeds/essence"
         ]
-        guard let url = components.url else { throw ZhihuAPIError.malformedPayload }
-        let data = try await client.data(for: url)
-        return try TopicResponseMapper.feeds(from: data)
+        var lastError: Error = ZhihuAPIError.malformedPayload
+        for base in baseCandidates {
+            guard var components = URLComponents(string: base) else { continue }
+            components.queryItems = [
+                URLQueryItem(name: "limit", value: String(limit)),
+                URLQueryItem(name: "offset", value: String(offset))
+            ]
+            guard let url = components.url else { continue }
+            do {
+                let data = try await client.data(for: url)
+                let feeds = try TopicResponseMapper.feeds(from: data)
+                if !feeds.isEmpty { return feeds }
+            } catch {
+                lastError = error
+            }
+        }
+        throw lastError
     }
 }
 
@@ -59,7 +74,9 @@ enum TopicResponseMapper {
             throw ZhihuAPIError.malformedPayload
         }
         let name = (root["name"] as? String) ?? "话题"
-        let excerpt = ((root["excerpt"] as? String)?.nonBlank ?? (root["introduction"] as? String)?.nonBlank)
+        let excerpt = ((root["excerpt"] as? String)?.nonBlank
+            ?? (root["introduction"] as? String)?.nonBlank
+            ?? (root["description"] as? String)?.nonBlank)
         let avatarURL = (root["avatar_url"] as? String).flatMap { URL(string: $0) }
         let parsedID = (root["id"] as? NSNumber)?.int64Value ?? Int64((root["id"] as? String) ?? "")
         return TopicInfoDTO(
@@ -67,10 +84,18 @@ enum TopicResponseMapper {
             name: name,
             excerpt: excerpt,
             avatarURL: avatarURL,
-            followersCount: (root["followers_count"] as? NSNumber)?.intValue ?? 0,
-            answersCount: (root["answers_count"] as? NSNumber)?.intValue ?? 0,
-            questionsCount: (root["questions_count"] as? NSNumber)?.intValue ?? 0
+            followersCount: firstInt(root, keys: "followers_count", "follower_count", "followers"),
+            answersCount: firstInt(root, keys: "answers_count", "answer_count", "best_answers_count"),
+            questionsCount: firstInt(root, keys: "questions_count", "question_count")
         )
+    }
+
+    private static func firstInt(_ root: [String: Any], keys: String...) -> Int {
+        for key in keys {
+            if let number = root[key] as? NSNumber { return number.intValue }
+            if let string = root[key] as? String, let value = Int(string) { return value }
+        }
+        return 0
     }
 
     static func feeds(from data: Data) throws -> [TopicFeedDTO] {
@@ -80,8 +105,9 @@ enum TopicResponseMapper {
             return []
         }
         let items: [TopicFeedDTO] = dataList.compactMap { item in
+            // 兼容两种结构：{type, target:{...}} 与平铺 {id, title, excerpt, type, ...}
             let target = item["target"] as? [String: Any] ?? item
-            guard let type = target["type"] as? String else { return nil }
+            guard let type = (target["type"] as? String) ?? (item["type"] as? String) else { return nil }
             let title = (target["title"] as? String) ?? (target["excerpt"] as? String) ?? ""
             let excerpt = (target["excerpt"] as? String)?.nonBlank ?? (target["content"] as? String)?.nonBlank
             let route = topicRoute(type: type, target: target)
@@ -298,7 +324,7 @@ struct TopicNativeView: View {
                     Text(info.name)
                         .font(.headline)
                         .foregroundStyle(.primary)
-                    Text("\(info.followersCount) 关注 · \(info.questionsCount) 问题 · \(info.answersCount) 回答")
+                    Text("\(info.followersCount) 位关注者")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
