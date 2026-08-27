@@ -199,11 +199,11 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
                 .compositingGroup()
             }
         } else if #available(iOS 26.0, *) {
-            // Apple iOS 26 原生液态玻璃（Liquid Glass）：按容器形状裁剪的真玻璃材质，
-            // 取代旧的 ultraThinMaterial 模拟，与系统导航栏/工具栏保持一致的高斯模糊
+            // Apple iOS 26 原生液态玻璃（Liquid Glass）：
+            // glassEffect 提供真玻璃材质（高斯模糊/折射），clipShape 将玻璃轮廓裁剪为所需形状
             content
-                .containerShape(shape)
                 .glassEffect(.regular)
+                .clipShape(shape)
         } else {
             content.background {
                 ZStack {
