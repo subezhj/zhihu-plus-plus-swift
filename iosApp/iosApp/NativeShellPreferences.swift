@@ -260,6 +260,7 @@ final class NativeShellPreferences: ObservableObject {
         static let homeRefreshTargetItemCount = "homeRefreshTargetItemCount"
         static let showSearchHotSearch = "showSearchHotSearch"
         static let showSearchHistory = "showSearchHistory"
+        static let clipboardLinkPrompt = "nativeClipboardLinkPrompt"
         static let topLevelReselect = "nativeTopLevelReselect"
         static let shareActionMode = "shareActionMode"
         static let externalPageOpeningMode = "externalPageOpeningMode"
@@ -288,6 +289,7 @@ final class NativeShellPreferences: ObservableObject {
     @Published private(set) var feedCardStyle: NativeFeedCardStyle
     @Published private(set) var showsSearchHotSearch: Bool
     @Published private(set) var showsSearchHistory: Bool
+    @Published private(set) var clipboardLinkPromptEnabled: Bool
     @Published private(set) var topLevelReselectEnabled: Bool
     @Published private(set) var defaultShareAction: NativeDefaultShareAction
     @Published private(set) var externalPageOpeningMode: NativeExternalPageOpeningMode
@@ -406,6 +408,7 @@ final class NativeShellPreferences: ObservableObject {
         )
         showsSearchHotSearch = Self.bool(defaults, key: Key.showSearchHotSearch, defaultValue: true)
         showsSearchHistory = Self.bool(defaults, key: Key.showSearchHistory, defaultValue: true)
+        clipboardLinkPromptEnabled = Self.bool(defaults, key: Key.clipboardLinkPrompt, defaultValue: true)
         topLevelReselectEnabled = Self.bool(defaults, key: Key.topLevelReselect, defaultValue: true)
         defaultShareAction = defaults.string(forKey: Key.shareActionMode)
             .flatMap(NativeDefaultShareAction.init(rawValue:)) ?? .ask
@@ -513,6 +516,12 @@ final class NativeShellPreferences: ObservableObject {
         guard showsSearchHotSearch != enabled else { return }
         showsSearchHotSearch = enabled
         defaults.set(enabled, forKey: Key.showSearchHotSearch)
+    }
+
+    func setClipboardLinkPromptEnabled(_ enabled: Bool) {
+        guard clipboardLinkPromptEnabled != enabled else { return }
+        clipboardLinkPromptEnabled = enabled
+        defaults.set(enabled, forKey: Key.clipboardLinkPrompt)
     }
 
     func setShowsSearchHistory(_ enabled: Bool) {

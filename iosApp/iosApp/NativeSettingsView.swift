@@ -134,6 +134,7 @@ struct NativeSettingsView: View {
             Section("搜索") {
                 Toggle("显示热搜", isOn: searchHotBinding)
                 Toggle("保存并显示搜索历史", isOn: searchHistoryBinding)
+                Toggle("复制知乎链接时提示打开", isOn: clipboardLinkPromptBinding)
             }
             .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
 
@@ -321,6 +322,10 @@ struct NativeSettingsView: View {
 
     private var searchHistoryBinding: Binding<Bool> {
         Binding(get: { preferences.showsSearchHistory }, set: preferences.setShowsSearchHistory)
+    }
+
+    private var clipboardLinkPromptBinding: Binding<Bool> {
+        Binding(get: { preferences.clipboardLinkPromptEnabled }, set: preferences.setClipboardLinkPromptEnabled)
     }
 
     private var topLevelReselectBinding: Binding<Bool> {

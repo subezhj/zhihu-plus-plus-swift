@@ -163,60 +163,69 @@ public struct LiquidGlassModifier<S: Shape>: ViewModifier {
     }
 
     public func body(content: Content) -> some View {
-        content
-            .background {
-                if !ignoreToggle && !presentation.liquidGlassEnabled {
+        if !ignoreToggle && !presentation.liquidGlassEnabled {
+            content.background {
+                shape
+                    .fill(Color.nativeSecondarySystemGroupedBackground)
+            }
+        } else if isProminent {
+            content.background {
+                ZStack {
                     shape
-                        .fill(Color.nativeSecondarySystemGroupedBackground)
-                } else if isProminent {
-                    ZStack {
-                        shape
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color.accentColor.opacity(colorScheme == .dark ? 0.95 : 0.90),
-                                        Color.accentColor.opacity(colorScheme == .dark ? 0.80 : 0.75)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.accentColor.opacity(colorScheme == .dark ? 0.95 : 0.90),
+                                    Color.accentColor.opacity(colorScheme == .dark ? 0.80 : 0.75)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
                             )
+                        )
 
-                        shape
-                            .stroke(
-                                LinearGradient(
-                                    colors: [
-                                        Color.white.opacity(colorScheme == .dark ? 0.5 : 0.4),
-                                        Color.white.opacity(0.15)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 0.5
-                            )
-                    }
-                    .compositingGroup()
-                } else {
-                    ZStack {
-                        shape
-                            .fill(.ultraThinMaterial)
+                    shape
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(colorScheme == .dark ? 0.5 : 0.4),
+                                    Color.white.opacity(0.15)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 0.5
+                        )
+                }
+                .compositingGroup()
+            }
+        } else if #available(iOS 26.0, *) {
+            // Apple iOS 26 原生液态玻璃（Liquid Glass）：按容器形状裁剪的真玻璃材质，
+            // 取代旧的 ultraThinMaterial 模拟，与系统导航栏/工具栏保持一致的高斯模糊
+            content
+                .containerShape(shape)
+                .glassEffect(.regular)
+        } else {
+            content.background {
+                ZStack {
+                    shape
+                        .fill(.ultraThinMaterial)
 
-                        // Lightweight subtle specular rim stroke (Apple standard)
-                        shape
-                            .stroke(
-                                LinearGradient(
-                                    colors: [
-                                        Color.white.opacity(colorScheme == .dark ? 0.35 : 0.6),
-                                        Color.white.opacity(colorScheme == .dark ? 0.05 : 0.15)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 0.5
-                            )
-                    }
+                    // Lightweight subtle specular rim stroke (Apple standard)
+                    shape
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(colorScheme == .dark ? 0.35 : 0.6),
+                                    Color.white.opacity(colorScheme == .dark ? 0.05 : 0.15)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 0.5
+                        )
                 }
             }
+        }
     }
 }
 
@@ -250,6 +259,15 @@ public extension View {
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
     }
+}
+
+/// 信息流卡片间距标准：卡片间上/下边距均为 6pt（视觉间距 12pt）。
+/// 首页/收藏等页面首卡距顶栏的间距应与卡片间间距保持一致（12pt）。
+public enum NativeHomeFeedCardSpacing {
+    public static let standardTopInset: CGFloat = 6
+    public static let standardBottomInset: CGFloat = 6
+    /// 首卡距顶栏间距 = 卡片间间距（6 + 6 = 12pt）
+    public static let firstCardTopInset: CGFloat = 12
 }
 
 private struct NativeFeedCardModifier: ViewModifier {
@@ -400,10 +418,10 @@ public struct NativeCapsuleBadge<Content: View>: View {
 
     public var body: some View {
         content
-            .font(.system(size: 15, weight: .medium))
+            .font(.system(size: 13, weight: .medium))
             .foregroundStyle(foregroundColor)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
             .background(Color.secondary.opacity(0.08), in: Capsule())
     }
 }

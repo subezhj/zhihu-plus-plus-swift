@@ -334,7 +334,7 @@ struct HomeNativeView: View {
                         .listRowBackground(Color.nativeSystemGroupedBackground)
                 }
 
-                ForEach(visibleItems) { item in
+                ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in
                     FeedItemRow(item: item, showsThumbnail: true) { route in
                         store.opened(item)
                         onOpen(route)
@@ -344,6 +344,13 @@ struct HomeNativeView: View {
                             Task { await store.loadMore() }
                         }
                     }
+                    // 首卡距顶栏 = 卡片间间距标准（12pt），与后续卡片间距保持一致
+                    .listRowInsets(EdgeInsets(
+                        top: index == 0 ? NativeHomeFeedCardSpacing.firstCardTopInset : NativeHomeFeedCardSpacing.standardTopInset,
+                        leading: 16,
+                        bottom: NativeHomeFeedCardSpacing.standardBottomInset,
+                        trailing: 16
+                    ))
                 }
 
                 if let message = store.errorMessage {

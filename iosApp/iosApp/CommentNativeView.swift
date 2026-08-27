@@ -95,12 +95,16 @@ private struct CommentThreadContainer: View {
     var body: some View {
         CommentLevelView(store: store, level: .root, close: nil)
             .navigationDestination(isPresented: personBinding) {
-                if let personModel { PersonNativeView(model: personModel) }
+                personDestination
             }
             .background {
                 if case let .replies(rootCommentID) = store.activeLevel {
                     NavigationLink(
-                        destination: CommentLevelView(store: store, level: .replies(rootCommentID: rootCommentID), close: nil),
+                        // 回复页本身也挂载个人页导航目标：从回复页点开用户页，返回时回到回复页而非根评论页
+                        destination: CommentLevelView(store: store, level: .replies(rootCommentID: rootCommentID), close: nil)
+                            .navigationDestination(isPresented: personBinding) {
+                                personDestination
+                            },
                         isActive: Binding(
                             get: {
                                 if case .replies = store.activeLevel { return true }
@@ -134,6 +138,11 @@ private struct CommentThreadContainer: View {
                 handleCommentURL(url)
             })
             .task { store.start() }
+    }
+
+    @ViewBuilder
+    private var personDestination: some View {
+        if let personModel { PersonNativeView(model: personModel) }
     }
 
     private func handleCommentURL(_ url: URL) -> OpenURLAction.Result {
@@ -301,6 +310,23 @@ private struct CommentLevelView: View {
                     .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.nativeSystemBackground)
+
+                // “回复”说明：标明下方均为针对主评论的回复
+                HStack(alignment: .center, spacing: 6) {
+                    Image(systemName: "arrowshape.turn.up.left.fill")
+                        .font(.system(size: 10, weight: .semibold))
+                    Text("回复")
+                        .font(.system(size: 12.5, weight: .semibold))
+                    Text("· 以下 \(page.items.count) 条均针对上面的主评论")
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(.secondary)
+                }
+                .foregroundStyle(Color.secondary)
+                .padding(.vertical, 9)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
             }
             ForEach(page.items) { comment in
                 CommentRow(
@@ -556,20 +582,8 @@ private struct CommentRow: View {
             // 分割线紧贴内容底部，作为外层容器的末尾子视图，避免 overlay 在行高变化时出现偏移
             NativeThinDivider()
         }
-        .contextMenu {
-            Button(action: beginReply) {
-                Label("回复 @\(comment.author.displayName)", systemImage: "arrowshape.turn.up.left")
-            }
-            Button {
-                UIPasteboard.general.string = CommentPlainText.value(from: comment.contentHTML)
-            } label: {
-                Label("复制评论", systemImage: "doc.on.doc")
-            }
-            Button(action: onShare) {
-                Label("分享", systemImage: "square.and.arrow.up")
-            }
-            .accessibilityIdentifier("comment_context_share_\(comment.id)")
-        }
+        // 不挂整行 contextMenu：保持正文 .textSelection(.enabled) 长按即可弹出系统文本选择（复制/翻译/查找）。
+        // 回复/分享仍可通过左滑 swipeActions 或点正文/作者区触发。
         .accessibilityIdentifier("comment_row_\(comment.id)")
     }
 

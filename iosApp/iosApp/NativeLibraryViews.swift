@@ -43,11 +43,18 @@ struct NativeCollectionsView: View {
                 if let error = store.errorMessage {
                     NativeInlineRetry(message: error) { Task { await store.loadMore() } }
                 }
-                ForEach(store.collections) { collection in
+                ForEach(Array(store.collections.enumerated()), id: \.element.id) { index, collection in
                     NavigationLink(value: NativeShellRoute.collectionContent(collection.id)) {
                         collectionRow(collection)
                     }
                     .nativeFeedCardItem(cornerRadius: 14)
+                    // 首卡距顶栏 = 卡片间间距标准（12pt），与首页保持一致
+                    .listRowInsets(EdgeInsets(
+                        top: index == 0 ? NativeHomeFeedCardSpacing.firstCardTopInset : NativeHomeFeedCardSpacing.standardTopInset,
+                        leading: 16,
+                        bottom: NativeHomeFeedCardSpacing.standardBottomInset,
+                        trailing: 16
+                    ))
                 }
                 paginationFooter
             }

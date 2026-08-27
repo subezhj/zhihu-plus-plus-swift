@@ -724,6 +724,8 @@ struct NativeAppShell: View {
     private func inspectClipboardAfterActivationIfNeeded() {
         guard clipboardInspectionArmed, isAppUnlocked else { return }
         clipboardInspectionArmed = false
+        // 设置开关：关闭“复制知乎链接时提示打开”后不再嗅探剪贴板
+        guard preferences.clipboardLinkPromptEnabled else { return }
         Task { await clipboardLinkMonitor.inspectIfNeeded() }
     }
 

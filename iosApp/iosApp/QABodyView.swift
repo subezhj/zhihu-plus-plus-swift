@@ -164,7 +164,8 @@ struct QABodyView: View {
             QANativeVideoPlayer(
                 video: video,
                 contentID: route.contentID,
-                contentType: route.contentType
+                contentType: route.contentType,
+                openExternal: { url in onNavigate(.link(.external(url))) }
             )
         case .divider:
             NativeThinDivider()
@@ -544,6 +545,7 @@ private struct QANativeVideoPlayer: View {
     let video: QAAttachmentVideoDTO
     var contentID: Int64 = 0
     var contentType: NativeVideoContentType = .answer
+    var openExternal: ((URL) -> Void)? = nil
     @State private var player: AVPlayer?
     @State private var isLoading = false
     @State private var errorMessage: String?
@@ -621,6 +623,23 @@ private struct QANativeVideoPlayer: View {
         }
         .onDisappear { player?.pause() }
         .accessibilityLabel("视频播放器")
+        // 长按视频：复制视频链接 / 在浏览器打开
+        .contextMenu {
+            if let linkURL = video.destinationURL ?? video.playbackURL {
+                Button {
+                    UIPasteboard.general.string = linkURL.absoluteString
+                } label: {
+                    Label("复制视频链接", systemImage: "link")
+                }
+                if let openExternal {
+                    Button {
+                        openExternal(linkURL)
+                    } label: {
+                        Label("在浏览器中打开", systemImage: "safari")
+                    }
+                }
+            }
+        }
     }
 
     @MainActor
