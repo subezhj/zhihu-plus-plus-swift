@@ -22,7 +22,7 @@
 		0A1B2C3D4E5F60010000000D /* SystemAndUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1B2C3D4E5F60010000001E /* SystemAndUpdateView.swift */; };
 		0A1B2C3D4E5F60010000000E /* PersonRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1B2C3D4E5F60010000001F /* PersonRoute.swift */; };
 		0A1B2C3D4E5F60010000000F /* PersonHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1B2C3D4E5F600100000021 /* PersonHostView.swift */; };
-		0A1B2C3D4E5F600100000309 /* PersonCoverSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1B2C3D4E5F600100000223 /* PersonCoverSheet.swift */; };
+		0A1B2C3D4E5F600100000313 /* PersonCoverSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1B2C3D4E5F600100000223 /* PersonCoverSheet.swift */; };
 		0A1B2C3D4E5F600100000301 /* PersonModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1B2C3D4E5F600100000211 /* PersonModels.swift */; };
 		0A1B2C3D4E5F600100000302 /* PersonRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1B2C3D4E5F600100000212 /* PersonRepository.swift */; };
 		0A1B2C3D4E5F600100000303 /* PersonRequestSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1B2C3D4E5F600100000213 /* PersonRequestSigner.swift */; };
@@ -502,7 +502,7 @@
 				0A1B2C3D4E5F60010000000D /* SystemAndUpdateView.swift in Sources */,
 				0A1B2C3D4E5F60010000000E /* PersonRoute.swift in Sources */,
 				0A1B2C3D4E5F60010000000F /* PersonHostView.swift in Sources */,
-				0A1B2C3D4E5F600100000309 /* PersonCoverSheet.swift in Sources */,
+				0A1B2C3D4E5F600100000313 /* PersonCoverSheet.swift in Sources */,
 				0A1B2C3D4E5F600100000301 /* PersonModels.swift in Sources */,
 				0A1B2C3D4E5F600100000302 /* PersonRepository.swift in Sources */,
 				0A1B2C3D4E5F600100000303 /* PersonRequestSigner.swift in Sources */,
