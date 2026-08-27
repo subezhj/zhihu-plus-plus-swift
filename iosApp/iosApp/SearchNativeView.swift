@@ -83,8 +83,7 @@ struct SearchNativeView: View {
             if store.route.isMemberRestricted {
                 // 创作搜索：返回按钮在左，搜索框右侧对齐（右上角无“更多”按钮）
                 ToolbarItem(placement: .topBarTrailing) {
-                    searchField
-                        .frame(maxWidth: 300)
+                    searchField(isMemberSearch: true)
                 }
             } else {
                 ToolbarItem(placement: .principal) {
@@ -104,7 +103,7 @@ struct SearchNativeView: View {
         .accessibilityIdentifier("search_screen")
     }
 
-    private var searchField: some View {
+    private func searchField(isMemberSearch: Bool = false) -> some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 15, weight: .medium))
@@ -132,7 +131,10 @@ struct SearchNativeView: View {
             }
         }
         .padding(.horizontal, 14)
-        .frame(maxWidth: .infinity)
+        .frame(
+            minWidth: isMemberSearch ? 0 : 320,
+            maxWidth: isMemberSearch ? 300 : .infinity
+        )
         .frame(height: 40)
         .liquidGlassCapsule(isProminent: false)
         .accessibilityElement(children: .contain)
@@ -246,8 +248,10 @@ struct SearchNativeView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .padding(.horizontal, 12)
+                    .liquidGlassCard(cornerRadius: 14)
                     .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
-                    .listRowBackground(Color.nativeSystemGroupedBackground)
+                    .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
                 }
 
@@ -304,7 +308,7 @@ struct SearchNativeView: View {
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 4, trailing: 16))
-                .listRowBackground(Color.nativeSystemGroupedBackground)
+                .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
         }
 
