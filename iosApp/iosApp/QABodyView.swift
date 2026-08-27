@@ -29,13 +29,9 @@ struct QABodyView: View {
     private var galleryURLs: [URL] { galleryImages.map(\.url) }
 
     var body: some View {
-        // Keep the complete document in one selection hierarchy. A LazyVStack
-        // recycles off-screen Text views, which truncates Select All/copy for
-        // long answers after scrolling.
+        // 连续正文段落合并到单个 UITextView：支持跨段长按选择复制
         VStack(alignment: .leading, spacing: presentation.blockSpacing()) {
-            ForEach(blocks) { block in
-                blockView(block)
-            }
+            groupedBlocks
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .textSelection(.enabled)
@@ -44,6 +40,43 @@ struct QABodyView: View {
             onNavigate(.link(destination))
             return .handled
         })
+    }
+
+    private enum GroupedBlock {
+        case paragraphGroup([QAInlineRun])
+        case block(QABodyBlock)
+    }
+
+    @ViewBuilder
+    private var groupedBlocks: some View {
+        var paragraphs: [QAInlineRun] = []
+        var items: [GroupedBlock] = []
+        for block in blocks {
+            if case let .paragraph(_, runs) = block {
+                if !paragraphs.isEmpty { paragraphs.append(QAInlineRun(text: "\n")) }
+                paragraphs.append(contentsOf: runs)
+            } else {
+                if !paragraphs.isEmpty {
+                    items.append(.paragraphGroup(paragraphs))
+                    paragraphs = []
+                }
+                items.append(.block(block))
+            }
+        }
+        if !paragraphs.isEmpty { items.append(.paragraphGroup(paragraphs)) }
+
+        ForEach(items.indices, id: \.self) { index in
+            switch items[index] {
+            case let .paragraphGroup(runs):
+                QARichTextView(
+                    runs: runs,
+                    pointSize: bodyPointSize * presentation.fontScale,
+                    lineSpacing: bodyLineSpacing
+                )
+            case let .block(block):
+                blockView(block)
+            }
+        }
     }
 
     @ViewBuilder
