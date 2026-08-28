@@ -378,17 +378,19 @@ struct TopicNativeView: View {
                 PagingListContent(
                     source: store,
                     rowContent: { item, _ in
-                        if let route = item.route {
-                            Button {
-                                onOpen(route)
-                            } label: {
-                                TopicFeedRow(item: item)
-                            }
-                            .buttonStyle(.plain)
-                            .nativeFeedCardItem(cornerRadius: 14)
-                        } else {
-                            TopicFeedRow(item: item)
+                        Group {
+                            if let route = item.route {
+                                Button {
+                                    onOpen(route)
+                                } label: {
+                                    TopicFeedRow(item: item)
+                                }
+                                .buttonStyle(.plain)
                                 .nativeFeedCardItem(cornerRadius: 14)
+                            } else {
+                                TopicFeedRow(item: item)
+                                    .nativeFeedCardItem(cornerRadius: 14)
+                            }
                         }
                     },
                     footerLoadingMessage: "正在加载更多",
@@ -498,5 +500,4 @@ extension TopicStore: PagingSource {
     var hasMore: Bool { !isEnd }
     var errorMessage: String? { feedsErrorMessage }
     func loadMore() async { await loadMoreIfNeeded() }
-    func retry() async { await loadMoreIfNeeded() }
 }
