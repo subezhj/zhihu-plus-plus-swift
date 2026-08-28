@@ -128,15 +128,17 @@ struct NativeCollectionContentView: View {
             PagingListContent(
                 source: store,
                 rowContent: { item, _ in
-                    if let destination = item.destination {
-                        Button { onOpenContent(destination) } label: {
-                            NativeLibraryItemContent(item: item)
-                        }
-                        .buttonStyle(.plain)
-                        .nativeFeedCardItem(cornerRadius: 14)
-                    } else {
-                        NativeLibraryItemContent(item: item)
+                    Group {
+                        if let destination = item.destination {
+                            Button { onOpenContent(destination) } label: {
+                                NativeLibraryItemContent(item: item)
+                            }
+                            .buttonStyle(.plain)
                             .nativeFeedCardItem(cornerRadius: 14)
+                        } else {
+                            NativeLibraryItemContent(item: item)
+                                .nativeFeedCardItem(cornerRadius: 14)
+                        }
                     }
                 },
                 loadingMessage: "正在加载收藏",
