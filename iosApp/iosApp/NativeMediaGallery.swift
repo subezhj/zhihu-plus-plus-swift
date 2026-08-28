@@ -14,7 +14,6 @@ struct NativeMediaGallery: View {
     @State private var selectedIndex: Int
     @StateObject private var imageStore = NativeMediaImageStore()
     @State private var zoomedIndices: Set<Int> = []
-    @State private var pageDragOffset: CGFloat = 0
     @State private var dismissOffset: CGFloat = 0
     @State private var message: NativeMediaMessage?
     @State private var isSaving = false
@@ -39,26 +38,30 @@ struct NativeMediaGallery: View {
                     .opacity(backgroundOpacity(viewportHeight: geometry.size.height))
                     .ignoresSafeArea()
 
-                HStack(spacing: 0) {
-                    ForEach(urls.indices, id: \.self) { index in
-                        NativeZoomableRemoteImage(
-                            url: urls[index],
-                            animatedURLs: animatedURLs,
-                            store: imageStore,
-                            onZoomChanged: { isZoomed in
-                                if isZoomed { zoomedIndices.insert(index) } else { zoomedIndices.remove(index) }
-                            }
-                        )
-                        .frame(width: geometry.size.width, height: geometry.size.height)
+                // Apple 官方分页：ScrollView + LazyHStack + scrollTargetBehavior(.paging) + scrollPosition
+                // 惰性渲染仅可见页（解决多图 HStack 全量平铺卡顿）；缩放时 scrollDisabled 锁住翻页
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 0) {
+                        ForEach(urls.indices, id: \.self) { index in
+                            NativeZoomableRemoteImage(
+                                url: urls[index],
+                                animatedURLs: animatedURLs,
+                                store: imageStore,
+                                onZoomChanged: { isZoomed in
+                                    if isZoomed { zoomedIndices.insert(index) } else { zoomedIndices.remove(index) }
+                                }
+                            )
+                            .frame(width: geometry.size.width, height: geometry.size.height)
+                            .id(index)
+                        }
                     }
+                    .scrollTargetLayout()
                 }
-                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .leading)
-                .offset(
-                    x: -CGFloat(selectedIndex) * geometry.size.width + pageDragOffset,
-                    y: dismissOffset
-                )
+                .scrollTargetBehavior(.paging)
+                .scrollPosition(id: $selectedIndex)
+                .scrollDisabled(isCurrentImageZoomed)
+                .offset(y: dismissOffset)
                 .contentShape(Rectangle())
-                .simultaneousGesture(horizontalPagingGesture(pageWidth: geometry.size.width))
                 .simultaneousGesture(verticalDismissGesture(viewportHeight: geometry.size.height))
 
                 if urls.count > 1 {
@@ -90,6 +93,10 @@ struct NativeMediaGallery: View {
             )
         }
         .accessibilityIdentifier(accessibilityPrefix)
+        .onChange(of: selectedIndex) { previous, current in
+            NativeMediaGalleryFeedback(action: hapticFeedback)
+                .pageDidCommit(from: previous, to: current)
+        }
     }
 
     private var topControls: some View {
@@ -159,44 +166,6 @@ struct NativeMediaGallery: View {
     private func backgroundOpacity(viewportHeight: CGFloat) -> Double {
         let fadeDistance = max(viewportHeight * 0.3, 1)
         return 1 - min(abs(dismissOffset) / fadeDistance, 1) * 0.55
-    }
-
-    private func horizontalPagingGesture(pageWidth: CGFloat) -> some Gesture {
-        DragGesture(minimumDistance: 12, coordinateSpace: .global)
-            .onChanged { value in
-                guard !isCurrentImageZoomed,
-                      abs(value.translation.width) > abs(value.translation.height),
-                      pageWidth > 0
-                else { return }
-                let pastFirst = selectedIndex == 0 && value.translation.width > 0
-                let pastLast = selectedIndex == urls.count - 1 && value.translation.width < 0
-                pageDragOffset = value.translation.width * (pastFirst || pastLast ? 0.25 : 1)
-            }
-            .onEnded { value in
-                guard !isCurrentImageZoomed,
-                      abs(value.translation.width) > abs(value.translation.height),
-                      pageWidth > 0
-                else {
-                    withAnimation(.spring(response: 0.28, dampingFraction: 0.85)) { pageDragOffset = 0 }
-                    return
-                }
-                let target = NativeMediaPagingPolicy.targetIndex(
-                    currentIndex: selectedIndex,
-                    pageCount: urls.count,
-                    translationWidth: value.translation.width,
-                    predictedEndTranslationWidth: value.predictedEndTranslation.width,
-                    pageWidth: pageWidth
-                )
-                let previousIndex = selectedIndex
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.86)) {
-                    selectedIndex = target
-                    pageDragOffset = 0
-                }
-                NativeMediaGalleryFeedback(action: hapticFeedback).pageDidCommit(
-                    from: previousIndex,
-                    to: target
-                )
-            }
     }
 
     private func verticalDismissGesture(viewportHeight: CGFloat) -> some Gesture {
@@ -554,30 +523,6 @@ struct NativeMediaDismissalPolicy {
         let threshold = max(viewportHeight * 0.16, 72)
         return abs(translation.height) >= threshold ||
             abs(predictedEndTranslation.height) >= threshold * 1.35
-    }
-}
-
-struct NativeMediaPagingPolicy {
-    static func targetIndex(
-        currentIndex: Int,
-        pageCount: Int,
-        translationWidth: CGFloat,
-        predictedEndTranslationWidth: CGFloat,
-        pageWidth: CGFloat
-    ) -> Int {
-        guard pageCount > 0, pageWidth > 0, pageCount > currentIndex, currentIndex >= 0 else {
-            return currentIndex
-        }
-        let threshold = pageWidth * 0.18
-        if (translationWidth <= -threshold || predictedEndTranslationWidth <= -threshold * 1.35),
-           currentIndex < pageCount - 1 {
-            return currentIndex + 1
-        }
-        if (translationWidth >= threshold || predictedEndTranslationWidth >= threshold * 1.35),
-           currentIndex > 0 {
-            return currentIndex - 1
-        }
-        return currentIndex
     }
 }
 
