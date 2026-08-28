@@ -344,24 +344,17 @@ struct NativeNotificationsView: View {
             .listRowBackground(Color.nativeSystemGroupedBackground)
             .listRowSeparator(.hidden)
 
-            if let error = store.errorMessage, !store.items.isEmpty {
-                NativeInlineRetry(message: error) { Task { await store.loadMore() } }
-                    .listRowBackground(Color.nativeSystemGroupedBackground)
-                    .listRowSeparator(.hidden)
-            }
-            ForEach(store.items) { item in
-                NativeNotificationRow(item: item, onOpenContent: onOpenContent)
-                    .nativeFeedCardItem(cornerRadius: 14)
-            }
-            if store.isLoading, !store.items.isEmpty {
-                HStack { Spacer(); ProgressView(); Spacer() }
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-            } else if !store.items.isEmpty {
-                Color.clear.frame(height: 1).task { await store.loadMore() }
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-            }
+            // 通用分页骨架（卡片行 + 触底加载 + footer），空态由页面 overlay 自处理
+            PagingListContent(
+                source: store,
+                rowContent: { item, _ in
+                    NativeNotificationRow(item: item, onOpenContent: onOpenContent)
+                        .nativeFeedCardItem(cornerRadius: 14)
+                },
+                loadingMessage: "正在加载通知",
+                footerLoadingMessage: "正在加载更多通知",
+                showsEmptyState: false
+            )
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
@@ -626,4 +619,10 @@ private struct RawNotificationTarget: Decodable {
     let avatarURL: String?
     let url: String?
     private enum CodingKeys: String, CodingKey { case name, url; case avatarURL = "avatar_url" }
+}
+
+// MARK: - PagingSource 适配（新架构重构 §4.19）
+extension NativeNotificationStore: PagingSource {
+    var hasMore: Bool { !ended.contains(selectedCategory) }
+    func retry() async { await loadMore() }
 }

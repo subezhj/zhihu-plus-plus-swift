@@ -37,6 +37,8 @@ struct PagingListContent<Source: PagingSource, Row: View>: View {
     var emptyMessage = "暂无内容"
     var emptySystemImage = "tray"
     var background: Color = .nativeSystemGroupedBackground
+    /// 页面自处理空态时置 false（如通知页分类空态用 overlay）
+    var showsEmptyState = true
 
     var body: some View {
         Group {
@@ -94,7 +96,7 @@ struct PagingListContent<Source: PagingSource, Row: View>: View {
             .font(.caption)
             .listRowSeparator(.hidden)
             .listRowBackground(background)
-        } else if source.items.isEmpty, !source.isLoading {
+        } else if source.items.isEmpty, !source.isLoading, showsEmptyState {
             VStack(spacing: 10) {
                 Image(systemName: emptySystemImage)
                     .font(.system(size: 36, weight: .light))
