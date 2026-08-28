@@ -423,3 +423,9 @@ final class SearchStore: ObservableObject {
         case next
     }
 }
+
+// MARK: - PagingSource 适配（新架构重构 §4.19）
+extension HotFeedStore: PagingSource {
+    var hasMore: Bool { canLoadNextPage }
+    func loadMore() async { await loadNextPage() }
+}

@@ -37,56 +37,27 @@ struct HotListNativeView: View {
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.nativeSystemGroupedBackground)
 
-                if store.items.isEmpty, store.isLoading {
-                    HStack {
-                        Spacer()
-                        ProgressView("正在加载热榜")
-                        Spacer()
-                    }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.nativeSystemGroupedBackground)
-                }
-
-                ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in
-                    HStack(alignment: .top, spacing: 10) {
-                        Text("\(index + 1)")
-                            .font(.headline.weight(.bold).monospacedDigit())
-                            .foregroundStyle(index < 3 ? Color.accentColor : Color.secondary)
-                            .frame(minWidth: 24, alignment: .trailing)
-                            .padding(.top, 14)
-                            .accessibilityHidden(true)
-                        FeedItemRow(item: item, showsThumbnail: false, onOpen: onOpen)
-                    }
-                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                }
-
-                if let errorMessage = store.errorMessage {
-                    FeedRetryRow(message: errorMessage) {
-                        Task { await store.retry() }
-                    }
-                    .listRowBackground(Color.nativeSystemGroupedBackground)
-                    .listRowSeparator(.hidden)
-                } else if store.canLoadNextPage {
-                    let taskID = NativeChannelTaskIdentity(
-                        isActive: isActiveChannel,
-                        value: store.nextPageLoadID
-                    )
-                    HStack {
-                        Spacer()
-                        ProgressView()
-                        Spacer()
-                    }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.nativeSystemGroupedBackground)
-                    .task(id: taskID) {
-                        guard taskID.isActive,
-                              taskID.value == store.nextPageLoadID
-                        else { return }
-                        await store.loadNextPage()
-                    }
-                }
+                // 通用分页骨架：排名序号由 rowContent 的 index 渲染，footer 统一管理
+                PagingListContent(
+                    source: store,
+                    rowContent: { item, index in
+                        HStack(alignment: .top, spacing: 10) {
+                            Text("\(index + 1)")
+                                .font(.headline.weight(.bold).monospacedDigit())
+                                .foregroundStyle(index < 3 ? Color.accentColor : Color.secondary)
+                                .frame(minWidth: 24, alignment: .trailing)
+                                .padding(.top, 14)
+                                .accessibilityHidden(true)
+                            FeedItemRow(item: item, showsThumbnail: false, onOpen: onOpen)
+                        }
+                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                    },
+                    loadingMessage: "正在加载热榜",
+                    footerLoadingMessage: "正在加载更多",
+                    customItems: visibleItems
+                )
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)

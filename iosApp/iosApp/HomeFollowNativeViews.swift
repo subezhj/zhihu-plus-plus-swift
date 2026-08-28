@@ -341,7 +341,8 @@ struct HomeNativeView: View {
                     loadingMessage: "正在加载推荐",
                     footerLoadingMessage: "正在加载更多推荐",
                     emptyMessage: "暂无推荐",
-                    emptySystemImage: "sparkles"
+                    emptySystemImage: "sparkles",
+                    customItems: visibleItems
                 )
             }
             .listStyle(.plain)

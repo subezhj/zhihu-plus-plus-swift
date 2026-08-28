@@ -39,6 +39,10 @@ struct PagingListContent<Source: PagingSource, Row: View>: View {
     var background: Color = .nativeSystemGroupedBackground
     /// 页面自处理空态时置 false（如通知页分类空态用 overlay）
     var showsEmptyState = true
+    /// 自定义展示项（页面按 blocklist 等过滤后传入）；默认用 source.items
+    var customItems: [Source.Item]? = nil
+
+    private var displayedItems: [Source.Item] { customItems ?? source.items }
 
     var body: some View {
         Group {
@@ -52,11 +56,11 @@ struct PagingListContent<Source: PagingSource, Row: View>: View {
                 .listRowBackground(background)
             }
 
-            ForEach(Array(source.items.enumerated()), id: \.element.id) { index, item in
+            ForEach(Array(displayedItems.enumerated()), id: \.element.id) { index, item in
                 rowContent(item, index)
                     .onAppear {
                         onAppearItem(item)
-                        if item.id == source.items.last?.id, source.hasMore {
+                        if item.id == displayedItems.last?.id, source.hasMore {
                             Task { await source.loadMore() }
                         }
                     }
@@ -96,8 +100,7 @@ struct PagingListContent<Source: PagingSource, Row: View>: View {
             .font(.caption)
             .listRowSeparator(.hidden)
             .listRowBackground(background)
-        } else if source.items.isEmpty, !source.isLoading, showsEmptyState {
-            VStack(spacing: 10) {
+        } else if source.items.isEmpty, !source.isLoading, showsEmptyState {            VStack(spacing: 10) {
                 Image(systemName: emptySystemImage)
                     .font(.system(size: 36, weight: .light))
                     .foregroundStyle(.secondary.opacity(0.6))
