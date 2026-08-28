@@ -428,14 +428,6 @@ final class HomeFeedNativeStore: ObservableObject {
         if currentGeneration == generation { isLoading = false }
     }
 
-    func retry() async {
-        if failedOperation == .nextPage {
-            await loadMore()
-        } else {
-            _ = await refresh(intent: .retry)
-        }
-    }
-
     func opened(_ item: FeedItemDTO) {
         Task { await repository.reportOpened(item) }
     }
