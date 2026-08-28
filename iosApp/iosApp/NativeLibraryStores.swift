@@ -323,3 +323,9 @@ final class NativeColumnStore: ObservableObject {
         }
     }
 }
+
+// MARK: - PagingSource 适配（新架构重构 §4.19）
+extension NativeCollectionContentStore: PagingSource {
+    var hasMore: Bool { !isEnd }
+    func retry() async { await loadMore() }
+}

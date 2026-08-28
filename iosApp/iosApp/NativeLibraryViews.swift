@@ -123,31 +123,26 @@ struct NativeCollectionContentView: View {
                         .listRowSeparator(.hidden)
                 }
             }
-            if let error = store.errorMessage, !store.items.isEmpty {
-                NativeInlineRetry(message: error) { Task { await store.loadMore() } }
-                    .listRowBackground(Color.nativeSystemGroupedBackground)
-                    .listRowSeparator(.hidden)
-            }
-            ForEach(store.items) { item in
-                if let destination = item.destination {
-                    Button { onOpenContent(destination) } label: {
-                        NativeLibraryItemContent(item: item)
-                    }
-                    .buttonStyle(.plain)
-                    .nativeFeedCardItem(cornerRadius: 14)
-                } else {
-                    NativeLibraryItemContent(item: item)
+
+            // 通用分页骨架：卡片行 + 触底加载 + footer
+            PagingListContent(
+                source: store,
+                rowContent: { item, _ in
+                    if let destination = item.destination {
+                        Button { onOpenContent(destination) } label: {
+                            NativeLibraryItemContent(item: item)
+                        }
+                        .buttonStyle(.plain)
                         .nativeFeedCardItem(cornerRadius: 14)
-                }
-            }
-            if store.isLoading, !store.items.isEmpty {
-                NativeLoadingRow("正在加载更多")
-                    .listRowBackground(Color.nativeSystemGroupedBackground)
-            } else if !store.isEnd, !store.items.isEmpty {
-                Color.clear.frame(height: 1).task { await store.loadMore() }
-                    .listRowBackground(Color.nativeSystemGroupedBackground)
-                    .listRowSeparator(.hidden)
-            }
+                    } else {
+                        NativeLibraryItemContent(item: item)
+                            .nativeFeedCardItem(cornerRadius: 14)
+                    }
+                },
+                loadingMessage: "正在加载收藏",
+                footerLoadingMessage: "正在加载更多",
+                showsEmptyState: false
+            )
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
