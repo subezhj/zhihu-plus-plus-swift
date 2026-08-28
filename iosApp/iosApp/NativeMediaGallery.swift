@@ -341,7 +341,7 @@ private struct NativeZoomingScrollView: UIViewRepresentable {
     }
 
     func updateUIView(_ scrollView: UIScrollView, context: Context) {
-        guard let coordinator = context.coordinator else { return }
+        let coordinator = context.coordinator
         if coordinator.image !== image {
             coordinator.image = image
             coordinator.imageView?.image = image
@@ -412,7 +412,7 @@ private struct NativeZoomingScrollView: UIViewRepresentable {
             return CGRect(origin: origin, size: size)
         }
 
-        private func layoutContent() {
+        func layoutContent() {
             guard let scrollView, let imageView else { return }
             let boundsSize = scrollView.bounds.size
             guard boundsSize.width > 0, boundsSize.height > 0 else { return }
