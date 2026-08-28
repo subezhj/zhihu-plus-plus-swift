@@ -118,7 +118,7 @@ private struct NativeAppLockGate: View {
 
     var body: some View {
         ZStack {
-            Color(.systemBackground).ignoresSafeArea()
+            Color.nativeSystemBackground.ignoresSafeArea()
             VStack(spacing: 18) {
                 Image(systemName: "lock.shield")
                     .font(.system(size: 46, weight: .medium))

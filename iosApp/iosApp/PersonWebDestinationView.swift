@@ -28,7 +28,7 @@ struct PersonWebDestinationView: View {
             }
             if let error = model.error {
                 PersonWebFailure(message: error, retry: model.reload)
-                    .background(Color(.systemBackground))
+                    .background(Color.nativeSystemBackground)
             }
         }
         .navigationTitle(route.title)
