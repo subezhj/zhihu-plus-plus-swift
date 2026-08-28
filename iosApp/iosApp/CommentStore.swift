@@ -386,7 +386,11 @@ final class CommentSessionStore: ObservableObject {
         page.initialLoad = .loading
         page.nextPage = .idle
         page.isEnd = false
-        page.items = []
+        // 刷新（invalidating）时保留旧 items 继续显示，加载成功后整体替换，
+        // 避免下拉刷新瞬间列表闪空造成跳变（对齐首页增量发布体验）
+        if !invalidating {
+            page.items = []
+        }
         page.nextURL = nil
         page.activeLikeMutation = nil
         pages[level] = page

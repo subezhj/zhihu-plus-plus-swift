@@ -591,6 +591,12 @@ private final class QASelectionTextView: UITextView {
         lastLayoutWidth = 0
         measuredHeight = 18
         setNeedsLayout()
+        // 同步立即测量：内容刚替换时先用当前宽度算好高度，
+        // 避免 List 行复用瞬间“旧高度承载新内容”造成的短暂文本重合
+        let width = bounds.width > 1 ? bounds.width : 320
+        let height = ceil(sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height)
+        measuredHeight = max(height, 18)
+        invalidateIntrinsicContentSize()
     }
 }
 
