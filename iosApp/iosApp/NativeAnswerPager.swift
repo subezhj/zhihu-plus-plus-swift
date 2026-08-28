@@ -16,9 +16,8 @@ struct NativeAnswerPager: View {
     @Environment(\.nativeHapticFeedback) private var hapticFeedback
 
     var body: some View {
-        QAAnswerPagerSurface(
+        AnswerPagerPages(
             pager: store,
-            answer: store.current,
             preferences: preferences,
             hapticFeedback: hapticFeedback,
             onNavigate: onNavigate
@@ -27,22 +26,53 @@ struct NativeAnswerPager: View {
     }
 }
 
-private struct QAAnswerPagerSurface: View {
+/// 纯 SwiftUI 横向分页（替代 UIKit `UIPageViewController`）：
+/// `TabView(.page)` 原生支持左右滑动切换相邻回答，页面惰性预载相邻页；
+/// 系统左缘右滑返回由 NavigationStack 与 `NativeAnswerInteractivePopBridge` 协作保证。
+private struct AnswerPagerPages: View {
     @ObservedObject var pager: AnswerPagerStore
-    @ObservedObject var answer: AnswerStore
     let preferences: QAReadingPreferences
     let hapticFeedback: NativeHapticFeedbackAction
     let onNavigate: (QANavigationIntent) -> Void
     @State private var posterDocument: NativeContentPosterDocument?
+    @State private var selectionValue: Int64
+
+    init(
+        pager: AnswerPagerStore,
+        preferences: QAReadingPreferences,
+        hapticFeedback: NativeHapticFeedbackAction,
+        onNavigate: @escaping (QANavigationIntent) -> Void
+    ) {
+        self.pager = pager
+        self.preferences = preferences
+        self.hapticFeedback = hapticFeedback
+        self.onNavigate = onNavigate
+        _selectionValue = State(initialValue: pager.current.id)
+    }
+
+    /// 当前可翻页集合：前一条 + 当前 + 后一条（相邻页由 store 维护）
+    private var pages: [AnswerStore] {
+        var result: [AnswerStore] = []
+        if let previous = pager.previous { result.append(previous) }
+        result.append(pager.current)
+        if let next = pager.next { result.append(next) }
+        return result
+    }
 
     var body: some View {
         ZStack(alignment: .top) {
-            QAAnswerPageController(
-                pager: pager,
-                pinAnswerDate: preferences.pinAnswerDate,
-                hapticFeedback: hapticFeedback,
-                onNavigate: onNavigate
-            )
+            TabView(selection: $selectionValue) {
+                ForEach(pages) { answerStore in
+                    AnswerNativeView(
+                        store: answerStore,
+                        pinAnswerDate: preferences.pinAnswerDate,
+                        onNavigate: onNavigate
+                    )
+                    .tag(answerStore.id)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+
             if let error = pager.switchError {
                 Button {
                     Task { await pager.retrySwitch() }
@@ -66,14 +96,13 @@ private struct QAAnswerPagerSurface: View {
                     .padding(.top, 8)
             }
         }
-        // 统一深浅色底色（nativeSystemBackground：浅 #EDEDED / 深 #181818）：
-        // UIKit 分页容器透明后透出此底色，顶栏导航栏模糊与其同色、底部 home indicator 不再露白条
+        // 统一深浅色底色（nativeSystemBackground：浅 #EDEDED / 深 #181818）
         .background(Color.nativeSystemBackground.ignoresSafeArea())
-        .navigationTitle(answer.initialRoute.kind == .answer ? "回答" : "文章")
+        .navigationTitle(pager.current.initialRoute.kind == .answer ? "回答" : "文章")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                if let content = answer.content {
+                if let content = pager.current.content {
                     Menu {
                         Button {
                             UIPasteboard.general.url = content.sourceURL
@@ -91,6 +120,18 @@ private struct QAAnswerPagerSurface: View {
                     .accessibilityLabel("更多操作")
                 }
             }
+        }
+        .onChange(of: selectionValue) { _, newID in
+            guard newID != pager.current.id else { return }
+            let committed = pager.commitDisplayedAnswer(answerID: newID)
+            if committed {
+                hapticFeedback(.selection)
+                Task { await pager.prepareDisplayedAnswer() }
+            }
+        }
+        .onChange(of: pager.current.id) { _, newID in
+            guard selectionValue != newID else { return }
+            selectionValue = newID
         }
         .sheet(item: $posterDocument) { document in
             NativeContentPosterShareView(document: document)
@@ -161,6 +202,7 @@ private struct QAMarkdownSharePresentation: Identifiable {
     }
 }
 
+/// 确保 NavigationStack 的系统左缘返回手势可用（处理 UIKit 容器嵌套时的 pop 手势仲裁）
 private struct NativeAnswerInteractivePopBridge: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> NativeAnswerInteractivePopObserverController {
         NativeAnswerInteractivePopObserverController()
@@ -306,341 +348,5 @@ struct NativeAnswerPagerFeedback {
     func forwardBoundaryDidPublish(_ published: Bool) {
         guard published else { return }
         action(.navigationBoundary)
-    }
-}
-
-private struct QAAnswerPageController: UIViewControllerRepresentable {
-    @ObservedObject var pager: AnswerPagerStore
-    let pinAnswerDate: Bool
-    let hapticFeedback: NativeHapticFeedbackAction
-    let onNavigate: (QANavigationIntent) -> Void
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(
-            pager: pager,
-            pinAnswerDate: pinAnswerDate,
-            hapticFeedback: hapticFeedback,
-            onNavigate: onNavigate
-        )
-    }
-
-    func makeUIViewController(context: Context) -> UIPageViewController {
-        let controller = UIPageViewController(
-            transitionStyle: .scroll,
-            navigationOrientation: .horizontal
-        )
-        controller.dataSource = context.coordinator
-        controller.delegate = context.coordinator
-        // 透明背景：由 SwiftUI 侧的 nativeSystemBackground 统一承担深浅色底色，
-        // 避免 UIKit 自定义色与全局深浅色规范不一致（“特殊涂层”）
-        controller.view.backgroundColor = .clear
-        controller.setViewControllers(
-            [context.coordinator.controller(for: pager.current)],
-            direction: .forward,
-            animated: false
-        )
-        context.coordinator.recordPagingAvailability()
-        DispatchQueue.main.async {
-            context.coordinator.establishSystemEdgePrecedence(in: controller)
-        }
-        return controller
-    }
-
-    func updateUIViewController(_ controller: UIPageViewController, context: Context) {
-        context.coordinator.pager = pager
-        context.coordinator.onNavigate = onNavigate
-        context.coordinator.updatePinAnswerDate(pinAnswerDate)
-        context.coordinator.feedback = NativeAnswerPagerFeedback(action: hapticFeedback)
-        context.coordinator.establishSystemEdgePrecedence(in: controller)
-        guard let visible = controller.viewControllers?.first as? QAHostedAnswerController else { return }
-        if visible.answerID != pager.current.id, !context.coordinator.isTransitioning {
-            controller.setViewControllers(
-                [context.coordinator.controller(for: pager.current)],
-                direction: .forward,
-                animated: false
-            )
-            context.coordinator.recordPagingAvailability()
-        } else {
-            context.coordinator.refreshPagingAvailabilityIfNeeded(in: controller, visible: visible)
-        }
-    }
-
-    @MainActor
-    final class Coordinator: NSObject, UIPageViewControllerDataSource, UIPageViewControllerDelegate,
-        UIGestureRecognizerDelegate
-    {
-        var pager: AnswerPagerStore
-        var pinAnswerDate: Bool
-        var feedback: NativeAnswerPagerFeedback
-        var onNavigate: (QANavigationIntent) -> Void
-        var isTransitioning = false
-        private var controllers: [Int64: QAHostedAnswerController] = [:]
-        private weak var relatedNavigationController: UINavigationController?
-        private weak var relatedPagingPan: UIPanGestureRecognizer?
-        private weak var pagingPanGesture: UIPanGestureRecognizer?
-        private weak var pageController: UIPageViewController?
-        private weak var pagingScrollView: UIScrollView?
-        private var contentPopGate: UIPanGestureRecognizer?
-        private var recordedCurrentID: Int64?
-        private var recordedPreviousID: Int64?
-        private var recordedNextID: Int64?
-
-        init(
-            pager: AnswerPagerStore,
-            pinAnswerDate: Bool,
-            hapticFeedback: NativeHapticFeedbackAction,
-            onNavigate: @escaping (QANavigationIntent) -> Void
-        ) {
-            self.pager = pager
-            self.pinAnswerDate = pinAnswerDate
-            feedback = NativeAnswerPagerFeedback(action: hapticFeedback)
-            self.onNavigate = onNavigate
-        }
-
-        func controller(for store: AnswerStore) -> QAHostedAnswerController {
-            if let cached = controllers[store.id] { return cached }
-            let root = hostedRoot(for: store)
-            let created = QAHostedAnswerController(answerID: store.id, rootView: root)
-            created.view.backgroundColor = .clear
-            controllers[store.id] = created
-            return created
-        }
-
-        func refreshHostedRoots() {
-            for controller in controllers.values {
-                controller.rootView = hostedRoot(for: controller.rootView.store)
-            }
-        }
-
-        func updatePinAnswerDate(_ value: Bool) {
-            guard pinAnswerDate != value else { return }
-            pinAnswerDate = value
-            refreshHostedRoots()
-        }
-
-        func recordPagingAvailability() {
-            recordedCurrentID = pager.current.id
-            recordedPreviousID = pager.previous?.id
-            recordedNextID = pager.next?.id
-        }
-
-        func refreshPagingAvailabilityIfNeeded(
-            in pageController: UIPageViewController,
-            visible: QAHostedAnswerController
-        ) {
-            let availabilityChanged = recordedCurrentID != pager.current.id ||
-                recordedPreviousID != pager.previous?.id ||
-                recordedNextID != pager.next?.id
-            guard !isTransitioning,
-                  visible.answerID == pager.current.id,
-                  availabilityChanged,
-                  pagingPanGesture?.state != .began,
-                  pagingPanGesture?.state != .changed
-            else { return }
-            pageController.setViewControllers(
-                [visible],
-                direction: .forward,
-                animated: false
-            )
-            recordPagingAvailability()
-        }
-
-        private func hostedRoot(for store: AnswerStore) -> AnswerNativeView {
-            AnswerNativeView(
-                store: store,
-                pinAnswerDate: pinAnswerDate,
-                onNavigate: { [weak self] intent in self?.onNavigate(intent) }
-            )
-        }
-
-        func establishSystemEdgePrecedence(in pageController: UIPageViewController) {
-            self.pageController = pageController
-            guard let pagingScrollView = pageController.view.subviews
-                .compactMap({ $0 as? UIScrollView })
-                .first
-            else { return }
-            self.pagingScrollView = pagingScrollView
-            pagingScrollView.isScrollEnabled = true
-            let pagePan = pagingScrollView.panGestureRecognizer
-
-            if pagingPanGesture !== pagePan {
-                pagingPanGesture?.removeTarget(self, action: #selector(handlePagePan(_:)))
-                pagePan.addTarget(self, action: #selector(handlePagePan(_:)))
-                pagingPanGesture = pagePan
-            }
-
-            guard let navigationController = pageController.navigationController,
-                  let interactivePop = navigationController.interactivePopGestureRecognizer
-            else { return }
-            guard relatedNavigationController !== navigationController || relatedPagingPan !== pagePan else { return }
-            if navigationController.viewControllers.count > 1 {
-                interactivePop.isEnabled = true
-            }
-            pagePan.require(toFail: interactivePop)
-            relatedNavigationController = navigationController
-            relatedPagingPan = pagePan
-        }
-
-        private func makeContentPopGate(in scrollView: UIScrollView) -> UIPanGestureRecognizer {
-            let gate = UIPanGestureRecognizer(target: nil, action: nil)
-            gate.delegate = self
-            gate.cancelsTouchesInView = false
-            gate.delaysTouchesBegan = false
-            gate.delaysTouchesEnded = false
-            gate.name = "zhpp.answer-pager-content-pop-gate"
-            scrollView.addGestureRecognizer(gate)
-            contentPopGate = gate
-            return gate
-        }
-
-        func tearDownGestureCoordination() {
-            pagingPanGesture?.removeTarget(self, action: #selector(handlePagePan(_:)))
-            if let gate = contentPopGate {
-                gate.view?.removeGestureRecognizer(gate)
-            }
-            contentPopGate = nil
-            pagingPanGesture = nil
-            relatedPagingPan = nil
-            relatedNavigationController = nil
-        }
-
-        @objc private func handlePagePan(_ gesture: UIPanGestureRecognizer) {
-            guard gesture.state == .ended || gesture.state == .cancelled else { return }
-            defer {
-                if let pageController,
-                   let visible = pageController.viewControllers?.first as? QAHostedAnswerController
-                {
-                    refreshPagingAvailabilityIfNeeded(in: pageController, visible: visible)
-                }
-            }
-            guard gesture.state == .ended else { return }
-            let translation = gesture.translation(in: gesture.view)
-            guard abs(translation.x) > 72, abs(translation.x) > abs(translation.y),
-                  pager.current.initialRoute.kind == .answer
-            else { return }
-            let layoutDirection: AnswerPagerLayoutDirection =
-                gesture.view?.effectiveUserInterfaceLayoutDirection == .rightToLeft
-                ? .rightToLeft
-                : .leftToRight
-            let isForward = !AnswerPagerGestureArbitrationPolicy.isLeadingToTrailing(
-                horizontalMovement: translation.x,
-                layoutDirection: layoutDirection
-            )
-            if isForward, case .end = pager.forwardAvailability {
-                feedback.forwardBoundaryDidPublish(pager.reportForwardBoundaryReached())
-            }
-        }
-
-        func pageViewController(
-            _ pageViewController: UIPageViewController,
-            viewControllerBefore viewController: UIViewController
-        ) -> UIViewController? {
-            guard let visible = viewController as? QAHostedAnswerController,
-                  visible.answerID == pager.current.id
-            else { return nil }
-            if let previous = pager.previous {
-                return controller(for: previous)
-            }
-            return nil
-        }
-
-        func pageViewController(
-            _ pageViewController: UIPageViewController,
-            viewControllerAfter viewController: UIViewController
-        ) -> UIViewController? {
-            guard let visible = viewController as? QAHostedAnswerController,
-                  visible.answerID == pager.current.id,
-                  let next = pager.next
-            else { return nil }
-            return controller(for: next)
-        }
-
-        func pageViewController(
-            _ pageViewController: UIPageViewController,
-            willTransitionTo pendingViewControllers: [UIViewController]
-        ) {
-            isTransitioning = true
-        }
-
-        func pageViewController(
-            _ pageViewController: UIPageViewController,
-            didFinishAnimating finished: Bool,
-            previousViewControllers: [UIViewController],
-            transitionCompleted completed: Bool
-        ) {
-            isTransitioning = false
-            guard completed, let visible = pageViewController.viewControllers?.first else { return }
-            guard let visible = visible as? QAHostedAnswerController else { return }
-            let committed = pager.commitDisplayedAnswer(answerID: visible.answerID)
-            feedback.pageDidCommit(committed)
-            guard committed else { return }
-            recordPagingAvailability()
-            Task { await pager.prepareDisplayedAnswer() }
-        }
-
-        func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-            guard gestureRecognizer === contentPopGate,
-                  let pan = gestureRecognizer as? UIPanGestureRecognizer,
-                  let view = pan.view
-            else { return true }
-            return gestureOwner(for: pan, in: view) == .pager
-        }
-
-        func gestureRecognizer(
-            _ gestureRecognizer: UIGestureRecognizer,
-            shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
-        ) -> Bool {
-            guard gestureRecognizer === contentPopGate || otherGestureRecognizer === contentPopGate else {
-                return false
-            }
-            let peer = gestureRecognizer === contentPopGate ? otherGestureRecognizer : gestureRecognizer
-            guard peer === pagingPanGesture,
-                  let gate = contentPopGate,
-                  let view = gate.view
-            else { return false }
-            return gestureOwner(for: gate, in: view) == .pager
-        }
-
-        private func gestureOwner(
-            for gesture: UIPanGestureRecognizer,
-            in view: UIView
-        ) -> AnswerPagerHorizontalGestureOwner {
-            let referenceView = pageController?.navigationController?.view ?? view
-            let direction: AnswerPagerLayoutDirection =
-                referenceView.effectiveUserInterfaceLayoutDirection == .rightToLeft
-                ? .rightToLeft
-                : .leftToRight
-            let translation = gesture.translation(in: referenceView)
-            let currentLocation = gesture.location(in: referenceView)
-            return AnswerPagerGestureArbitrationPolicy.owner(
-                translation: translation,
-                velocity: gesture.velocity(in: referenceView),
-                startLocationX: currentLocation.x - translation.x,
-                containerWidth: referenceView.bounds.width,
-                hasPreviousAnswer: pager.previous != nil,
-                canNavigateBack: (pageController?.navigationController?.viewControllers.count ?? 0) > 1,
-                layoutDirection: direction
-            )
-        }
-    }
-
-    static func dismantleUIViewController(
-        _ uiViewController: UIPageViewController,
-        coordinator: Coordinator
-    ) {
-        coordinator.tearDownGestureCoordination()
-    }
-}
-
-private final class QAHostedAnswerController: UIHostingController<AnswerNativeView> {
-    let answerID: Int64
-
-    init(answerID: Int64, rootView: AnswerNativeView) {
-        self.answerID = answerID
-        super.init(rootView: rootView)
-    }
-
-    @MainActor required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
 }
