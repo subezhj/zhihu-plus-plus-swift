@@ -72,10 +72,33 @@ struct NativeHapticFeedbackAction {
 
 @MainActor
 private enum NativeHapticFeedbackPerformer {
+    // 复用 generator 实例（Apple 推荐）：避免每次新建导致系统节流“吃掉”反馈、时机漂移
+    private static var impactLight: UIImpactFeedbackGenerator?
+    private static var impactMedium: UIImpactFeedbackGenerator?
+    private static var impactHeavy: UIImpactFeedbackGenerator?
+    private static var selection: UISelectionFeedbackGenerator?
+    private static var notification: UINotificationFeedbackGenerator?
+
     static func perform(_ event: NativeHapticFeedbackEvent, strength: NativeHapticStrength) {
-        let generator = UIImpactFeedbackGenerator(style: impactStyle(for: strength))
-        generator.prepare()
-        generator.impactOccurred(intensity: intensity(for: event))
+        switch event {
+        case .selection, .refreshIgnored:
+            // 最轻：选择反馈（点赞/切换等）
+            selectionGenerator().selectionChanged()
+        case .commit:
+            // 柔和主反馈：用轻-中强度，避免 heavy 的生硬感
+            impactGenerator(style: impactStyle(for: strength)).impactOccurred(intensity: 0.4)
+        case .longPress:
+            impactGenerator(style: impactStyle(for: strength)).impactOccurred(intensity: 0.5)
+        case .dismiss:
+            impactGenerator(style: impactStyle(for: strength)).impactOccurred(intensity: 0.3)
+        case .navigationBoundary:
+            // 边界提示：中等强度，柔和
+            impactGenerator(style: impactStyle(for: strength)).impactOccurred(intensity: 0.5)
+        case .refreshSucceeded:
+            notificationGenerator().notificationOccurred(.success)
+        case .strengthPreview:
+            impactGenerator(style: impactStyle(for: strength)).impactOccurred(intensity: 0.6)
+        }
     }
 
     private static func impactStyle(
@@ -88,17 +111,40 @@ private enum NativeHapticFeedbackPerformer {
         }
     }
 
-    private static func intensity(for event: NativeHapticFeedbackEvent) -> CGFloat {
-        switch event {
-        case .selection: return 0.5
-        case .commit: return 1
-        case .longPress: return 0.8
-        case .dismiss: return 0.6
-        case .navigationBoundary: return 1
-        case .refreshSucceeded: return 1
-        case .refreshIgnored: return 0.45
-        case .strengthPreview: return 0.8
+    private static func impactGenerator(
+        style: UIImpactFeedbackGenerator.FeedbackStyle
+    ) -> UIImpactFeedbackGenerator {
+        switch style {
+        case .light:
+            if let generator = impactLight { return generator }
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            impactLight = generator
+            return generator
+        case .heavy:
+            if let generator = impactHeavy { return generator }
+            let generator = UIImpactFeedbackGenerator(style: .heavy)
+            impactHeavy = generator
+            return generator
+        default:
+            if let generator = impactMedium { return generator }
+            let generator = UIImpactFeedbackGenerator(style: .medium)
+            impactMedium = generator
+            return generator
         }
+    }
+
+    private static func selectionGenerator() -> UISelectionFeedbackGenerator {
+        if let generator = selection { return generator }
+        let generator = UISelectionFeedbackGenerator()
+        selection = generator
+        return generator
+    }
+
+    private static func notificationGenerator() -> UINotificationFeedbackGenerator {
+        if let generator = notification { return generator }
+        let generator = UINotificationFeedbackGenerator()
+        notification = generator
+        return generator
     }
 }
 

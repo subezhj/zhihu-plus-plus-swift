@@ -32,6 +32,10 @@ final class CommentSessionStore: ObservableObject {
     private var submissionTask: Task<Void, Never>?
     private var operationID: UInt64 = 0
     private var isDisposed = false
+    /// 最近一次成功加载根评论的时间（用于缓存过期静默刷新）
+    private var lastLoadedAt: Date?
+    /// 缓存保鲜窗口：超过该时长重进评论页时静默刷新（缓存数据仍在，仅后台更新）
+    static let cacheFreshnessWindow: TimeInterval = 120
 
     init(
         route: CommentThreadRouteDTO,
@@ -76,7 +80,10 @@ final class CommentSessionStore: ObservableObject {
 
     func start() {
         guard !isDisposed else { return }
-        loadInitial(level: activeLevel, invalidating: false)
+        // 内存缓存过期策略：已加载且未超时 → 直接复用不请求；超过保鲜窗口 → 静默刷新（保留旧内容）
+        let isCached = pages[activeLevel]?.initialLoad == .loaded
+        let isFresh = lastLoadedAt.map { Date().timeIntervalSince($0) < Self.cacheFreshnessWindow } ?? false
+        loadInitial(level: activeLevel, invalidating: isCached && !isFresh)
     }
 
     func changeSort(_ sort: CommentSortDTO) {
@@ -412,6 +419,7 @@ final class CommentSessionStore: ObservableObject {
                 acceptedPage.initialLoad = .loaded
                 acceptedPage.nextPage = .idle
                 pages[level] = acceptedPage
+                if level == .root { self.lastLoadedAt = Date() }
             } catch is CancellationError {
                 // 任务被取消（新任务顶替 / 页面切换）：页面仍有效时回到 idle，
                 // 避免 initialLoad 卡在 .loading 导致后续无法重新加载（对齐首页 isLoading finally 重置）
