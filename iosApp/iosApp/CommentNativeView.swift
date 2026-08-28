@@ -918,14 +918,20 @@ private struct CommentRichText: UIViewRepresentable {
     func updateUIView(_ textView: SelectionTextView, context: Context) {
         let pointSize = basePointSize * contentPresentation.fontScale
         let lineSpacing = contentPresentation.extraLineSpacing(for: pointSize)
-        textView.attributedText = CommentAttributedText.attributed(
-            from: html,
-            fallbackPointSize: pointSize,
-            lineSpacing: lineSpacing
-        )
-        textView.font = UIFont.systemFont(ofSize: pointSize)
-        // 内容更新后强制重测高度（缓存高度方案：仅 invalidateIntrinsicContentSize 不会重测，导致行高错乱/文本重叠）
-        textView.markNeedsRemeasure()
+        // 仅当内容/字号真正变化才重新设置并重测高度：
+        // 滚动时 List 行 body 会反复重建，若每次都 markNeedsRemeasure 会触发昂贵
+        // 的 sizeThatFits 全文测量导致滑动卡顿（首页固定行高卡片无此开销）
+        if textView.storedHTML != html || textView.storedPointSize != pointSize {
+            textView.storedHTML = html
+            textView.storedPointSize = pointSize
+            textView.attributedText = CommentAttributedText.attributed(
+                from: html,
+                fallbackPointSize: pointSize,
+                lineSpacing: lineSpacing
+            )
+            textView.font = UIFont.systemFont(ofSize: pointSize)
+            textView.markNeedsRemeasure()
+        }
         context.coordinator.openURL = openURL
     }
 
@@ -952,6 +958,9 @@ private struct CommentRichText: UIViewRepresentable {
 private final class SelectionTextView: UITextView {
     private var lastLayoutWidth: CGFloat = 0
     private var measuredHeight: CGFloat = 18
+    /// 内容/字号缓存：updateUIView 仅在实际变化时重测高度，避免滚动时反复昂贵测量
+    fileprivate var storedHTML: String?
+    fileprivate var storedPointSize: CGFloat?
 
     override init(frame: CGRect, textContainer: NSTextContainer?) {
         super.init(frame: frame, textContainer: textContainer)
