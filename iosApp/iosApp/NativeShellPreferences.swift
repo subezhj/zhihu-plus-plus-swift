@@ -266,6 +266,7 @@ final class NativeShellPreferences: ObservableObject {
         static let externalPageOpeningMode = "externalPageOpeningMode"
         static let hapticsEnabled = "nativeHapticsEnabled"
         static let hapticStrength = "nativeHapticStrength"
+        static let forcesProMotion = "nativeForcesProMotion"
     }
 
     private let defaults: UserDefaults
@@ -295,6 +296,7 @@ final class NativeShellPreferences: ObservableObject {
     @Published private(set) var externalPageOpeningMode: NativeExternalPageOpeningMode
     @Published private(set) var hapticsEnabled: Bool
     @Published private(set) var hapticStrength: NativeHapticStrength
+    @Published private(set) var forcesProMotion: Bool
 
     var contentPresentation: NativeContentPresentationPreferences {
         NativeContentPresentationPreferences(
@@ -415,6 +417,7 @@ final class NativeShellPreferences: ObservableObject {
         externalPageOpeningMode = defaults.string(forKey: Key.externalPageOpeningMode)
             .flatMap(NativeExternalPageOpeningMode.init(rawValue:)) ?? .defaultBrowser
         hapticsEnabled = Self.bool(defaults, key: Key.hapticsEnabled, defaultValue: true)
+        forcesProMotion = Self.bool(defaults, key: Key.forcesProMotion, defaultValue: false)
         hapticStrength = defaults.string(forKey: Key.hapticStrength)
             .flatMap(NativeHapticStrength.init(rawValue:)) ?? .standard
     }
@@ -552,6 +555,13 @@ final class NativeShellPreferences: ObservableObject {
         guard hapticsEnabled != enabled else { return }
         hapticsEnabled = enabled
         defaults.set(enabled, forKey: Key.hapticsEnabled)
+    }
+
+    func setForcesProMotion(_ enabled: Bool) {
+        guard forcesProMotion != enabled else { return }
+        forcesProMotion = enabled
+        defaults.set(enabled, forKey: Key.forcesProMotion)
+        NativeProMotionEnforcer.update(enabled: enabled)
     }
 
     func setHapticStrength(_ strength: NativeHapticStrength) {

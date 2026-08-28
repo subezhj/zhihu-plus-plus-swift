@@ -141,6 +141,7 @@ struct NativeSettingsView: View {
             Section {
                 Toggle("再次点击当前标签回到顶部或刷新", isOn: topLevelReselectBinding)
                 Toggle("触觉反馈", isOn: hapticsEnabledBinding)
+                Toggle("强制 120Hz 高刷 (ProMotion)", isOn: proMotionBinding)
                 Picker("反馈力度", selection: hapticStrengthBinding) {
                     ForEach(NativeHapticStrength.allCases) { strength in
                         Text(strength.title).tag(strength)
@@ -334,6 +335,10 @@ struct NativeSettingsView: View {
 
     private var hapticsEnabledBinding: Binding<Bool> {
         Binding(get: { preferences.hapticsEnabled }, set: preferences.setHapticsEnabled)
+    }
+
+    private var proMotionBinding: Binding<Bool> {
+        Binding(get: { preferences.forcesProMotion }, set: preferences.setForcesProMotion)
     }
 
     private var hapticStrengthBinding: Binding<NativeHapticStrength> {

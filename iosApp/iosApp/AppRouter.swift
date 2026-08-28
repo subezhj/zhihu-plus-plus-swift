@@ -128,6 +128,8 @@ final class HostModel: ObservableObject {
             repository: .live(accountStore: accountStore, client: client)
         )
         preferences = NativeShellPreferences(defaults: defaults)
+        // 应用强制 120Hz 设置（ProMotion 高刷）
+        NativeProMotionEnforcer.apply(enabled: preferences.forcesProMotion)
         questionAuthorBlocklist = QuestionAuthorBlocklistStore(defaults: defaults)
         self.notificationPreferences = notificationPreferences
         notifications = NativeNotificationStore(
