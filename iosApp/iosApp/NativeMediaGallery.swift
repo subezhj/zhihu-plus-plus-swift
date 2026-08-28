@@ -146,7 +146,7 @@ struct NativeMediaGallery: View {
             } label: {
                 Image(systemName: "ellipsis")
                     .font(.system(size: 17, weight: .semibold))
-                    .frame(width: 44, height: 44)
+                    .frame(width: 40, height: 40)
                     .contentShape(Circle())
                     .modifier(NativeMediaControlSurface())
             }
@@ -238,7 +238,7 @@ private struct NativeMediaControlButton: View {
         Button(action: action) {
             Image(systemName: systemImage)
                 .font(.system(size: 17, weight: .semibold))
-                .frame(width: 44, height: 44)
+                .frame(width: 40, height: 40)
                 .contentShape(Circle())
                 .modifier(NativeMediaControlSurface())
         }
