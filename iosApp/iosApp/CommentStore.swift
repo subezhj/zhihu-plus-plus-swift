@@ -447,7 +447,12 @@ final class CommentSessionStore: ObservableObject {
                 acceptedPage.nextPage = .idle
                 pages[level] = acceptedPage
             } catch is CancellationError {
-                return
+                // 任务被取消（新任务顶替 / 页面切换）：页面仍有效时回到 idle，
+                // 避免 nextPage 卡在 .loading 导致该层后续永远无法继续加载
+                // （与首页 loadMore 的“无论成败均重置加载锁”对齐）
+                guard accepts(acceptanceKey), var acceptedPage = pages[level] else { return }
+                acceptedPage.nextPage = .idle
+                pages[level] = acceptedPage
             } catch {
                 guard accepts(acceptanceKey), var acceptedPage = pages[level] else { return }
                 acceptedPage.nextPage = .failed(displayMessage(error))
