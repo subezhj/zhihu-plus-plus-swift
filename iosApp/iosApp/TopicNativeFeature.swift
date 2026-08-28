@@ -500,4 +500,5 @@ extension TopicStore: PagingSource {
     var hasMore: Bool { !isEnd }
     var errorMessage: String? { feedsErrorMessage }
     func loadMore() async { await loadMoreIfNeeded() }
+    func refresh() async { await loadMoreIfNeeded() }
 }
