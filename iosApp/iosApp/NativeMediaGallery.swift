@@ -34,172 +34,120 @@ struct NativeMediaGallery: View {
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                Color.black
-                    .opacity(backgroundOpacity(viewportHeight: geometry.size.height))
-                    .ignoresSafeArea()
+        NavigationStack {
+            GeometryReader { geometry in
+                ZStack {
+                    Color.black
+                        .opacity(backgroundOpacity(viewportHeight: geometry.size.height))
+                        .ignoresSafeArea()
 
-                // Apple 官方分页：ScrollView + LazyHStack + scrollTargetBehavior(.paging) + scrollPosition
-                // 惰性渲染仅可见页（解决多图 HStack 全量平铺卡顿）；缩放时 scrollDisabled 锁住翻页
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 0) {
-                        ForEach(urls.indices, id: \.self) { index in
-                            NativeZoomableRemoteImage(
-                                url: urls[index],
-                                animatedURLs: animatedURLs,
-                                store: imageStore,
-                                onZoomChanged: { isZoomed in
-                                    if isZoomed { zoomedIndices.insert(index) } else { zoomedIndices.remove(index) }
-                                }
-                            )
-                            .frame(width: geometry.size.width, height: geometry.size.height)
-                            .id(index)
+                    // Apple 官方分页：ScrollView + LazyHStack + scrollTargetBehavior(.paging) + scrollPosition
+                    // 惰性渲染仅可见页（解决多图 HStack 全量平铺卡顿）；缩放时 scrollDisabled 锁住翻页
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack(spacing: 0) {
+                            ForEach(urls.indices, id: \.self) { index in
+                                NativeZoomableRemoteImage(
+                                    url: urls[index],
+                                    animatedURLs: animatedURLs,
+                                    store: imageStore,
+                                    onZoomChanged: { isZoomed in
+                                        if isZoomed { zoomedIndices.insert(index) } else { zoomedIndices.remove(index) }
+                                    }
+                                )
+                                .frame(width: geometry.size.width, height: geometry.size.height)
+                                .id(index)
+                            }
                         }
+                        .scrollTargetLayout()
                     }
-                    .scrollTargetLayout()
-                }
-                .scrollTargetBehavior(.paging)
-                .scrollPosition(id: $pageID)
-                .onChange(of: pageID) { _, newValue in
-                    if let newValue { selectedIndex = newValue }
-                }
-                .scrollDisabled(isCurrentImageZoomed)
-                .offset(y: dismissOffset)
-                .contentShape(Rectangle())
-                .simultaneousGesture(verticalDismissGesture(viewportHeight: geometry.size.height))
-
-                if urls.count > 1 {
-                    VStack {
-                        Spacer()
-                        Text("\(selectedIndex + 1) / \(urls.count)")
-                            .font(.caption.monospacedDigit())
-                            .foregroundStyle(.white)
-                            .fixedSize(horizontal: true, vertical: false)
-                            .frame(minWidth: 54)
-                            .padding(.horizontal, 11)
-                            .padding(.vertical, 7)
-                            .modifier(NativeMediaIndicatorSurface())
-                            .padding(.bottom, 18)
+                    .scrollTargetBehavior(.paging)
+                    .scrollPosition(id: $pageID)
+                    .onChange(of: pageID) { _, newValue in
+                        if let newValue { selectedIndex = newValue }
                     }
-                    .allowsHitTesting(false)
-                }
-            }
-            .clipped()
-        }
-        .background(Color.black.ignoresSafeArea())
-        .overlay(alignment: .top) { topControls }
-        .preferredColorScheme(.dark)
-        .alert(item: $message) { message in
-            Alert(
-                title: Text("操作结果"),
-                message: Text(message.text),
-                dismissButton: .default(Text("知道了"))
-            )
-        }
-        .accessibilityIdentifier(accessibilityPrefix)
-        .onChange(of: selectedIndex) { previous, current in
-            NativeMediaGalleryFeedback(action: hapticFeedback)
-                .pageDidCommit(from: previous, to: current)
-        }
-    }
+                    .scrollDisabled(isCurrentImageZoomed)
+                    .offset(y: dismissOffset)
+                    .contentShape(Rectangle())
+                    .simultaneousGesture(verticalDismissGesture(viewportHeight: geometry.size.height))
 
-    private var topControls: some View {
-        controls
-    }
-
-    private var controls: some View {
-        HStack(spacing: 10) {
-            NativeMediaControlButton(
-                systemImage: "xmark",
-                accessibilityLabel: "关闭图片",
-                action: dismiss.callAsFunction
-            )
-            .accessibilityIdentifier("\(accessibilityPrefix)_close")
-
-            Spacer()
-
-            Menu {
-                if let currentImage {
-                    ShareLink(
-                        item: Image(uiImage: currentImage),
-                        preview: SharePreview("知乎++图片", image: Image(uiImage: currentImage))
-                    ) {
-                        Label("分享图片文件", systemImage: "square.and.arrow.up")
+                    if urls.count > 1 {
+                        VStack {
+                            Spacer()
+                            Text("\(selectedIndex + 1) / \(urls.count)")
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.white)
+                                .fixedSize(horizontal: true, vertical: false)
+                                .frame(minWidth: 54)
+                                .padding(.horizontal, 11)
+                                .padding(.vertical, 7)
+                                .modifier(NativeMediaIndicatorSurface())
+                                .padding(.bottom, 18)
+                        }
+                        .allowsHitTesting(false)
                     }
                 }
-
-                if let currentURL {
-                    ShareLink(item: currentURL) {
-                        Label("分享图片链接", systemImage: "link")
+                .clipped()
+            }
+            .background(Color.black.ignoresSafeArea())
+            .preferredColorScheme(.dark)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
                     }
+                    .buttonStyle(.glass)
+                    .accessibilityLabel("关闭图片")
+                    .accessibilityIdentifier("\(accessibilityPrefix)_close")
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        if let currentImage {
+                            ShareLink(
+                                item: Image(uiImage: currentImage),
+                                preview: SharePreview("知乎++图片", image: Image(uiImage: currentImage))
+                            ) {
+                                Label("分享图片文件", systemImage: "square.and.arrow.up")
+                            }
+                        }
 
-                Button(action: copyCurrentImage) {
-                    Label("复制图片", systemImage: "doc.on.doc")
-                }
+                        if let currentURL {
+                            ShareLink(item: currentURL) {
+                                Label("分享图片链接", systemImage: "link")
+                            }
+                        }
 
-                Button(action: saveCurrentImage) {
-                    Label(isSaving ? "正在保存" : "保存到照片", systemImage: "square.and.arrow.down")
+                        Button(action: copyCurrentImage) {
+                            Label("复制图片", systemImage: "doc.on.doc")
+                        }
+
+                        Button(action: saveCurrentImage) {
+                            Label(isSaving ? "正在保存" : "保存到照片", systemImage: "square.and.arrow.down")
+                        }
+                        .disabled(currentImage == nil || isSaving)
+                    } label: {
+                        Image(systemName: "ellipsis")
+                    }
+                    .accessibilityLabel("图片操作")
+                    .accessibilityIdentifier("\(accessibilityPrefix)_actions")
                 }
-                .disabled(currentImage == nil || isSaving)
-            } label: {
-                Image(systemName: "ellipsis")
-                    .font(.system(size: 17, weight: .semibold))
-                    .frame(width: 40, height: 40)
-                    .contentShape(Circle())
-                    .modifier(NativeMediaControlSurface())
             }
-            .foregroundStyle(.white)
-            .accessibilityLabel("图片操作")
-            .accessibilityIdentifier("\(accessibilityPrefix)_actions")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.hidden, for: .navigationBar)
+            .alert(item: $message) { message in
+                Alert(
+                    title: Text("操作结果"),
+                    message: Text(message.text),
+                    dismissButton: .default(Text("知道了"))
+                )
+            }
+            .accessibilityIdentifier(accessibilityPrefix)
+            .onChange(of: selectedIndex) { previous, current in
+                NativeMediaGalleryFeedback(action: hapticFeedback)
+                    .pageDidCommit(from: previous, to: current)
+            }
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 4)
-    }
-
-    private var currentURL: URL? {
-        urls.indices.contains(selectedIndex) ? urls[selectedIndex] : nil
-    }
-
-    private var currentImage: UIImage? {
-        currentURL.flatMap { imageStore.image(for: $0) }
-    }
-
-    private var isCurrentImageZoomed: Bool { zoomedIndices.contains(selectedIndex) }
-
-    private func backgroundOpacity(viewportHeight: CGFloat) -> Double {
-        let fadeDistance = max(viewportHeight * 0.3, 1)
-        return 1 - min(abs(dismissOffset) / fadeDistance, 1) * 0.55
-    }
-
-    private func verticalDismissGesture(viewportHeight: CGFloat) -> some Gesture {
-        DragGesture(minimumDistance: 12, coordinateSpace: .global)
-            .onChanged { value in
-                guard !isCurrentImageZoomed,
-                      NativeMediaDismissalPolicy.isVertical(value.translation)
-                else { return }
-                dismissOffset = value.translation.height
-            }
-            .onEnded { value in
-                guard !isCurrentImageZoomed,
-                      NativeMediaDismissalPolicy.isVertical(value.translation)
-                else {
-                    withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) { dismissOffset = 0 }
-                    return
-                }
-                if NativeMediaDismissalPolicy.shouldDismiss(
-                    translation: value.translation,
-                    predictedEndTranslation: value.predictedEndTranslation,
-                    viewportHeight: viewportHeight
-                ) {
-                    NativeMediaGalleryFeedback(action: hapticFeedback)
-                        .verticalDismissDidCommit(true)
-                    dismiss()
-                } else {
-                    withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) { dismissOffset = 0 }
-                }
-            }
     }
 
     private func copyCurrentImage() {
@@ -226,31 +174,6 @@ struct NativeMediaGallery: View {
                 message = NativeMediaMessage(text: "无法保存图片，请检查照片权限后重试")
             }
         }
-    }
-}
-
-private struct NativeMediaControlButton: View {
-    let systemImage: String
-    let accessibilityLabel: String
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.system(size: 17, weight: .semibold))
-                .frame(width: 40, height: 40)
-                .contentShape(Circle())
-                .modifier(NativeMediaControlSurface())
-        }
-        .foregroundStyle(.white)
-        .accessibilityLabel(accessibilityLabel)
-    }
-}
-
-private struct NativeMediaControlSurface: ViewModifier {
-    func body(content: Content) -> some View {
-        // ignoreToggle：图片查看器在黑色背景上，务必保持液态玻璃质感（不受设置开关回退成纯色圆）
-        content.liquidGlassCircle(ignoreToggle: true)
     }
 }
 
@@ -356,6 +279,7 @@ private struct NativeZoomingScrollView: UIViewRepresentable {
         weak var scrollView: UIScrollView?
         weak var imageView: UIImageView?
         var image: UIImage?
+        private var hasInitialLayout = false
 
         init(onZoomChanged: @escaping (Bool) -> Void) {
             self.onZoomChanged = onZoomChanged
@@ -380,6 +304,16 @@ private struct NativeZoomingScrollView: UIViewRepresentable {
 
         func scrollViewDidLayoutSubviews(_ scrollView: UIScrollView) {
             layoutContent()
+            if !hasInitialLayout {
+                hasInitialLayout = true
+                // 首次布局完成后强制 zoomScale=1，防止图片 intrinsic 尺寸诱导 UIScrollView 自动放大
+                if scrollView.zoomScale > 1.01 {
+                    scrollView.setZoomScale(1, animated: false)
+                    scrollView.contentOffset = .zero
+                    scrollView.isScrollEnabled = false
+                    onZoomChanged(false)
+                }
+            }
         }
 
         @objc func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
