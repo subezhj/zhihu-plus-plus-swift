@@ -415,11 +415,34 @@ final class AnswerPagerStore: ObservableObject {
         return true
     }
 
+    /// 线性加载所需：所有已加载答案的 contentID（路由顺序）
+    var orderedContentIDs: [Int64] { routes.map(\.contentID) }
+
+    /// 给定 contentID 返回对应的 AnswerStore（缓存或创建）
+    func store(forContentID contentID: Int64) -> AnswerStore? {
+        guard let route = routes.first(where: { $0.contentID == contentID }) else { return nil }
+        if let existing = stores[contentID] { return existing }
+        let created = AnswerStore(route: route, repository: repository)
+        stores[contentID] = created
+        return created
+    }
+
     func prepareDisplayedAnswer() async {
         await current.loadIfNeeded()
         if let questionID = current.content?.questionID ?? current.initialRoute.questionID {
             await openedHistory.markOpened(answerID: current.id, questionID: questionID)
         }
+        await prepareNextIfNeeded()
+    }
+
+    /// 线性加载：是否还可加载更多相邻回答
+    var canLoadMoreAnswers: Bool {
+        guard current.initialRoute.kind == .answer, !isEnd else { return false }
+        return true
+    }
+
+    /// 线性加载：追加加载下一个相邻回答（幂等，由 prepareNextIfNeeded 防重）
+    func loadNextAnswer() async {
         await prepareNextIfNeeded()
     }
 
