@@ -150,6 +150,50 @@ struct NativeMediaGallery: View {
         }
     }
 
+    private var currentURL: URL? {
+        urls.indices.contains(selectedIndex) ? urls[selectedIndex] : nil
+    }
+
+    private var currentImage: UIImage? {
+        currentURL.flatMap { imageStore.image(for: $0) }
+    }
+
+    private var isCurrentImageZoomed: Bool { zoomedIndices.contains(selectedIndex) }
+
+    private func backgroundOpacity(viewportHeight: CGFloat) -> Double {
+        let fadeDistance = max(viewportHeight * 0.3, 1)
+        return 1 - min(abs(dismissOffset) / fadeDistance, 1) * 0.55
+    }
+
+    private func verticalDismissGesture(viewportHeight: CGFloat) -> some Gesture {
+        DragGesture(minimumDistance: 12, coordinateSpace: .global)
+            .onChanged { value in
+                guard !isCurrentImageZoomed,
+                      NativeMediaDismissalPolicy.isVertical(value.translation)
+                else { return }
+                dismissOffset = value.translation.height
+            }
+            .onEnded { value in
+                guard !isCurrentImageZoomed,
+                      NativeMediaDismissalPolicy.isVertical(value.translation)
+                else {
+                    withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) { dismissOffset = 0 }
+                    return
+                }
+                if NativeMediaDismissalPolicy.shouldDismiss(
+                    translation: value.translation,
+                    predictedEndTranslation: value.predictedEndTranslation,
+                    viewportHeight: viewportHeight
+                ) {
+                    NativeMediaGalleryFeedback(action: hapticFeedback)
+                        .verticalDismissDidCommit(true)
+                    dismiss()
+                } else {
+                    withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) { dismissOffset = 0 }
+                }
+            }
+    }
+
     private func copyCurrentImage() {
         if let currentImage {
             UIPasteboard.general.image = currentImage
