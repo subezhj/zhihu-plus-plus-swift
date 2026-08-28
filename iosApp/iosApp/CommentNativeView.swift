@@ -196,6 +196,9 @@ private struct CommentLevelView: View {
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
         .environment(\.defaultMinListRowHeight, 1)
+        .refreshable {
+            await store.refresh(level: level)
+        }
         .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .background(CommentScrollViewAccessor { scrollView = $0 })
         .onChange(of: store.scrollToStartLevel) { target in
@@ -402,6 +405,13 @@ private struct CommentLevelView: View {
             }
             .listRowSeparator(.hidden)
             .listRowBackground(Color.nativeSystemGroupedBackground)
+        case .idle where page.nextURL != nil && !page.isEnd:
+            // 与首页推荐流 NativeFeedPaginationLoadingRow 对齐：还有下一页时始终显示占位行，
+            // 避免列表底部在加载间隙跳动；onAppear 触发的预加载会在接近底部时拉起下一页
+            HStack { Spacer(); ProgressView("正在加载更多"); Spacer() }
+                .font(.caption)
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.nativeSystemGroupedBackground)
         case .idle where page.isEnd && !page.items.isEmpty:
             Text(level == .root ? "已显示全部评论" : "已显示全部回复")
                 .font(.caption)
