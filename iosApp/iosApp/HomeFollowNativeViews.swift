@@ -328,33 +328,21 @@ struct HomeNativeView: View {
     var body: some View {
         ScrollViewReader { proxy in
             List {
-                if store.items.isEmpty, store.isLoading {
-                    HStack { Spacer(); ProgressView("正在加载推荐"); Spacer() }
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.nativeSystemGroupedBackground)
-                }
-
-                ForEach(visibleItems) { item in
-                    FeedItemRow(item: item, showsThumbnail: true) { route in
-                        store.opened(item)
-                        onOpen(route)
-                    }
-                    .onAppear {
-                        if item.id == visibleItems.last?.id, store.canLoadMore {
-                            Task { await store.loadMore() }
+                // 通用分页骨架：首屏加载/行列表/触底加载/空态/footer 统一收敛
+                PagingListContent(
+                    source: store,
+                    rowContent: { item in
+                        FeedItemRow(item: item, showsThumbnail: true) { route in
+                            store.opened(item)
+                            onOpen(route)
                         }
-                    }
-                }
-
-                if let message = store.errorMessage {
-                    FeedRetryRow(message: message) { Task { await store.retry() } }
-                } else if store.hasNextPage {
-                    NativeFeedPaginationLoadingRow(title: "正在加载更多推荐")
-                        .listRowSeparator(.hidden)
-                } else if visibleItems.isEmpty, !store.isLoading {
-                    Label("暂无推荐", systemImage: "sparkles")
-                        .foregroundStyle(.secondary)
-                }
+                    },
+                    onAppearItem: { _ in },
+                    loadingMessage: "正在加载推荐",
+                    footerLoadingMessage: "正在加载更多推荐",
+                    emptyMessage: "暂无推荐",
+                    emptySystemImage: "sparkles"
+                )
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)

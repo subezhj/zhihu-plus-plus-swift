@@ -298,6 +298,8 @@ final class HomeFeedNativeStore: ObservableObject {
 
     var canLoadMore: Bool { hasLoaded && !isEnd && nextURL != nil && !isLoading }
     var hasNextPage: Bool { hasLoaded && !isEnd && nextURL != nil }
+    /// PagingSource 适配：与 hasNextPage 等价
+    var hasMore: Bool { hasNextPage }
     var nextPageLoadID: String? { nextURL?.absoluteString }
 
     func loadInitialIfNeeded() async {
@@ -311,6 +313,14 @@ final class HomeFeedNativeStore: ObservableObject {
             return
         }
         await loadInitialPage()
+    }
+
+    func retry() async {
+        if failedOperation == .nextPage {
+            await loadMore()
+        } else {
+            _ = await refresh(intent: .retry)
+        }
     }
 
     func refresh() async {
@@ -922,3 +932,9 @@ final class FollowNativeStore: ObservableObject {
         section == .recommendations ? recommendationGeneration : momentsGeneration
     }
 }
+
+// MARK: - PagingSource 适配（新架构重构 §4.19）
+extension HomeFeedNativeStore: PagingSource {
+    // Item = FeedItemDTO；items / isLoading / errorMessage / hasMore / loadMore / refresh / retry 均已满足
+}
+\n// MARK: - PagingSource 适配（新架构重构 §4.19）\nextension HomeFeedNativeStore: PagingSource {}\n

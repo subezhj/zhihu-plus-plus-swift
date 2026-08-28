@@ -80,6 +80,7 @@
 		0B200000000000000000023 /* PinNativeFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B100000000000000000023 /* PinNativeFeature.swift */; };
 0B20000000000000000002C /* TopicNativeFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B10000000000000000002C /* TopicNativeFeature.swift */; };
 0B20000000000000000002D /* NativeProMotionEnforcer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B10000000000000000002D /* NativeProMotionEnforcer.swift */; };
+0B20000000000000000002E /* PagingList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B10000000000000000002E /* PagingList.swift */; };
 		0B200000000000000000024 /* QABodyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B100000000000000000024 /* QABodyView.swift */; };
 		0B200000000000000000025 /* QARichContentParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B100000000000000000025 /* QARichContentParser.swift */; };
 		0B200000000000000000026 /* QuestionAnswerModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B100000000000000000026 /* QuestionAnswerModels.swift */; };
@@ -201,6 +202,7 @@
 		0B100000000000000000023 /* PinNativeFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinNativeFeature.swift; sourceTree = "<group>"; };
 0B10000000000000000002C /* TopicNativeFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopicNativeFeature.swift; sourceTree = "<group>"; };
 0B10000000000000000002D /* NativeProMotionEnforcer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeProMotionEnforcer.swift; sourceTree = "<group>"; };
+0B10000000000000000002E /* PagingList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagingList.swift; sourceTree = "<group>"; };
 		0B100000000000000000024 /* QABodyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QABodyView.swift; sourceTree = "<group>"; };
 		0B100000000000000000025 /* QARichContentParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QARichContentParser.swift; sourceTree = "<group>"; };
 		0B100000000000000000026 /* QuestionAnswerModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionAnswerModels.swift; sourceTree = "<group>"; };
@@ -329,6 +331,7 @@
 				0B100000000000000000023 /* PinNativeFeature.swift */,
 				0B10000000000000000002C /* TopicNativeFeature.swift */,
 				0B10000000000000000002D /* NativeProMotionEnforcer.swift */,
+				0B10000000000000000002E /* PagingList.swift */,
 				0B100000000000000000024 /* QABodyView.swift */,
 				0B100000000000000000025 /* QARichContentParser.swift */,
 				0B100000000000000000026 /* QuestionAnswerModels.swift */,
@@ -556,6 +559,7 @@
 				0B200000000000000000023 /* PinNativeFeature.swift in Sources */,
 				0B20000000000000000002C /* TopicNativeFeature.swift in Sources */,
 				0B20000000000000000002D /* NativeProMotionEnforcer.swift in Sources */,
+				0B20000000000000000002E /* PagingList.swift in Sources */,
 				0B200000000000000000024 /* QABodyView.swift in Sources */,
 				0B200000000000000000025 /* QARichContentParser.swift in Sources */,
 				0B200000000000000000026 /* QuestionAnswerModels.swift in Sources */,
