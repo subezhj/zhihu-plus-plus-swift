@@ -248,6 +248,7 @@ final class NativeAnswerInteractivePopObserverController: UIViewController,
 {
     private weak var observedGesture: UIGestureRecognizer?
     private weak var previousDelegate: UIGestureRecognizerDelegate?
+    private weak var coordinatedPagingPan: UIPanGestureRecognizer?
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -256,6 +257,10 @@ final class NativeAnswerInteractivePopObserverController: UIViewController,
               let gesture = navigationController.interactivePopGestureRecognizer
         else { return }
         observeInteractivePopGesture(gesture)
+        // 延迟一帧等 SwiftUI 布局完成，再对横向分页 ScrollView 做 pop 仲裁
+        DispatchQueue.main.async { [weak self] in
+            self?.coordinatePagingPan(with: gesture)
+        }
     }
 
     func observeInteractivePopGesture(_ gesture: UIGestureRecognizer) {
@@ -266,6 +271,37 @@ final class NativeAnswerInteractivePopObserverController: UIViewController,
         previousDelegate = gesture.delegate
         gesture.delegate = self
         gesture.isEnabled = true
+    }
+
+    /// 标准 Apple 边缘返回仲裁：让横向分页 ScrollView 的 pan 手势依赖（require to fail）
+    /// 系统 interactivePop 手势——从左缘右滑时 pop 先识别（返回），否则分页 pan 才开始翻页。
+    /// 重构回答页时该协调曾被删除，导致分页 pan 抢占边缘右滑、侧滑返回失效。
+    private func coordinatePagingPan(with popGesture: UIGestureRecognizer) {
+        guard coordinatedPagingPan == nil else { return }
+        // 从当前可见 VC（回答页 hosting view）的视图树向下找横向分页 UIScrollView，
+        // 避免误抓到底层推荐页的横向内容流
+        guard let visibleView = navigationController?.visibleViewController?.view,
+              let pagingPan = findHorizontalScrollView(in: visibleView)?.panGestureRecognizer
+        else { return }
+        pagingPan.require(toFail: popGesture)
+        coordinatedPagingPan = pagingPan
+    }
+
+    private func findHorizontalScrollView(in root: UIView?) -> UIScrollView? {
+        guard let root else { return nil }
+        if let scrollView = root as? UIScrollView {
+            // 横向分页容器：内容宽度显著大于可视宽度（多页），且允许横向滚动
+            if scrollView.contentSize.width > scrollView.bounds.width + 1,
+               scrollView.panGestureRecognizer.numberOfTouchesRequired == 1 {
+                return scrollView
+            }
+        }
+        for subview in root.subviews {
+            if let found = findHorizontalScrollView(in: subview) {
+                return found
+            }
+        }
+        return nil
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -279,6 +315,7 @@ final class NativeAnswerInteractivePopObserverController: UIViewController,
         }
         observedGesture = nil
         previousDelegate = nil
+        coordinatedPagingPan = nil
     }
 
     func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {

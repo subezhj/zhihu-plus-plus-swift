@@ -304,6 +304,12 @@ private struct NativeZoomingScrollView: UIViewRepresentable {
         context.coordinator.imageView = imageView
         context.coordinator.image = image
 
+        // 首次挂载后布局可能尚未就绪（bounds=0），延后一帧再统一布局，
+        // 避免首屏 imageView 尺寸为 0 需用户滑动才显示
+        DispatchQueue.main.async { [weak scrollView] in
+            scrollView?.layoutIfNeeded()
+        }
+
         return scrollView
     }
 
@@ -316,6 +322,16 @@ private struct NativeZoomingScrollView: UIViewRepresentable {
             coordinator.resetToFit(scrollView)
         } else {
             coordinator.layoutContent()
+            // bounds 可能尚未就绪（首次出现时布局回调不保证触发），延后一帧兜底
+            DispatchQueue.main.async { [weak scrollView] in
+                guard let scrollView else { return }
+                scrollView.layoutIfNeeded()
+                if let imageView = context.coordinator.imageView,
+                   scrollView.bounds.size != .zero,
+                   imageView.frame.size != scrollView.bounds.size {
+                    context.coordinator.layoutContent()
+                }
+            }
         }
     }
 
