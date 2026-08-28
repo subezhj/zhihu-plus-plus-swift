@@ -35,7 +35,7 @@ private struct AnswerPagerPages: View {
     let hapticFeedback: NativeHapticFeedbackAction
     let onNavigate: (QANavigationIntent) -> Void
     @State private var posterDocument: NativeContentPosterDocument?
-    @State private var selectionValue: Int64
+    @State private var selectionValue: Int64?
 
     init(
         pager: AnswerPagerStore,
@@ -61,17 +61,26 @@ private struct AnswerPagerPages: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            TabView(selection: $selectionValue) {
-                ForEach(pages) { answerStore in
-                    AnswerNativeView(
-                        store: answerStore,
-                        pinAnswerDate: preferences.pinAnswerDate,
-                        onNavigate: onNavigate
-                    )
-                    .tag(answerStore.id)
+            // 纯 SwiftUI 横向分页：ScrollView + paging + scrollPosition(id:)，
+            // 替代 TabView(.page)（其对动态页面集合会跳页/卡顿）；LazyHStack 惰性渲染相邻页
+            ScrollView(.horizontal) {
+                LazyHStack(spacing: 0) {
+                    ForEach(pages) { answerStore in
+                        AnswerNativeView(
+                            store: answerStore,
+                            pinAnswerDate: preferences.pinAnswerDate,
+                            onNavigate: onNavigate
+                        )
+                        .containerRelativeFrame(.horizontal)
+                        .id(answerStore.id)
+                    }
                 }
+                .scrollTargetLayout()
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
+            .scrollTargetBehavior(.paging)
+            .scrollPosition(id: $selectionValue, anchor: .center)
+            .scrollIndicators(.hidden)
+            .scrollBounceBehavior(.basedOnSize)
 
             if let error = pager.switchError {
                 Button {
@@ -122,12 +131,11 @@ private struct AnswerPagerPages: View {
             }
         }
         .onChange(of: selectionValue) { _, newID in
-            guard newID != pager.current.id else { return }
-            // 异步提交：等分页滑动动画完成后再切换/加载，避免动画期间 body 重算掉帧
+            guard let newID, newID != pager.current.id else { return }
+            // 异步提交：等分页动画完成后再切换/加载，避免动画期间 body 重算掉帧
             Task { @MainActor in
                 let committed = pager.commitDisplayedAnswer(answerID: newID)
                 if committed {
-                    hapticFeedback(.selection)
                     await pager.prepareDisplayedAnswer()
                 }
             }

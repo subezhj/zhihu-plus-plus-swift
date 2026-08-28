@@ -914,7 +914,8 @@ private struct CommentRichText: UIViewRepresentable {
             lineSpacing: lineSpacing
         )
         textView.font = UIFont.systemFont(ofSize: pointSize)
-        textView.invalidateIntrinsicContentSize()
+        // 内容更新后强制重测高度（缓存高度方案：仅 invalidateIntrinsicContentSize 不会重测，导致行高错乱/文本重叠）
+        textView.markNeedsRemeasure()
         context.coordinator.openURL = openURL
     }
 
