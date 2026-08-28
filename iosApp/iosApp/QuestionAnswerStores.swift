@@ -555,4 +555,5 @@ extension QuestionStore: PagingSource {
         return false
     }
     var hasMore: Bool { !isEnd }
+    var errorMessage: String? { message?.text }
 }
