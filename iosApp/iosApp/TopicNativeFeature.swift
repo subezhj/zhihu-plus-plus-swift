@@ -373,30 +373,28 @@ struct TopicNativeView: View {
                 .listRowBackground(Color.nativeSystemGroupedBackground)
                 .listRowSeparator(.hidden)
                 .task { await store.loadFeedsDebug() }
-            }
-            ForEach(store.feeds, id: \.id) { item in
-                if let route = item.route {
-                    Button {
-                        onOpen(route)
-                    } label: {
-                        TopicFeedRow(item: item)
-                    }
-                    .buttonStyle(.plain)
-                    .nativeFeedCardItem(cornerRadius: 14)
-                    .onAppear {
-                        if item.id == store.feeds.last?.id {
-                            Task { await store.loadMoreIfNeeded() }
+            } else if !store.feeds.isEmpty {
+                // 通用分页骨架：话题内容行 + 触底加载 + footer（加载/错误）
+                PagingListContent(
+                    source: store,
+                    rowContent: { item, _ in
+                        if let route = item.route {
+                            Button {
+                                onOpen(route)
+                            } label: {
+                                TopicFeedRow(item: item)
+                            }
+                            .buttonStyle(.plain)
+                            .nativeFeedCardItem(cornerRadius: 14)
+                        } else {
+                            TopicFeedRow(item: item)
+                                .nativeFeedCardItem(cornerRadius: 14)
                         }
-                    }
-                } else {
-                    TopicFeedRow(item: item)
-                        .nativeFeedCardItem(cornerRadius: 14)
-                }
-            }
-            if store.isLoadingFeeds {
-                HStack { Spacer(); ProgressView(); Spacer() }
-                    .listRowBackground(Color.nativeSystemGroupedBackground)
-                    .listRowSeparator(.hidden)
+                    },
+                    footerLoadingMessage: "正在加载更多",
+                    showsEmptyState: false,
+                    showsLoadingRow: false
+                )
             }
         }
         .listStyle(.plain)
@@ -492,4 +490,13 @@ private extension String {
         let value = trimmingCharacters(in: .whitespacesAndNewlines)
         return value.isEmpty ? nil : value
     }
+}
+// MARK: - PagingSource 适配（新架构重构）
+extension TopicStore: PagingSource {
+    var items: [TopicFeedDTO] { feeds }
+    var isLoading: Bool { isLoadingFeeds }
+    var hasMore: Bool { !isEnd }
+    var errorMessage: String? { feedsErrorMessage }
+    func loadMore() async { await loadMoreIfNeeded() }
+    func retry() async { await loadMoreIfNeeded() }
 }
