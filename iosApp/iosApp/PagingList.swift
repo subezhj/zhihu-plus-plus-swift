@@ -39,6 +39,8 @@ struct PagingListContent<Source: PagingSource, Row: View>: View {
     var background: Color = .nativeSystemGroupedBackground
     /// 页面自处理空态时置 false（如通知页分类空态用 overlay）
     var showsEmptyState = true
+    /// 页面自处理首屏加载行（如问题页用骨架屏）时置 false
+    var showsLoadingRow = true
     /// 自定义展示项（页面按 blocklist 等过滤后传入）；默认用 source.items
     var customItems: [Source.Item]? = nil
 
@@ -46,7 +48,7 @@ struct PagingListContent<Source: PagingSource, Row: View>: View {
 
     var body: some View {
         Group {
-            if source.items.isEmpty, source.isLoading {
+            if source.items.isEmpty, source.isLoading, showsLoadingRow {
                 HStack {
                     Spacer()
                     ProgressView(loadingMessage)

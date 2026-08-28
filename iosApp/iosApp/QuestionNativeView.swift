@@ -140,40 +140,24 @@ struct QuestionNativeView: View {
                             .nativeFeedCardItem(cornerRadius: 14)
                         }
                     } else {
-                        ForEach(store.answers) { answer in
-                            Button {
-                                onNavigate(.answer(store.answerRoute(for: answer)))
-                            } label: {
-                                QAAnswerPreviewRow(answer: answer)
-                            }
-                            .buttonStyle(.plain)
-                            .nativeFeedCardItem(cornerRadius: 14)
-                            .task {
-                                if answer.id == store.answers.last?.id { await store.loadMore() }
-                            }
-                        }
-                    }
-
-                    switch store.nextPage {
-                    case .loading where !store.answers.isEmpty:
-                        HStack { Spacer(); ProgressView(); Spacer() }
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                    case let .failed(message):
-                        Button("加载回答失败，点此重试") { Task { await store.loadMore() } }
-                            .foregroundStyle(.red)
-                            .accessibilityHint(message)
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                    case .idle:
-                        if store.answers.isEmpty {
-                            Text("还没有回答")
-                                .foregroundStyle(.secondary)
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                        }
-                    default:
-                        EmptyView()
+                        // 通用分页骨架：回答卡片行 + 触底加载 + footer（加载/错误/空态）
+                        PagingListContent(
+                            source: store,
+                            rowContent: { answer, _ in
+                                Button {
+                                    onNavigate(.answer(store.answerRoute(for: answer)))
+                                } label: {
+                                    QAAnswerPreviewRow(answer: answer)
+                                }
+                                .buttonStyle(.plain)
+                                .nativeFeedCardItem(cornerRadius: 14)
+                            },
+                            loadingMessage: "正在加载回答",
+                            footerLoadingMessage: "正在加载更多",
+                            emptyMessage: "还没有回答",
+                            emptySystemImage: "bubble.left",
+                            showsLoadingRow: false
+                        )
                     }
                 } header: {
                     Picker("回答排序", selection: sortBinding) {

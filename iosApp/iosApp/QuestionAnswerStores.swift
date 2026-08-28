@@ -545,3 +545,14 @@ final class AnswerPagerStore: ObservableObject {
         }
     }
 }
+
+// MARK: - PagingSource 适配（新架构重构 §4.19）
+extension QuestionStore: PagingSource {
+    var items: [AnswerPreviewDTO] { answers }
+    var isLoading: Bool {
+        if case .loading = initialLoad { return true }
+        if case .loading = nextPage { return true }
+        return false
+    }
+    var hasMore: Bool { !isEnd }
+}
