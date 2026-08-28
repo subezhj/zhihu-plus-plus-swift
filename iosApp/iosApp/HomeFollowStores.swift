@@ -937,4 +937,3 @@ final class FollowNativeStore: ObservableObject {
 extension HomeFeedNativeStore: PagingSource {
     // Item = FeedItemDTO；items / isLoading / errorMessage / hasMore / loadMore / refresh / retry 均已满足
 }
-\n// MARK: - PagingSource 适配（新架构重构 §4.19）\nextension HomeFeedNativeStore: PagingSource {}\n
