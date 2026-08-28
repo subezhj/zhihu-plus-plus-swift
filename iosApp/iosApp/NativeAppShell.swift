@@ -607,8 +607,8 @@ struct NativeAppShell: View {
             )
         case let .comments(route):
             NativeCommentNavigationRouteView(
+                hostModel: hostModel,
                 route: route,
-                accountStore: hostModel.accountStore,
                 onPersonNavigate: { handlePersonIntent($0, in: tab) },
                 onNavigate: { handleQAIntent($0, in: tab) }
             )
@@ -1122,17 +1122,19 @@ private struct NativePersonConnectionsRouteView: View {
 
 
 private struct NativeCommentNavigationRouteView: View {
+    @ObservedObject private var hostModel: HostModel
     @StateObject private var model: CommentHostModel
 
     init(
+        hostModel: HostModel,
         route: CommentThreadRouteDTO,
-        accountStore: AccountJSONStore,
         onPersonNavigate: @escaping (PersonNavigationIntent) -> Void,
         onNavigate: @escaping (QANavigationIntent) -> Void
     ) {
-        _model = StateObject(wrappedValue: CommentHostModel(
-            route: route,
-            accountStore: accountStore,
+        self.hostModel = hostModel
+        // 内存缓存：命中复用已加载数据（不重新拉第一页），未命中新建
+        _model = StateObject(wrappedValue: hostModel.commentHostModel(
+            for: route,
             onPersonNavigate: onPersonNavigate,
             onNavigate: onNavigate
         ))

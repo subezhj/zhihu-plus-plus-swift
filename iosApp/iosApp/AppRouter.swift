@@ -93,6 +93,12 @@ final class HostModel: ObservableObject {
     let dailyRepository: DailyRepository
     let pinRepository: PinRepository
     let creationRepository: CreationRepository
+
+    /// 评论页内存缓存：按路由复用 CommentHostModel，避免重进评论页时重复拉取第一页。
+    /// 容量上限，超出时淘汰最早（近似 LRU）。
+    private var commentHostCache: [CommentThreadRouteDTO: CommentHostModel] = [:]
+    private var commentHostCacheOrder: [CommentThreadRouteDTO] = []
+    private static let commentHostCacheLimit = 8
     let questionAnswerRepository: QuestionAnswerRepository
     let videoRepository: NativeVideoRepository
     let answerOpenedHistory: AnswerOpenedHistory
@@ -264,6 +270,41 @@ final class HostModel: ObservableObject {
     func modalDidDismiss() {
         guard router.presentedModal == nil else { return }
         riskRetries.removeAll()
+    }
+
+    /// 获取或创建评论页模型（命中缓存则复用，未命中则新建并缓存）
+    func commentHostModel(
+        for route: CommentThreadRouteDTO,
+        onPersonNavigate: @escaping (PersonNavigationIntent) -> Void,
+        onNavigate: @escaping (QANavigationIntent) -> Void
+    ) -> CommentHostModel {
+        if let cached = commentHostCache[route] {
+            touchCommentHostCache(route)
+            return cached
+        }
+        let model = CommentHostModel(
+            route: route,
+            accountStore: accountStore,
+            onPersonNavigate: onPersonNavigate,
+            onNavigate: onNavigate
+        )
+        commentHostCache[route] = model
+        touchCommentHostCache(route)
+        if commentHostCache.count > Self.commentHostCacheLimit {
+            evictOldestCommentHost()
+        }
+        return model
+    }
+
+    private func touchCommentHostCache(_ route: CommentThreadRouteDTO) {
+        commentHostCacheOrder.removeAll { $0 == route }
+        commentHostCacheOrder.append(route)
+    }
+
+    private func evictOldestCommentHost() {
+        guard let oldest = commentHostCacheOrder.first else { return }
+        commentHostCacheOrder.removeFirst()
+        commentHostCache.removeValue(forKey: oldest)?.dispose()
     }
 
     private func currentCookiesJSON() -> String? {
