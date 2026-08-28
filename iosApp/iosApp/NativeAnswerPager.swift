@@ -50,6 +50,38 @@ private struct AnswerPagerPages: View {
         _selectionValue = State(initialValue: pager.current.id)
     }
 
+    /// 单个回答页（惰性渲染）
+    @ViewBuilder
+    private func answerPage(for contentID: Int64) -> some View {
+        if let answerStore = pager.store(forContentID: contentID) {
+            AnswerNativeView(
+                store: answerStore,
+                pinAnswerDate: preferences.pinAnswerDate,
+                onNavigate: onNavigate
+            )
+            .containerRelativeFrame(.horizontal)
+            .id(contentID)
+            .onAppear {
+                // 边界预加载：最后一个已加载回答出现时，异步加载更多相邻回答（与首页推荐流同哲学）
+                if contentID == answerIDs.last, pager.canLoadMoreAnswers {
+                    Task { await pager.loadNextAnswer() }
+                }
+            }
+        }
+    }
+
+    /// 加载占位页：可滑到（显示加载中），加载完成后被真实页替换（scrollPosition 无 id 目标时保持原位）
+    private var loadingPlaceholderPage: some View {
+        HStack {
+            Spacer()
+            ProgressView("加载下一个回答")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Spacer()
+        }
+        .containerRelativeFrame(.horizontal)
+    }
+
     /// 线性加载方案（与首页推荐流同哲学）：渲染所有已加载路由，懒加载 + 边界触底加载，
     /// 无“中间页重组”，scrollPosition(id:) 跟随当前回答稳定不跳动
     private var answerIDs: [Int64] { pager.orderedContentIDs }
@@ -59,32 +91,10 @@ private struct AnswerPagerPages: View {
             ScrollView(.horizontal) {
                 LazyHStack(spacing: 0) {
                     ForEach(answerIDs, id: \.self) { contentID in
-                        if let answerStore = pager.store(forContentID: contentID) {
-                            AnswerNativeView(
-                                store: answerStore,
-                                pinAnswerDate: preferences.pinAnswerDate,
-                                onNavigate: onNavigate
-                            )
-                            .containerRelativeFrame(.horizontal)
-                            .id(contentID)
-                            .onAppear {
-                                // 边界预加载：最后一个已加载回答出现时，异步加载更多相邻回答
-                                if contentID == answerIDs.last, pager.canLoadMoreAnswers {
-                                    Task { await pager.loadNextAnswer() }
-                                }
-                            }
-                        }
+                        answerPage(for: contentID)
                     }
-                    // 加载占位页：可滑到（显示加载中），加载完成后被真实页替换（scrollPosition 无 id 目标时保持原位）
                     if pager.isPreparingNext || (pager.forwardAvailability == .loading && !pager.isEnd) {
-                        HStack {
-                            Spacer()
-                            ProgressView("加载下一个回答")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                        }
-                        .containerRelativeFrame(.horizontal)
+                        loadingPlaceholderPage
                     }
                 }
                 .scrollTargetLayout()
