@@ -556,4 +556,5 @@ extension QuestionStore: PagingSource {
     }
     var hasMore: Bool { !isEnd }
     var errorMessage: String? { message?.text }
+    func retry() async { await loadMore() }
 }
