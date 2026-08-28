@@ -637,7 +637,7 @@ private struct CommentComposerBar: View {
                     .transition(.opacity)
             }
         }
-        .animation(.spring(response: 0.32, dampingFraction: 0.86), value: store.composerPresentation.isActive(for: level))
+        .animation(.easeOut(duration: 0.18), value: store.composerPresentation.isActive(for: level))
         .onChange(of: store.composerPresentation) { presentation in
             isDraftFocused = presentation.isActive(for: level)
         }
@@ -687,8 +687,14 @@ private struct CommentComposerBar: View {
                 Spacer()
             }
             .padding(.horizontal, 16)
-            .frame(minHeight: 54)
-            .liquidGlassCapsule(isProminent: false)
+            .frame(minHeight: 52)
+            // 与回答页底部操作栏（AnswerActionBar）同款液态玻璃：ignoreToggle + 0.5pt 描边 + 阴影
+            .liquidGlassCapsule(ignoreToggle: true)
+            .overlay(
+                Capsule()
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+            )
+            .shadow(color: Color.black.opacity(0.12), radius: 10, x: 0, y: 4)
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .contentShape(Rectangle())
@@ -716,8 +722,10 @@ private struct CommentComposerBar: View {
                     Text("取消")
                         .font(NativeTypography.caption())
                         .foregroundStyle(.secondary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.plain)
             }
 
             if let imageData = store.draft.imageData, let image = UIImage(data: imageData) {
@@ -748,15 +756,16 @@ private struct CommentComposerBar: View {
                     in: RoundedRectangle(cornerRadius: 14, style: .continuous)
                 )
 
-            // 工具行：表情/选图居左，发送居右
-            HStack(spacing: 8) {
+            // 工具行：表情/选图居左，发送居右（普通按钮，不再叠加液态玻璃）
+            HStack(spacing: 6) {
                 Button { showsEmojiPicker = true } label: {
                     Image(systemName: "face.smiling")
-                        .font(.system(size: 15, weight: .medium))
-                        .frame(width: 22, height: 22)
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 30, height: 30)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.plain)
                 .accessibilityLabel("选择表情")
                 .accessibilityIdentifier("comment_emoji_picker")
 
@@ -765,11 +774,12 @@ private struct CommentComposerBar: View {
                     matching: .images
                 ) {
                     Image(systemName: "photo")
-                        .font(.system(size: 15, weight: .medium))
-                        .frame(width: 22, height: 22)
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 30, height: 30)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.plain)
                 .accessibilityLabel("选择图片")
                 .accessibilityIdentifier("comment_photo_picker")
 
@@ -783,16 +793,16 @@ private struct CommentComposerBar: View {
                     }
                 } label: {
                     if case .submitting = store.draft.submissionState {
-                        ProgressView().frame(width: 24, height: 24)
+                        ProgressView().frame(width: 28, height: 28)
                     } else {
                         Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 19, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 24, height: 24)
+                            .font(.system(size: 26, weight: .semibold))
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 30, height: 30)
                             .contentShape(Rectangle())
                     }
                 }
-                .buttonStyle(.glassProminent)
+                .buttonStyle(.plain)
                 .disabled(
                     (store.draft.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
                         store.draft.imageData == nil) ||
@@ -802,15 +812,16 @@ private struct CommentComposerBar: View {
                 .accessibilityIdentifier("comment_submit")
             }
         }
-        // 小圆角液态玻璃容器（与底部安全区协调）
+        // 液态玻璃容器：与回答页底部操作栏（AnswerActionBar）同款材质 + 0.5pt 描边 + 阴影
         .padding(14)
         .liquidGlassCard(cornerRadius: 20, isProminent: false)
         .overlay(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
         )
-        .padding(.horizontal, 12)
-        .padding(.bottom, 8)
+        .shadow(color: Color.black.opacity(0.12), radius: 10, x: 0, y: 4)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 10)
     }
 
     private func dismissComposer() {
