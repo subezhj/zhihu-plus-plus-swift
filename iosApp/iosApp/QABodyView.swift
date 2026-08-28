@@ -656,10 +656,10 @@ private final class FullScreenOrientationPlayerViewController: AVPlayerViewContr
         button.isHidden = true // Only visible when in full screen
 
         overlay.addSubview(button)
-        // 与原厂底部控制条(含右下角倍速按钮)同一水平线：按钮底边贴近安全区底部，与右下角倍速控件左右对称
+        // 悬浮在系统底部控制条上方（-60），不与右下角倍速控件抢占底部条同一水平，避免视觉拥挤
         NSLayoutConstraint.activate([
             button.leadingAnchor.constraint(equalTo: overlay.safeAreaLayoutGuide.leadingAnchor, constant: 18),
-            button.bottomAnchor.constraint(equalTo: overlay.safeAreaLayoutGuide.bottomAnchor, constant: -14),
+            button.bottomAnchor.constraint(equalTo: overlay.safeAreaLayoutGuide.bottomAnchor, constant: -60),
             button.heightAnchor.constraint(equalToConstant: 34)
         ])
 

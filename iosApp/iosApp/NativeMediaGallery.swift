@@ -148,7 +148,21 @@ struct NativeMediaGallery: View {
                     .font(.system(size: 17, weight: .semibold))
                     .frame(width: 44, height: 44)
                     .contentShape(Circle())
-                    .modifier(NativeMediaControlSurface())
+                    .background(
+                        Circle()
+                            .fill(.ultraThinMaterial)
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.35), Color.white.opacity(0.06)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 0.5
+                            )
+                    )
             }
             .foregroundStyle(.white)
             .accessibilityLabel("图片操作")
@@ -240,16 +254,10 @@ private struct NativeMediaControlButton: View {
                 .font(.system(size: 17, weight: .semibold))
                 .frame(width: 44, height: 44)
                 .contentShape(Circle())
-                .modifier(NativeMediaControlSurface())
         }
+        .buttonStyle(.glass)
         .foregroundStyle(.white)
         .accessibilityLabel(accessibilityLabel)
-    }
-}
-
-private struct NativeMediaControlSurface: ViewModifier {
-    func body(content: Content) -> some View {
-        content.liquidGlassCircle()
     }
 }
 
@@ -265,19 +273,14 @@ private struct NativeZoomableRemoteImage: View {
     @ObservedObject var store: NativeMediaImageStore
     let onZoomChanged: (Bool) -> Void
 
-    @State private var scale: CGFloat = 1
-    @State private var settledScale: CGFloat = 1
-    @State private var offset: CGSize = .zero
-    @State private var settledOffset: CGSize = .zero
-
     var body: some View {
         Group {
             if NativeRemoteMediaPolicy.isAnimatedImage(url) || animatedURLs.contains(url) {
-                zoomableContent(
-                    NativeAnimatedRemoteImage(url: url, contentMode: .fit)
-                )
+                NativeAnimatedRemoteImage(url: url, contentMode: .fit)
             } else if let image = store.image(for: url) {
-                zoomableImage(image)
+                // Apple Photos 原生缩放：UIScrollView zoom（锚点跟随手指/回弹/惯性/双击），
+                // zoomScale==1 时禁用内层滚动放行外层分页，放大后接管平移
+                NativeZoomingScrollView(image: image, onZoomChanged: onZoomChanged)
             } else if store.didFail(url) {
                 VStack(spacing: 12) {
                     Image(systemName: "exclamationmark.triangle")
@@ -295,65 +298,147 @@ private struct NativeZoomableRemoteImage: View {
         .task(id: url) { await store.load(url) }
         .onDisappear { onZoomChanged(false) }
     }
+}
 
-    private func zoomableImage(_ image: UIImage) -> some View {
-        zoomableContent(Image(uiImage: image).resizable().scaledToFit())
+/// Apple Photos 风格原生缩容器：包装 UIScrollView，viewForZooming 返回内容 view，
+/// 缩放/平移/回弹/双击均由系统原生处理，不依赖 SwiftUI 自定义手势。
+private struct NativeZoomingScrollView: UIViewRepresentable {
+    let image: UIImage
+    let onZoomChanged: (Bool) -> Void
+
+    func makeUIView(context: Context) -> UIScrollView {
+        let scrollView = UIScrollView()
+        scrollView.delegate = context.coordinator
+        scrollView.minimumZoomScale = 1
+        scrollView.maximumZoomScale = 5
+        scrollView.bouncesZoom = true
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.contentInsetAdjustmentBehavior = .never
+        scrollView.decelerationRate = .fast
+        scrollView.backgroundColor = .clear
+        // zoomScale==1 时不拦截任何手势，横向滑动交由外层分页 ScrollView
+        scrollView.isScrollEnabled = false
+
+        let imageView = UIImageView(image: image)
+        imageView.contentMode = .scaleAspectFit
+        imageView.isUserInteractionEnabled = true
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(imageView)
+
+        let doubleTap = UITapGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(NativeZoomingScrollView.Coordinator.handleDoubleTap(_:))
+        )
+        doubleTap.numberOfTapsRequired = 2
+        scrollView.addGestureRecognizer(doubleTap)
+
+        context.coordinator.scrollView = scrollView
+        context.coordinator.imageView = imageView
+        context.coordinator.image = image
+
+        return scrollView
     }
 
-    @ViewBuilder
-    private func zoomableContent<Content: View>(_ content: Content) -> some View {
-        let transformed = content
-            .scaleEffect(scale)
-            .offset(offset)
-            .gesture(magnificationGesture)
-            .onTapGesture(count: 2, perform: toggleZoom)
-
-        if scale > 1.001 {
-            transformed.simultaneousGesture(panGesture)
-        } else {
-            transformed
+    func updateUIView(_ scrollView: UIScrollView, context: Context) {
+        guard let coordinator = context.coordinator else { return }
+        if coordinator.image !== image {
+            coordinator.image = image
+            coordinator.imageView?.image = image
+            scrollView.setZoomScale(1, animated: false)
+            scrollView.isScrollEnabled = false
+            coordinator.onZoomChanged(false)
         }
+        coordinator.layoutContent()
     }
 
-    private var magnificationGesture: some Gesture {
-        MagnificationGesture()
-            .onChanged { value in
-                scale = min(max(settledScale * value, 1), 5)
-                onZoomChanged(scale > 1.001)
-            }
-            .onEnded { _ in
-                settledScale = scale
-                if scale == 1 {
-                    offset = .zero
-                    settledOffset = .zero
-                }
-                onZoomChanged(scale > 1.001)
-            }
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onZoomChanged: onZoomChanged)
     }
 
-    private var panGesture: some Gesture {
-        DragGesture()
-            .onChanged { value in
-                guard scale > 1 else { return }
-                offset = CGSize(
-                    width: settledOffset.width + value.translation.width,
-                    height: settledOffset.height + value.translation.height
-                )
-            }
-            .onEnded { _ in settledOffset = offset }
-    }
+    @MainActor
+    final class Coordinator: NSObject, UIScrollViewDelegate {
+        let onZoomChanged: (Bool) -> Void
+        weak var scrollView: UIScrollView?
+        weak var imageView: UIImageView?
+        var image: UIImage?
 
-    private func toggleZoom() {
-        if scale > 1 {
-            scale = 1
-            settledScale = 1
-            offset = .zero
-            settledOffset = .zero
-        } else {
-            scale = 2
-            settledScale = 2
+        init(onZoomChanged: @escaping (Bool) -> Void) {
+            self.onZoomChanged = onZoomChanged
         }
-        onZoomChanged(scale > 1.001)
+
+        func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+            imageView
+        }
+
+        func scrollViewDidZoom(_ scrollView: UIScrollView) {
+            centerImage()
+            let zoomed = scrollView.zoomScale > 1.01
+            scrollView.isScrollEnabled = zoomed
+            onZoomChanged(zoomed)
+        }
+
+        func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
+            let zoomed = scale > 1.01
+            scrollView.isScrollEnabled = zoomed
+            onZoomChanged(zoomed)
+        }
+
+        func scrollViewDidLayoutSubviews(_ scrollView: UIScrollView) {
+            layoutContent()
+        }
+
+        @objc func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
+            guard let scrollView else { return }
+            if scrollView.zoomScale > 1.01 {
+                scrollView.setZoomScale(1, animated: true)
+                scrollView.isScrollEnabled = false
+                onZoomChanged(false)
+            } else {
+                let point = gesture.location(in: scrollView)
+                let newScale = min(scrollView.maximumZoomScale, 2.5)
+                let rect = zoomRect(for: scrollView, scale: newScale, center: point)
+                scrollView.zoom(to: rect, animated: true)
+                onZoomChanged(true)
+            }
+        }
+
+        private func zoomRect(for scrollView: UIScrollView, scale: CGFloat, center: CGPoint) -> CGRect {
+            let size = CGSize(
+                width: scrollView.bounds.width / scale,
+                height: scrollView.bounds.height / scale
+            )
+            let origin = CGPoint(x: center.x - size.width / 2, y: center.y - size.height / 2)
+            return CGRect(origin: origin, size: size)
+        }
+
+        private func layoutContent() {
+            guard let scrollView, let imageView else { return }
+            let boundsSize = scrollView.bounds.size
+            guard boundsSize.width > 0, boundsSize.height > 0 else { return }
+            if imageView.frame.size != boundsSize || scrollView.contentSize != boundsSize {
+                imageView.frame = CGRect(origin: .zero, size: boundsSize)
+                scrollView.contentSize = boundsSize
+            }
+            centerImage()
+        }
+
+        private func centerImage() {
+            guard let scrollView, let imageView else { return }
+            let boundsSize = scrollView.bounds.size
+            var frameToCenter = imageView.frame
+            if frameToCenter.size.width < boundsSize.width {
+                frameToCenter.origin.x = (boundsSize.width - frameToCenter.size.width) / 2
+            } else {
+                frameToCenter.origin.x = 0
+            }
+            if frameToCenter.size.height < boundsSize.height {
+                frameToCenter.origin.y = (boundsSize.height - frameToCenter.size.height) / 2
+            } else {
+                frameToCenter.origin.y = 0
+            }
+            imageView.frame = frameToCenter
+        }
     }
 }
 
