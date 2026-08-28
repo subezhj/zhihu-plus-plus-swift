@@ -40,16 +40,19 @@ struct NativeCollectionsView: View {
                         .listRowBackground(Color.clear)
                 }
             } else {
-                if let error = store.errorMessage {
-                    NativeInlineRetry(message: error) { Task { await store.loadMore() } }
-                }
-                ForEach(store.collections) { collection in
-                    NavigationLink(value: NativeShellRoute.collectionContent(collection.id)) {
-                        collectionRow(collection)
-                    }
-                    .nativeFeedCardItem(cornerRadius: 14)
-                }
-                paginationFooter
+                // 通用分页骨架：收藏夹卡片行 + 触底加载 + footer（加载/错误）
+                PagingListContent(
+                    source: store,
+                    rowContent: { collection, _ in
+                        NavigationLink(value: NativeShellRoute.collectionContent(collection.id)) {
+                            collectionRow(collection)
+                        }
+                        .nativeFeedCardItem(cornerRadius: 14)
+                    },
+                    footerLoadingMessage: "正在加载更多",
+                    showsEmptyState: false,
+                    showsLoadingRow: false
+                )
             }
         }
         .listStyle(.plain)
@@ -185,26 +188,19 @@ struct NativeHistoryView: View {
 
     var body: some View {
         List {
-            if let error = store.errorMessage, !store.items.isEmpty {
-                NativeInlineRetry(message: error) { Task { await store.loadMore() } }
-                    .listRowBackground(Color.nativeSystemBackground)
-                    .listRowSeparator(.hidden)
-            }
-            ForEach(store.items) { item in
-                NativeHistoryRow(item: item, onOpenContent: onOpenContent)
-                    .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-            }
-            if store.canLoadMore {
-                NativePaginationFooter(
-                    isLoading: store.isLoadingMore,
-                    accessibilityIdentifier: "native_history_pagination_footer"
-                )
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-                .task { await store.loadMore() }
-            }
+            // 通用分页骨架：历史行 + 触底加载 + footer（加载/错误）
+            PagingListContent(
+                source: store,
+                rowContent: { item, _ in
+                    NativeHistoryRow(item: item, onOpenContent: onOpenContent)
+                        .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                },
+                footerLoadingMessage: "正在加载更多",
+                emptyMessage: "暂无历史记录",
+                emptySystemImage: "clock.arrow.circlepath"
+            )
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
