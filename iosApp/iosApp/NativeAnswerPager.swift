@@ -123,15 +123,14 @@ private struct AnswerPagerPages: View {
         }
         .onChange(of: selectionValue) { _, newID in
             guard newID != pager.current.id else { return }
-            let committed = pager.commitDisplayedAnswer(answerID: newID)
-            if committed {
-                hapticFeedback(.selection)
-                Task { await pager.prepareDisplayedAnswer() }
+            // 异步提交：等分页滑动动画完成后再切换/加载，避免动画期间 body 重算掉帧
+            Task { @MainActor in
+                let committed = pager.commitDisplayedAnswer(answerID: newID)
+                if committed {
+                    hapticFeedback(.selection)
+                    await pager.prepareDisplayedAnswer()
+                }
             }
-        }
-        .onChange(of: pager.current.id) { _, newID in
-            guard selectionValue != newID else { return }
-            selectionValue = newID
         }
         .sheet(item: $posterDocument) { document in
             NativeContentPosterShareView(document: document)

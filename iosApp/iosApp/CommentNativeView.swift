@@ -720,12 +720,13 @@ private struct CommentComposerBar: View {
                     dismissComposer()
                 } label: {
                     Text("取消")
-                        .font(NativeTypography.caption())
-                        .foregroundStyle(.secondary)
+                        .font(NativeTypography.feedTitle())
+                        .foregroundStyle(.primary)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("取消输入")
             }
 
             if let imageData = store.draft.imageData, let image = UIImage(data: imageData) {
@@ -744,17 +745,18 @@ private struct CommentComposerBar: View {
                 }
             }
 
-            // 主体：全宽输入框（高度 44–96 受控，超出行数在框内滚动）
-            CommentDraftField(store: store, isFocused: $isDraftFocused)
-                .textFieldStyle(.plain)
-                .font(NativeTypography.commentBody())
-                .frame(maxWidth: .infinity, minHeight: 44, maxHeight: 96)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .background(
-                    Color.primary.opacity(0.06),
-                    in: RoundedRectangle(cornerRadius: 14, style: .continuous)
-                )
+            // 主体：全宽输入框，光标/文字从左上角开始（顶部对齐），高度 44–96 受控
+            ZStack(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.primary.opacity(0.06))
+                CommentDraftField(store: store, isFocused: $isDraftFocused)
+                    .textFieldStyle(.plain)
+                    .font(NativeTypography.commentBody())
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+            }
+            .frame(maxWidth: .infinity, minHeight: 44, maxHeight: 96)
+            .accessibilityIdentifier("comment_draft_field")
 
             // 工具行：表情/选图居左，发送居右（普通按钮，不再叠加液态玻璃）
             HStack(spacing: 6) {
