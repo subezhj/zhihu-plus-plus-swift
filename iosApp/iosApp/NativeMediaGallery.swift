@@ -97,7 +97,8 @@ struct NativeMediaGallery: View {
                     } label: {
                         Image(systemName: "xmark")
                     }
-                    .buttonStyle(.glass)
+                    // 不设显式 buttonStyle：toolbar 会统一给系统玻璃按钮，与右侧更多（Menu）一致
+                    // （若加 .buttonStyle(.glass) 会与 toolbar 自带玻璃叠加成玻璃嵌玻璃）
                     .accessibilityLabel("关闭图片")
                     .accessibilityIdentifier("\(accessibilityPrefix)_close")
                 }
@@ -280,11 +281,17 @@ private struct NativeZoomingScrollView: UIViewRepresentable {
         // zoomScale==1 时不拦截任何手势，横向滑动交由外层分页 ScrollView
         scrollView.isScrollEnabled = false
 
-        let imageView = UIImageView(image: image)
+        // 用空 UIImageView 初始化（UIImageView(image:) 会把 frame 设为图片 intrinsic 尺寸，
+        // UIScrollView 在 bounds 就绪前会误把巨大 frame 当内容 → 首屏自动放大）。
+        // frame/contentSize 统一由 layoutContent 按容器尺寸设置。
+        let imageView = UIImageView()
+        imageView.image = image
         imageView.contentMode = .scaleAspectFit
         imageView.isUserInteractionEnabled = true
+        imageView.frame = scrollView.bounds
         // 保持 frame 布局（UIScrollView zoom 依赖 frame，不用 AutoLayout），由 layoutContent 手动布局
         scrollView.addSubview(imageView)
+        scrollView.contentSize = scrollView.bounds.size
 
         let doubleTap = UITapGestureRecognizer(
             target: context.coordinator,
@@ -305,12 +312,11 @@ private struct NativeZoomingScrollView: UIViewRepresentable {
         if coordinator.image !== image {
             coordinator.image = image
             coordinator.imageView?.image = image
-            scrollView.setZoomScale(1, animated: false)
-            scrollView.contentOffset = .zero
-            scrollView.isScrollEnabled = false
-            coordinator.onZoomChanged(false)
+            // 图片变更：立即复位为适配态，不依赖布局回调时序
+            coordinator.resetToFit(scrollView)
+        } else {
+            coordinator.layoutContent()
         }
-        coordinator.layoutContent()
     }
 
     func makeCoordinator() -> Coordinator {
@@ -323,7 +329,7 @@ private struct NativeZoomingScrollView: UIViewRepresentable {
         weak var scrollView: UIScrollView?
         weak var imageView: UIImageView?
         var image: UIImage?
-        private var hasInitialLayout = false
+        private var reportedZoomed = false
 
         init(onZoomChanged: @escaping (Bool) -> Void) {
             self.onZoomChanged = onZoomChanged
@@ -337,27 +343,17 @@ private struct NativeZoomingScrollView: UIViewRepresentable {
             centerImage()
             let zoomed = scrollView.zoomScale > 1.01
             scrollView.isScrollEnabled = zoomed
-            onZoomChanged(zoomed)
+            reportZoomed(zoomed)
         }
 
         func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
             let zoomed = scale > 1.01
             scrollView.isScrollEnabled = zoomed
-            onZoomChanged(zoomed)
+            reportZoomed(zoomed)
         }
 
         func scrollViewDidLayoutSubviews(_ scrollView: UIScrollView) {
             layoutContent()
-            if !hasInitialLayout {
-                hasInitialLayout = true
-                // 首次布局完成后强制 zoomScale=1，防止图片 intrinsic 尺寸诱导 UIScrollView 自动放大
-                if scrollView.zoomScale > 1.01 {
-                    scrollView.setZoomScale(1, animated: false)
-                    scrollView.contentOffset = .zero
-                    scrollView.isScrollEnabled = false
-                    onZoomChanged(false)
-                }
-            }
         }
 
         @objc func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
@@ -365,13 +361,13 @@ private struct NativeZoomingScrollView: UIViewRepresentable {
             if scrollView.zoomScale > 1.01 {
                 scrollView.setZoomScale(1, animated: true)
                 scrollView.isScrollEnabled = false
-                onZoomChanged(false)
+                reportZoomed(false)
             } else {
                 let point = gesture.location(in: scrollView)
                 let newScale = min(scrollView.maximumZoomScale, 2.5)
                 let rect = zoomRect(for: scrollView, scale: newScale, center: point)
                 scrollView.zoom(to: rect, animated: true)
-                onZoomChanged(true)
+                reportZoomed(true)
             }
         }
 
@@ -384,16 +380,43 @@ private struct NativeZoomingScrollView: UIViewRepresentable {
             return CGRect(origin: origin, size: size)
         }
 
+        /// 图片变更时立即复位为适配态（不依赖布局回调时序）
+        func resetToFit(_ scrollView: UIScrollView) {
+            guard let imageView else { return }
+            let boundsSize = scrollView.bounds.size
+            if boundsSize.width > 0, boundsSize.height > 0 {
+                scrollView.zoomScale = 1
+                imageView.frame = CGRect(origin: .zero, size: boundsSize)
+                scrollView.contentSize = boundsSize
+                scrollView.contentOffset = .zero
+                scrollView.isScrollEnabled = false
+                reportZoomed(false)
+                centerImage()
+            }
+            layoutContent()
+        }
+
+        /// 未缩放态强制对齐容器；已缩放时只做居中，不打断缩放
         func layoutContent() {
             guard let scrollView, let imageView else { return }
             let boundsSize = scrollView.bounds.size
             guard boundsSize.width > 0, boundsSize.height > 0 else { return }
             if scrollView.zoomScale <= 1.001,
                (imageView.frame.size != boundsSize || scrollView.contentSize != boundsSize) {
+                scrollView.zoomScale = 1
                 imageView.frame = CGRect(origin: .zero, size: boundsSize)
                 scrollView.contentSize = boundsSize
+                scrollView.contentOffset = .zero
+                scrollView.isScrollEnabled = false
+                reportZoomed(false)
             }
             centerImage()
+        }
+
+        private func reportZoomed(_ zoomed: Bool) {
+            guard zoomed != reportedZoomed else { return }
+            reportedZoomed = zoomed
+            onZoomChanged(zoomed)
         }
 
         private func centerImage() {
