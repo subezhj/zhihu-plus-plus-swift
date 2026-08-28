@@ -30,7 +30,7 @@ protocol PagingSource: AnyObject, ObservableObject {
 /// 仅复用“分页骨架 + 占位”以收敛重复实现。
 struct PagingListContent<Source: PagingSource, Row: View>: View {
     @ObservedObject var source: Source
-    let rowContent: (Source.Item) -> Row
+    let rowContent: (Source.Item, Int) -> Row
     var onAppearItem: (Source.Item) -> Void = { _ in }
     var loadingMessage = "正在加载"
     var footerLoadingMessage = "正在加载更多"
@@ -50,8 +50,8 @@ struct PagingListContent<Source: PagingSource, Row: View>: View {
                 .listRowBackground(background)
             }
 
-            ForEach(source.items) { item in
-                rowContent(item)
+            ForEach(Array(source.items.enumerated()), id: \.element.id) { index, item in
+                rowContent(item, index)
                     .onAppear {
                         onAppearItem(item)
                         if item.id == source.items.last?.id, source.hasMore {

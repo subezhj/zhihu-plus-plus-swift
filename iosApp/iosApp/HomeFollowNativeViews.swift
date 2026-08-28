@@ -331,7 +331,7 @@ struct HomeNativeView: View {
                 // 通用分页骨架：首屏加载/行列表/触底加载/空态/footer 统一收敛
                 PagingListContent(
                     source: store,
-                    rowContent: { item in
+                    rowContent: { item, _ in
                         FeedItemRow(item: item, showsThumbnail: true) { route in
                             store.opened(item)
                             onOpen(route)
