@@ -14,7 +14,7 @@ struct TopicInfoDTO: Codable, Hashable, Sendable {
     let questionsCount: Int
 }
 
-struct TopicFeedDTO: Codable, Hashable, Sendable {
+struct TopicFeedDTO: Codable, Hashable, Sendable, Identifiable {
     let id: String
     let title: String
     let excerpt: String?
