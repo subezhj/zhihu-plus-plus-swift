@@ -148,21 +148,7 @@ struct NativeMediaGallery: View {
                     .font(.system(size: 17, weight: .semibold))
                     .frame(width: 44, height: 44)
                     .contentShape(Circle())
-                    .background(
-                        Circle()
-                            .fill(.ultraThinMaterial)
-                    )
-                    .overlay(
-                        Circle()
-                            .stroke(
-                                LinearGradient(
-                                    colors: [Color.white.opacity(0.35), Color.white.opacity(0.06)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 0.5
-                            )
-                    )
+                    .modifier(NativeMediaControlSurface())
             }
             .foregroundStyle(.white)
             .accessibilityLabel("图片操作")
@@ -254,10 +240,17 @@ private struct NativeMediaControlButton: View {
                 .font(.system(size: 17, weight: .semibold))
                 .frame(width: 44, height: 44)
                 .contentShape(Circle())
+                .modifier(NativeMediaControlSurface())
         }
-        .buttonStyle(.glass)
         .foregroundStyle(.white)
         .accessibilityLabel(accessibilityLabel)
+    }
+}
+
+private struct NativeMediaControlSurface: ViewModifier {
+    func body(content: Content) -> some View {
+        // ignoreToggle：图片查看器在黑色背景上，务必保持液态玻璃质感（不受设置开关回退成纯色圆）
+        content.liquidGlassCircle(ignoreToggle: true)
     }
 }
 
@@ -323,7 +316,7 @@ private struct NativeZoomingScrollView: UIViewRepresentable {
         let imageView = UIImageView(image: image)
         imageView.contentMode = .scaleAspectFit
         imageView.isUserInteractionEnabled = true
-        imageView.translatesAutoresizingMaskIntoConstraints = false
+        // 保持 frame 布局（UIScrollView zoom 依赖 frame，不用 AutoLayout），由 layoutContent 手动布局
         scrollView.addSubview(imageView)
 
         let doubleTap = UITapGestureRecognizer(
@@ -346,6 +339,7 @@ private struct NativeZoomingScrollView: UIViewRepresentable {
             coordinator.image = image
             coordinator.imageView?.image = image
             scrollView.setZoomScale(1, animated: false)
+            scrollView.contentOffset = .zero
             scrollView.isScrollEnabled = false
             coordinator.onZoomChanged(false)
         }
@@ -416,7 +410,8 @@ private struct NativeZoomingScrollView: UIViewRepresentable {
             guard let scrollView, let imageView else { return }
             let boundsSize = scrollView.bounds.size
             guard boundsSize.width > 0, boundsSize.height > 0 else { return }
-            if imageView.frame.size != boundsSize || scrollView.contentSize != boundsSize {
+            if scrollView.zoomScale <= 1.001,
+               (imageView.frame.size != boundsSize || scrollView.contentSize != boundsSize) {
                 imageView.frame = CGRect(origin: .zero, size: boundsSize)
                 scrollView.contentSize = boundsSize
             }
