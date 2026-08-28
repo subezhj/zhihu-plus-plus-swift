@@ -93,7 +93,7 @@ private struct AnswerPagerPages: View {
                     ForEach(answerIDs, id: \.self) { contentID in
                         answerPage(for: contentID)
                     }
-                    if pager.isPreparingNext || (pager.forwardAvailability == .loading && !pager.isEnd) {
+                    if pager.isPreparingNext || (pager.forwardAvailability == .loading && !pager.isLoadingComplete) {
                         loadingPlaceholderPage
                     }
                 }

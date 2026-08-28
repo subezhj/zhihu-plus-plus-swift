@@ -435,6 +435,9 @@ final class AnswerPagerStore: ObservableObject {
         await prepareNextIfNeeded()
     }
 
+    /// 是否已加载完所有相邻回答（用于线性加载边界判断）
+    var isLoadingComplete: Bool { isEnd }
+
     /// 线性加载：是否还可加载更多相邻回答
     var canLoadMoreAnswers: Bool {
         guard current.initialRoute.kind == .answer, !isEnd else { return false }
