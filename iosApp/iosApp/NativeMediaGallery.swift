@@ -12,6 +12,7 @@ struct NativeMediaGallery: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.nativeHapticFeedback) private var hapticFeedback
     @State private var selectedIndex: Int
+    @State private var pageID: Int?
     @StateObject private var imageStore = NativeMediaImageStore()
     @State private var zoomedIndices: Set<Int> = []
     @State private var dismissOffset: CGFloat = 0
@@ -29,6 +30,7 @@ struct NativeMediaGallery: View {
         self.initialIndex = min(max(0, initialIndex), max(0, urls.count - 1))
         self.accessibilityPrefix = accessibilityPrefix
         _selectedIndex = State(initialValue: min(max(0, initialIndex), max(0, urls.count - 1)))
+        _pageID = State(initialValue: min(max(0, initialIndex), max(0, urls.count - 1)))
     }
 
     var body: some View {
@@ -58,7 +60,10 @@ struct NativeMediaGallery: View {
                     .scrollTargetLayout()
                 }
                 .scrollTargetBehavior(.paging)
-                .scrollPosition(id: $selectedIndex)
+                .scrollPosition(id: $pageID)
+                .onChange(of: pageID) { _, newValue in
+                    if let newValue { selectedIndex = newValue }
+                }
                 .scrollDisabled(isCurrentImageZoomed)
                 .offset(y: dismissOffset)
                 .contentShape(Rectangle())
