@@ -36,3 +36,7 @@ build/
 # Local documents
 CODE_LOAD.md
 *.local.md
+
+# Agent skill 配置文件(本地工作副本,不跟踪)
+AGENTS.md
+docs/agents/
