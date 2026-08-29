@@ -290,9 +290,8 @@ final class NativeAnswerInteractivePopObserverController: UIViewController,
     private func findHorizontalScrollView(in root: UIView?) -> UIScrollView? {
         guard let root else { return nil }
         if let scrollView = root as? UIScrollView {
-            // 横向分页容器：内容宽度显著大于可视宽度（多页），且允许横向滚动
-            if scrollView.contentSize.width > scrollView.bounds.width + 1,
-               scrollView.panGestureRecognizer.numberOfTouchesRequired == 1 {
+            // 横向分页容器：内容宽度显著大于可视宽度（多页）
+            if scrollView.contentSize.width > scrollView.bounds.width + 1 {
                 return scrollView
             }
         }
