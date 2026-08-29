@@ -532,7 +532,7 @@ struct PinNativeView: View {
         let blocks = QARichContentParser.blocks(from: html)
         return VStack(alignment: .leading, spacing: contentPresentation.blockSpacing()) {
             ForEach(blocks, id: \.id) { block in
-                blockRichText(block, font: .system(size: pointSize), lineSpacing: lineSpacing)
+                blockRichText(block, pointSize: pointSize, lineSpacing: lineSpacing)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -545,11 +545,11 @@ struct PinNativeView: View {
     }
 
     @ViewBuilder
-    private func blockRichText(_ block: QABodyBlock, font: Font, lineSpacing: CGFloat) -> some View {
+    private func blockRichText(_ block: QABodyBlock, pointSize: CGFloat, lineSpacing: CGFloat) -> some View {
         switch block {
         case let .paragraph(_, runs), let .heading(_, _, runs), let .quote(_, runs):
-            Text(QARichTextFormatter.attributed(runs))
-                .font(font)
+            Text(QARichTextFormatter.attributed(runs, pointSize: pointSize))
+                .font(.system(size: pointSize))
                 .lineSpacing(lineSpacing)
                 .tint(Color.accentColor)
         default:

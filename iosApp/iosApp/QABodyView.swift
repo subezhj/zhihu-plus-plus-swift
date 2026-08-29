@@ -426,18 +426,28 @@ private struct QABodyRemoteImage: View {
 }
 
 enum QARichTextFormatter {
-    static func attributed(_ runs: [QAInlineRun]) -> AttributedString {
+    /// 生成富文本 AttributedString。
+    /// 注意：粗体/斜体用显式 font（同字号变粗/变斜），
+    /// 不要用 `inlinePresentationIntent = .stronglyEmphasized`——SwiftUI 的
+    /// `Text(AttributedString)` 渲染该语义时会同时放大字号，导致“变粗还变大”。
+    static func attributed(_ runs: [QAInlineRun], pointSize: CGFloat) -> AttributedString {
         runs.reduce(into: AttributedString()) { value, run in
             var part = AttributedString(run.text)
-            var presentation: InlinePresentationIntent = []
-            if run.style.contains(.strong) { presentation.insert(.stronglyEmphasized) }
-            if run.style.contains(.emphasis) { presentation.insert(.emphasized) }
-            if !presentation.isEmpty { part.inlinePresentationIntent = presentation }
-            if run.style.contains(.strikethrough) { part.strikethroughStyle = .single }
             if run.style.contains(.code) {
-                part.font = .body.monospaced()
+                part.font = .system(size: pointSize).monospaced()
                 part.backgroundColor = Color(uiColor: .secondarySystemBackground)
+            } else {
+                let bold = run.style.contains(.strong)
+                let italic = run.style.contains(.emphasis)
+                if bold, italic {
+                    part.font = .system(size: pointSize).bold().italic()
+                } else if bold {
+                    part.font = .system(size: pointSize).bold()
+                } else if italic {
+                    part.font = .system(size: pointSize).italic()
+                }
             }
+            if run.style.contains(.strikethrough) { part.strikethroughStyle = .single }
             if let link = run.link {
                 part.link = QABodyLinkResolver.url(link)
                 part.foregroundColor = .accentColor
