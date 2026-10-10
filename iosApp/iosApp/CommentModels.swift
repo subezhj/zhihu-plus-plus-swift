@@ -71,7 +71,7 @@ struct CommentPageAcceptanceKey: Hashable {
     let generation: UInt64
 }
 
-struct CommentAuthorDTO: Hashable {
+struct CommentAuthorDTO: Codable, Hashable {
     let memberID: String
     let urlToken: String
     let displayName: String
@@ -87,20 +87,20 @@ struct CommentAuthorDTO: Hashable {
     }
 }
 
-enum CommentMediaKind: String, Hashable {
+enum CommentMediaKind: String, Codable, Hashable {
     case image
     case animatedImage
     case sticker
 }
 
-struct CommentMediaDTO: Hashable, Identifiable {
+struct CommentMediaDTO: Codable, Hashable, Identifiable {
     let kind: CommentMediaKind
     let url: URL
 
     var id: String { "\(kind.rawValue):\(url.absoluteString)" }
 }
 
-struct CommentDTO: Hashable, Identifiable {
+struct CommentDTO: Codable, Hashable, Identifiable {
     let id: String
     let contentHTML: String
     let createdTimeSeconds: Int64

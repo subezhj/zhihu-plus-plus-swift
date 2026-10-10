@@ -4,7 +4,9 @@ struct OfflineReaderView: View {
     let questionID: Int64
     @State private var package: OfflineQuestionPackage?
     @State private var selectedIndex: Int = 0
-    @State private var isDetailExpanded = true
+    @State private var isDetailExpanded = false
+    @State private var showsIndexSheet = false
+    @State private var showsCommentsSheet = false
     @Environment(\.nativeContentPresentation) private var contentPresentation
 
     var body: some View {
@@ -24,6 +26,17 @@ struct OfflineReaderView: View {
         .background(Color.nativeSystemBackground.ignoresSafeArea())
         .navigationTitle(package?.question.title ?? "离线阅读")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if let package, !package.answers.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showsIndexSheet = true
+                    } label: {
+                        Label("回答目录", systemImage: "list.bullet")
+                    }
+                }
+            }
+        }
         .task {
             package = await OfflineStorageService.shared.loadPackage(questionID: questionID)
         }
@@ -31,37 +44,144 @@ struct OfflineReaderView: View {
 
     @ViewBuilder
     private func contentView(_ package: OfflineQuestionPackage) -> some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 16) {
-                // 问题标题与描述部分
-                questionHeader(package.question)
+        ZStack(alignment: .bottom) {
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 16) {
+                    // 问题头部（标题与折叠描述）
+                    questionHeader(package.question)
 
-                Divider()
-                    .padding(.vertical, 4)
+                    Divider()
+                        .padding(.vertical, 2)
 
-                // 切换回答的 Tab/Paging 标识
-                if !package.answers.isEmpty {
-                    answerNavigationHeader(answersCount: package.answers.count)
-
-                    // 当前选中的回答全文
                     if package.answers.indices.contains(selectedIndex) {
                         let answer = package.answers[selectedIndex]
-                        answerBody(answer)
+                        answerBody(answer, totalCount: package.answers.count)
+                    } else {
+                        Text("该问题下暂无缓存回答")
+                            .foregroundStyle(.secondary)
+                            .padding(.vertical, 20)
                     }
-                } else {
-                    Text("该问题下暂无缓存回答")
-                        .foregroundStyle(.secondary)
-                        .padding(.vertical, 20)
                 }
+                .padding(.horizontal, 18)
+                .padding(.vertical, 14)
+                .padding(.bottom, 80) // 留出底部悬浮 ActionBar 的间距
             }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 14)
+
+            // 悬浮液态玻璃操作底栏
+            if !package.answers.isEmpty {
+                offlineActionBar(package: package)
+            }
+        }
+        .sheet(isPresented: $showsIndexSheet) {
+            offlineIndexSheet(package: package)
+        }
+        .sheet(isPresented: $showsCommentsSheet) {
+            if package.answers.indices.contains(selectedIndex) {
+                let currentAnswer = package.answers[selectedIndex]
+                offlineCommentsSheet(
+                    answer: currentAnswer,
+                    comments: package.comments[currentAnswer.route.contentID] ?? []
+                )
+            }
         }
     }
 
+    // MARK: - 悬浮液态玻璃操作底栏
+
+    @ViewBuilder
+    private func offlineActionBar(package: OfflineQuestionPackage) -> some View {
+        let totalCount = package.answers.count
+        let currentAnswer = package.answers.indices.contains(selectedIndex) ? package.answers[selectedIndex] : nil
+        let commentsCount = currentAnswer.flatMap { package.comments[$0.route.contentID]?.count } ?? 0
+
+        HStack(spacing: 0) {
+            // 上一条回答
+            Button {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    if selectedIndex > 0 { selectedIndex -= 1 }
+                }
+            } label: {
+                VStack(spacing: 2) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 17, weight: .semibold))
+                    Text("上一条")
+                        .font(.system(size: 10.5))
+                }
+                .frame(maxWidth: .infinity, minHeight: 40)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(selectedIndex <= 0)
+            .foregroundStyle(selectedIndex > 0 ? Color.primary : Color.secondary.opacity(0.4))
+
+            // 中间目录/进度
+            Button {
+                showsIndexSheet = true
+            } label: {
+                VStack(spacing: 2) {
+                    Image(systemName: "list.number")
+                        .font(.system(size: 17, weight: .semibold))
+                    Text("\(selectedIndex + 1) / \(totalCount)")
+                        .font(.system(size: 10.5, weight: .semibold).monospacedDigit())
+                }
+                .frame(maxWidth: .infinity, minHeight: 40)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.accentColor)
+
+            // 评论
+            Button {
+                showsCommentsSheet = true
+            } label: {
+                VStack(spacing: 2) {
+                    Image(systemName: "bubble.left")
+                        .font(.system(size: 17, weight: .regular))
+                    Text(commentsCount > 0 ? "\(commentsCount) 评论" : "评论")
+                        .font(.system(size: 10.5).monospacedDigit())
+                }
+                .frame(maxWidth: .infinity, minHeight: 40)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.primary)
+
+            // 下一条回答
+            Button {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    if selectedIndex < totalCount - 1 { selectedIndex += 1 }
+                }
+            } label: {
+                VStack(spacing: 2) {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 17, weight: .semibold))
+                    Text("下一条")
+                        .font(.system(size: 10.5))
+                }
+                .frame(maxWidth: .infinity, minHeight: 40)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(selectedIndex >= totalCount - 1)
+            .foregroundStyle(selectedIndex < totalCount - 1 ? Color.primary : Color.secondary.opacity(0.4))
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .liquidGlassCapsule(ignoreToggle: true)
+        .overlay(
+            Capsule()
+                .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+        )
+        .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 4)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 10)
+    }
+
+    // MARK: - 问题头部
+
     @ViewBuilder
     private func questionHeader(_ question: QuestionDTO) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(question.title)
                 .font(NativeTypography.pageTitle(scale: contentPresentation.fontScale))
                 .textSelection(.enabled)
@@ -74,15 +194,15 @@ struct OfflineReaderView: View {
                     }
                 } label: {
                     HStack {
-                        Text("问题描述")
-                            .font(.headline)
-                            .foregroundStyle(.primary)
-                        Spacer()
+                        Text(isDetailExpanded ? "收起问题描述" : "查看问题描述")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.secondary)
                         Image(systemName: "chevron.down")
-                            .font(.subheadline.weight(.semibold))
+                            .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
                             .rotationEffect(.degrees(isDetailExpanded ? 180 : 0))
                     }
+                    .padding(.vertical, 4)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -93,65 +213,28 @@ struct OfflineReaderView: View {
                         segmentSubject: .question(question.id),
                         onNavigate: { _ in }
                     )
-                } else {
-                    Text(question.plainTextDetail)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(3)
+                    .padding(.top, 4)
                 }
             }
         }
     }
 
-    @ViewBuilder
-    private func answerNavigationHeader(answersCount: Int) -> some View {
-        HStack {
-            Text("回答 (\(selectedIndex + 1)/\(answersCount))")
-                .font(.headline)
-                .foregroundStyle(.primary)
-
-            Spacer()
-
-            HStack(spacing: 12) {
-                Button {
-                    withAnimation {
-                        if selectedIndex > 0 { selectedIndex -= 1 }
-                    }
-                } label: {
-                    Image(systemName: "chevron.left.circle")
-                        .font(.title3)
-                }
-                .disabled(selectedIndex <= 0)
-
-                Button {
-                    withAnimation {
-                        if selectedIndex < answersCount - 1 { selectedIndex += 1 }
-                    }
-                } label: {
-                    Image(systemName: "chevron.right.circle")
-                        .font(.title3)
-                }
-                .disabled(selectedIndex >= answersCount - 1)
-            }
-            .foregroundStyle(Color.accentColor)
-        }
-        .padding(.vertical, 4)
-    }
+    // MARK: - 回答全文
 
     @ViewBuilder
-    private func answerBody(_ answer: AnswerDTO) -> some View {
+    private func answerBody(_ answer: AnswerDTO, totalCount: Int) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            // 作者信息
-            HStack(spacing: 11) {
+            // 作者信息行
+            HStack(spacing: 12) {
                 AsyncImage(url: answer.author.avatarURL) { image in
                     image.resizable().scaledToFill()
                 } placeholder: {
                     Image(systemName: "person.crop.circle.fill").resizable().foregroundStyle(.tertiary)
                 }
-                .frame(width: 38, height: 38)
+                .frame(width: 42, height: 42)
                 .clipShape(Circle())
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 3) {
                     Text(answer.author.displayName)
                         .font(.headline)
                     if !answer.author.headline.isEmpty {
@@ -162,13 +245,21 @@ struct OfflineReaderView: View {
                     }
                 }
                 Spacer()
-                Text("\(answer.voteUpCount) 赞同")
-                    .font(.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("\(answer.voteUpCount.formatted(.number.notation(.compactName))) 赞同")
+                        .font(.caption.weight(.semibold).monospacedDigit())
+                        .foregroundStyle(Color.accentColor)
+                    Text("第 \(selectedIndex + 1) / \(totalCount) 条")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
             }
             .padding(.vertical, 2)
 
-            // 正文区块
+            Divider()
+                .opacity(0.6)
+
+            // 正文富文本与图片展示
             QABodyView(
                 blocks: answer.blocks,
                 segmentSubject: .answer(answer.route.contentID),
@@ -187,7 +278,142 @@ struct OfflineReaderView: View {
             .font(.caption)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .trailing)
-            .padding(.top, 12)
+            .padding(.top, 16)
         }
+    }
+
+    // MARK: - 回答目录抽屉 Sheet
+
+    @ViewBuilder
+    private func offlineIndexSheet(package: OfflineQuestionPackage) -> some View {
+        NavigationView {
+            List(Array(package.answers.enumerated()), id: \.element.route.contentID) { index, ans in
+                Button {
+                    selectedIndex = index
+                    showsIndexSheet = false
+                } label: {
+                    HStack(spacing: 12) {
+                        Text("\(index + 1)")
+                            .font(.headline.monospacedDigit())
+                            .foregroundStyle(index == selectedIndex ? Color.accentColor : Color.secondary)
+                            .frame(width: 28, alignment: .center)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text(ans.author.displayName)
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(index == selectedIndex ? Color.accentColor : Color.primary)
+                                Spacer()
+                                Text("\(ans.voteUpCount.formatted(.number.notation(.compactName))) 赞同")
+                                    .font(.caption.monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                            }
+                            if let firstBlockText = extractSummaryText(from: ans.blocks) {
+                                Text(firstBlockText)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(2)
+                            }
+                        }
+                    }
+                    .padding(.vertical, 4)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .listRowBackground(index == selectedIndex ? Color.accentColor.opacity(0.08) : Color.clear)
+            }
+            .navigationTitle("回答目录 (\(package.answers.count))")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("关闭") { showsIndexSheet = false }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+
+    private func extractSummaryText(from blocks: [QABodyBlock]) -> String? {
+        for block in blocks {
+            switch block {
+            case let .paragraph(_, runs), let .quote(_, runs), let .heading(_, _, runs):
+                let text = runs.map(\.text).joined()
+                if !text.isEmpty { return text }
+            default:
+                continue
+            }
+        }
+        return nil
+    }
+
+    // MARK: - 离线评论抽屉 Sheet
+
+    @ViewBuilder
+    private func offlineCommentsSheet(answer: AnswerDTO, comments: [CommentDTO]) -> some View {
+        NavigationView {
+            Group {
+                if comments.isEmpty {
+                    VStack(spacing: 8) {
+                        Image(systemName: "bubble.left.and.exclamationmark")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.secondary)
+                        Text("暂无缓存的离线评论")
+                            .font(.headline)
+                        Text("离线缓存仅收录回答的前 10 条热门主评。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    List(comments) { comment in
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 9) {
+                                AsyncImage(url: comment.author.avatarURL) { image in
+                                    image.resizable().scaledToFill()
+                                } placeholder: {
+                                    Image(systemName: "person.crop.circle.fill").resizable().foregroundStyle(.tertiary)
+                                }
+                                .frame(width: 28, height: 28)
+                                .clipShape(Circle())
+
+                                Text(comment.author.displayName)
+                                    .font(.subheadline.weight(.semibold))
+
+                                Spacer()
+
+                                if comment.likeCount > 0 {
+                                    Label("\(comment.likeCount)", systemImage: "hand.thumbsup")
+                                        .font(.caption2.monospacedDigit())
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+
+                            // 评论文本内容
+                            Text(QARichContentParser.plainText(comment.contentHTML))
+                                .font(.subheadline)
+                                .foregroundStyle(.primary)
+
+                            HStack {
+                                if let ip = comment.ipLocation, !ip.isEmpty {
+                                    Text("IP属地: \(ip)")
+                                }
+                                Text(Date(timeIntervalSince1970: TimeInterval(comment.createdTimeSeconds)).formatted(date: .abbreviated, time: .shortened))
+                            }
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+            }
+            .navigationTitle("热门评论 (\(comments.count))")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("关闭") { showsCommentsSheet = false }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
     }
 }

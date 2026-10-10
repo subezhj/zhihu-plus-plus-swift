@@ -322,9 +322,7 @@ struct NativeAccountView: View {
         List {
             accountSection
             accountManagementSection
-            if let identity = store.identity {
-                librarySection(identity: identity)
-            }
+            librarySection(identity: store.identity)
             settingsSection
             aboutSection
         }
@@ -472,9 +470,9 @@ struct NativeAccountView: View {
         }
     }
 
-    private func librarySection(identity: NativeAccountIdentity) -> some View {
+    private func librarySection(identity: NativeAccountIdentity?) -> some View {
         Section("我的内容") {
-            if let token = identity.collectionToken {
+            if let token = identity?.collectionToken {
                 NavigationLink(value: NativeShellRoute.collections(userToken: token)) {
                     Label("收藏夹", systemImage: "bookmark")
                 }
@@ -486,6 +484,10 @@ struct NativeAccountView: View {
             .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
             NavigationLink(value: NativeShellRoute.notifications) {
                 Label("通知", systemImage: "bell")
+            }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
+            NavigationLink(value: NativeShellRoute.offlineManager) {
+                Label("离线缓存", systemImage: "arrow.down.circle")
             }
             .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
         }

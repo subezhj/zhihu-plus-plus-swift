@@ -16,6 +16,34 @@ struct OfflineQuestionPackage: Codable, Sendable {
     let manifest: OfflineQuestionManifest
     let question: QuestionDTO
     let answers: [AnswerDTO]
+    let comments: [Int64: [CommentDTO]] // answerID -> 热门评论列表
+
+    init(
+        manifest: OfflineQuestionManifest,
+        question: QuestionDTO,
+        answers: [AnswerDTO],
+        comments: [Int64: [CommentDTO]] = [:]
+    ) {
+        self.manifest = manifest
+        self.question = question
+        self.answers = answers
+        self.comments = comments
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case manifest
+        case question
+        case answers
+        case comments
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        manifest = try container.decode(OfflineQuestionManifest.self, forKey: .manifest)
+        question = try container.decode(QuestionDTO.self, forKey: .question)
+        answers = try container.decode([AnswerDTO].self, forKey: .answers)
+        comments = try container.decodeIfPresent([Int64: [CommentDTO]].self, forKey: .comments) ?? [:]
+    }
 }
 
 actor OfflineStorageService {

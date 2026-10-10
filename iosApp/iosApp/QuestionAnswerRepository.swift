@@ -27,10 +27,12 @@ protocol QuestionAnswerRepository: Sendable {
         route: AnswerRouteDTO
     ) async throws
     func recordReadHistory(contentToken: String, contentType: String) async
+    func fetchAnswerComments(answerID: Int64, limit: Int) async throws -> [CommentDTO]
 }
 
 extension QuestionAnswerRepository {
     func recordReadHistory(contentToken: String, contentType: String) async {}
+    func fetchAnswerComments(answerID: Int64, limit: Int = 20) async throws -> [CommentDTO] { [] }
 }
 
 protocol NativeVideoRepository: Sendable {
@@ -340,6 +342,18 @@ actor URLSessionQuestionAnswerRepository: QuestionAnswerRepository {
             additionalHeaders: ["Content-Type": "application/x-www-form-urlencoded"],
             authentication: .accountRequired
         )
+    }
+
+    func fetchAnswerComments(answerID: Int64, limit: Int = 20) async throws -> [CommentDTO] {
+        let route = CommentThreadRouteDTO(subject: .answer(answerID))
+        let commentRepo = URLSessionCommentRepository(client: client)
+        let result = try await commentRepo.fetchPage(
+            route: route,
+            level: .root,
+            sort: .score,
+            nextURL: nil
+        )
+        return Array(result.items.prefix(limit))
     }
 
     private func endpoint(path: String, query: [URLQueryItem] = []) throws -> URL {

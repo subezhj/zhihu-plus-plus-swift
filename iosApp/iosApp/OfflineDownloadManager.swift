@@ -2,9 +2,9 @@ import Foundation
 import Combine
 
 enum OfflineDownloadTarget: Int, CaseIterable, Identifiable {
-    case five = 5
     case ten = 10
     case twenty = 20
+    case fifty = 50
 
     var id: Int { rawValue }
     var title: String { "前 \(rawValue) 条回答" }
@@ -135,7 +135,7 @@ final class OfflineDownloadManager: ObservableObject {
                     for imgURL in imageURLsToDownload {
                         try Task.checkCancellation()
                         downloadedCount += 1
-                        let progress = 0.70 + (0.25 * Double(downloadedCount) / Double(totalImages))
+                        let progress = 0.70 + (0.15 * Double(downloadedCount) / Double(totalImages))
                         await MainActor.run {
                             self.state = .downloading(
                                 questionID: questionID,
@@ -155,7 +155,25 @@ final class OfflineDownloadManager: ObservableObject {
                     }
                 }
 
-                // 5. 打包并保存
+                // 5. 缓存回答热门评论 (每篇前 10 条热门评论)
+                var answerComments: [Int64: [CommentDTO]] = [:]
+                for (cIndex, answer) in answers.enumerated() {
+                    try Task.checkCancellation()
+                    let progress = 0.85 + (0.12 * Double(cIndex) / Double(answers.count))
+                    await MainActor.run {
+                        self.state = .downloading(
+                            questionID: questionID,
+                            progress: progress,
+                            message: "正在缓存热门评论 (\(cIndex + 1)/\(answers.count))..."
+                        )
+                    }
+                    if let comments = try? await repository.fetchAnswerComments(answerID: answer.route.contentID, limit: 10),
+                       !comments.isEmpty {
+                        answerComments[answer.route.contentID] = comments
+                    }
+                }
+
+                // 6. 打包并保存
                 await MainActor.run {
                     self.state = .downloading(questionID: questionID, progress: 0.98, message: "正在写入本地存储...")
                 }
@@ -168,7 +186,12 @@ final class OfflineDownloadManager: ObservableObject {
                     totalByteSize: 0, // 会在下次统计时刷新
                     cachedAt: Date()
                 )
-                let package = OfflineQuestionPackage(manifest: manifest, question: question, answers: answers)
+                let package = OfflineQuestionPackage(
+                    manifest: manifest,
+                    question: question,
+                    answers: answers,
+                    comments: answerComments
+                )
                 try await self.storage.save(package: package)
 
                 await MainActor.run {
