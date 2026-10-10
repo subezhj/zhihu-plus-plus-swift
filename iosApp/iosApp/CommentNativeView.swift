@@ -221,7 +221,10 @@ private struct CommentLevelView: View {
             if let close {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(action: close) {
-                        Image(systemName: "xmark")
+                        Image(systemName: "xmark.circle.fill")
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(.secondary)
+                            .font(.title3)
                     }
                     .accessibilityLabel(level == .root ? "关闭评论" : "关闭回复")
                     .accessibilityIdentifier(level == .root ? "comment_close" : "comment_reply_close")
@@ -689,7 +692,7 @@ private struct CommentComposerBar: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "square.and.pencil")
-                    .font(.system(size: 18, weight: .medium))
+                    .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(Color.accentColor)
                 Text(level == .root ? "写评论，发表你的看法…" : "回复这条评论…")
                     .font(NativeTypography.commentBody())
@@ -697,16 +700,15 @@ private struct CommentComposerBar: View {
                 Spacer()
             }
             .padding(.horizontal, 16)
-            .frame(minHeight: 52)
-            // 与回答页底部操作栏（AnswerActionBar）同款液态玻璃：ignoreToggle + 0.5pt 描边 + 阴影
-            .liquidGlassCapsule(ignoreToggle: true)
+            .frame(minHeight: 46)
+            .background(Color.nativeSecondarySystemGroupedBackground, in: Capsule())
             .overlay(
                 Capsule()
-                    .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+                    .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
             )
-            .shadow(color: Color.black.opacity(0.12), radius: 10, x: 0, y: 4)
+            .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 3)
             .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.vertical, 8)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -714,26 +716,26 @@ private struct CommentComposerBar: View {
     }
 
     private var activeComposer: some View {
-        VStack(spacing: 10) {
-            // 顶部：左标题 + 右取消
+        VStack(spacing: 8) {
+            // 顶部：目标提示 + 右侧圆形关闭按钮
             HStack(alignment: .center) {
-                HStack(spacing: 6) {
-                    Image(systemName: "bubble.and.pencil")
-                        .font(.system(size: 14, weight: .semibold))
+                HStack(spacing: 5) {
+                    Image(systemName: "arrowshape.turn.up.left.fill")
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(Color.accentColor)
                     Text(store.activeReplyTargetName.map { "回复 @\($0)" } ?? (level == .root ? "发表评论" : "发表回复"))
-                        .font(NativeTypography.feedTitle())
+                        .font(.subheadline.weight(.medium))
                         .foregroundStyle(.primary)
                 }
                 Spacer()
                 Button {
                     dismissComposer()
                 } label: {
-                    Text("取消")
-                        .font(NativeTypography.feedTitle())
-                        .foregroundStyle(.primary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
+                    Image(systemName: "xmark.circle.fill")
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundStyle(.secondary)
+                        .font(.system(size: 20))
+                        .frame(width: 32, height: 32)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("取消输入")
@@ -744,37 +746,35 @@ private struct CommentComposerBar: View {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 64, height: 52)
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .frame(width: 56, height: 46)
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     Text("待发送图片")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Spacer()
                     Button("移除", role: .destructive) { store.setDraftImage(nil) }
-                        .font(.caption)
+                        .font(.caption.weight(.medium))
                 }
+                .padding(.horizontal, 4)
             }
 
-            // 主体：全宽输入框，光标/文字从左上角开始（顶部对齐），高度 44–96 受控
-            ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color.primary.opacity(0.06))
-                CommentDraftField(store: store, isFocused: $isDraftFocused)
-                    .textFieldStyle(.plain)
-                    .font(NativeTypography.commentBody())
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 10)
-            }
-            .frame(maxWidth: .infinity, minHeight: 44, maxHeight: 96)
-            .accessibilityIdentifier("comment_draft_field")
+            // 主体输入区域
+            CommentDraftField(store: store, isFocused: $isDraftFocused)
+                .textFieldStyle(.plain)
+                .font(NativeTypography.commentBody())
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .frame(maxWidth: .infinity, minHeight: 40, maxHeight: 110)
+                .accessibilityIdentifier("comment_draft_field")
 
-            // 工具行：表情/选图居左，发送居右（普通按钮，不再叠加液态玻璃）
-            HStack(spacing: 6) {
+            // 底部操作区：表情/图片 (左) 与 发送胶囊 (右)
+            HStack(spacing: 8) {
                 Button { showsEmojiPicker = true } label: {
                     Image(systemName: "face.smiling")
                         .font(.system(size: 20, weight: .medium))
                         .foregroundStyle(.secondary)
-                        .frame(width: 30, height: 30)
+                        .frame(width: 38, height: 38)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -788,7 +788,7 @@ private struct CommentComposerBar: View {
                     Image(systemName: "photo")
                         .font(.system(size: 20, weight: .medium))
                         .foregroundStyle(.secondary)
-                        .frame(width: 30, height: 30)
+                        .frame(width: 38, height: 38)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -805,12 +805,14 @@ private struct CommentComposerBar: View {
                     }
                 } label: {
                     if case .submitting = store.draft.submissionState {
-                        ProgressView().frame(width: 28, height: 28)
+                        ProgressView().controlSize(.small)
+                            .frame(width: 34, height: 34)
                     } else {
+                        let canSubmit = (!store.draft.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || store.draft.imageData != nil) && !store.draft.submissionState.isSubmitting
                         Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 26, weight: .semibold))
-                            .foregroundStyle(Color.accentColor)
-                            .frame(width: 30, height: 30)
+                            .font(.system(size: 30, weight: .semibold))
+                            .foregroundStyle(canSubmit ? Color.accentColor : Color.secondary.opacity(0.3))
+                            .frame(width: 36, height: 36)
                             .contentShape(Rectangle())
                     }
                 }
@@ -824,16 +826,19 @@ private struct CommentComposerBar: View {
                 .accessibilityIdentifier("comment_submit")
             }
         }
-        // 液态玻璃容器：与回答页底部操作栏（AnswerActionBar）同款材质 + 0.5pt 描边 + 阴影
-        .padding(14)
-        .liquidGlassCard(cornerRadius: 20, isProminent: false)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 4)
+        )
         .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
         )
-        .shadow(color: Color.black.opacity(0.12), radius: 10, x: 0, y: 4)
-        .padding(.horizontal, 16)
-        .padding(.bottom, 10)
+        .padding(.horizontal, 12)
+        .padding(.bottom, 6)
     }
 
     private func dismissComposer() {
