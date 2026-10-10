@@ -296,6 +296,7 @@ struct NativeAppShell: View {
     @State private var searchRootRoute = SearchRouteDTO()
     @State private var searchFocusRequestToken: UInt = 0
     @State private var clipboardInspectionArmed = false
+    @State private var presentedCommentsSheet: CommentThreadRouteDTO?
 
     init(hostModel: HostModel, isAppUnlocked: Bool) {
         self.hostModel = hostModel
@@ -381,6 +382,19 @@ struct NativeAppShell: View {
         }
         .fullScreenCover(item: $mediaPresentation) { presentation in
             NativeMediaGallery(urls: presentation.urls, initialIndex: presentation.initialIndex)
+        }
+        .sheet(item: $presentedCommentsSheet) { route in
+            NavigationView {
+                NativeCommentNavigationRouteView(
+                    hostModel: hostModel,
+                    route: route,
+                    onPersonNavigate: { handlePersonIntent($0, in: selectedTab) },
+                    onNavigate: { handleQAIntent($0, in: selectedTab) },
+                    close: { presentedCommentsSheet = nil }
+                )
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
         .onChange(of: selectedTab) { _ in
             homeTabDoubleTapGate.cancel()
@@ -594,7 +608,7 @@ struct NativeAppShell: View {
                 onOpenPerson: { navigate(.person($0), in: tab) },
                 onOpenLink: handlePinLink,
                 onOpenComments: {
-                    navigate(.comments(.init(subject: .pin($0))), in: tab)
+                    presentedCommentsSheet = .init(subject: .pin($0))
                 }
             )
         case let .topic(route):
@@ -804,7 +818,7 @@ struct NativeAppShell: View {
         case let .answer(route): navigate(.answer(route), in: tab)
         case let .writeAnswer(route): navigate(.writeAnswer(route), in: tab)
         case let .comments(route), let .segmentComments(route):
-            navigate(.comments(route), in: tab)
+            presentedCommentsSheet = route
         case let .images(urls, index):
             guard !urls.isEmpty else { return }
             mediaPresentation = .init(urls: urls, initialIndex: index)
@@ -1132,14 +1146,17 @@ private struct NativePersonConnectionsRouteView: View {
 private struct NativeCommentNavigationRouteView: View {
     @ObservedObject private var hostModel: HostModel
     @StateObject private var model: CommentHostModel
+    var close: (() -> Void)? = nil
 
     init(
         hostModel: HostModel,
         route: CommentThreadRouteDTO,
         onPersonNavigate: @escaping (PersonNavigationIntent) -> Void,
-        onNavigate: @escaping (QANavigationIntent) -> Void
+        onNavigate: @escaping (QANavigationIntent) -> Void,
+        close: (() -> Void)? = nil
     ) {
         self.hostModel = hostModel
+        self.close = close
         // 内存缓存：命中复用已加载数据（不重新拉第一页），未命中新建
         _model = StateObject(wrappedValue: hostModel.commentHostModel(
             for: route,
@@ -1148,7 +1165,7 @@ private struct NativeCommentNavigationRouteView: View {
         ))
     }
 
-    var body: some View { CommentNavigationPage(model: model) }
+    var body: some View { CommentNavigationPage(model: model, close: close) }
 }
 
 private struct NativeSharePresentation: Identifiable {

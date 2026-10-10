@@ -28,7 +28,17 @@ struct CommentShareContextDTO: Hashable {
     let sourceURL: URL
 }
 
-struct CommentThreadRouteDTO: Hashable {
+struct CommentThreadRouteDTO: Hashable, Identifiable {
+    var id: String {
+        switch subject {
+        case let .answer(id): return "answer_\(id)"
+        case let .article(id): return "article_\(id)"
+        case let .question(id): return "question_\(id)"
+        case let .pin(id): return "pin_\(id)"
+        case let .segment(contentID, type, segID): return "segment_\(contentID)_\(type)_\(segID)"
+        }
+    }
+
     let subject: CommentSubjectDTO
     let initialLevel: CommentLevelKey
     let shareContext: CommentShareContextDTO?

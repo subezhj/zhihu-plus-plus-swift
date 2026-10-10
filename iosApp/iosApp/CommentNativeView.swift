@@ -68,6 +68,7 @@ final class CommentHostModel: ObservableObject, Identifiable {
 
 struct CommentNavigationPage: View {
     @ObservedObject var model: CommentHostModel
+    var close: (() -> Void)? = nil
 
     var body: some View {
         CommentThreadContainer(
@@ -75,7 +76,8 @@ struct CommentNavigationPage: View {
             personModel: model.personModel,
             personBindingChanged: model.personBindingChanged,
             onNavigate: model.onNavigate,
-            onPersonNavigate: model.onPersonNavigate
+            onPersonNavigate: model.onPersonNavigate,
+            close: close
         )
         .accessibilityIdentifier("comment_navigation_page")
     }
@@ -93,9 +95,10 @@ private struct CommentThreadContainer: View {
     let personBindingChanged: (Bool) -> Void
     let onNavigate: (QANavigationIntent) -> Void
     let onPersonNavigate: (PersonNavigationIntent) -> Void
+    let close: (() -> Void)?
 
     var body: some View {
-        CommentLevelView(store: store, level: .root, close: nil)
+        CommentLevelView(store: store, level: .root, close: close)
             .background {
                 if case let .replies(rootCommentID) = store.activeLevel {
                     NavigationLink(
@@ -758,14 +761,14 @@ private struct CommentComposerBar: View {
                 .padding(.horizontal, 4)
             }
 
-            // 主体输入区域
+            // 主体输入区域：扩大可视高度与编辑范围，避免输入框局促
             CommentDraftField(store: store, isFocused: $isDraftFocused)
                 .textFieldStyle(.plain)
                 .font(NativeTypography.commentBody())
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
                 .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                .frame(maxWidth: .infinity, minHeight: 40, maxHeight: 110)
+                .frame(maxWidth: .infinity, minHeight: 56, maxHeight: 140)
                 .accessibilityIdentifier("comment_draft_field")
 
             // 底部操作区：表情/图片 (左) 与 发送胶囊 (右)
@@ -1162,9 +1165,8 @@ private struct CommentDraftField: View {
     let isFocused: FocusState<Bool>.Binding
 
     var body: some View {
-        TextField("发表评论", text: draftBinding, axis: .vertical)
-            // 行数上限 4：展开态容器高度受控，避免输入过长时胶囊/容器无限增高
-            .lineLimit(1...4)
+        TextField("写下你的友善评论…", text: draftBinding, axis: .vertical)
+            .lineLimit(2...6)
             .focused(isFocused)
     }
 
