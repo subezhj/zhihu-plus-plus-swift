@@ -110,9 +110,12 @@
 		0B400000000000000000013 /* QuestionAnswerFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B300000000000000000013 /* QuestionAnswerFeatureTests.swift */; };
 		0E200000000000000000001 /* KaTeXResources in Resources */ = {isa = PBXBuildFile; fileRef = 0E100000000000000000001 /* KaTeXResources */; };
 		0E200000000000000000002 /* QAKaTeXRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E100000000000000000002 /* QAKaTeXRenderer.swift */; };
-		0E400000000000000000001 /* KaTeXResourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E300000000000000000001 /* KaTeXResourceTests.swift */; };
 		0F200000000000000000001 /* NativeContentPosterShare.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F100000000000000000001 /* NativeContentPosterShare.swift */; };
 		0F200000000000000000002 /* NativeClipboardZhihuLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F100000000000000000002 /* NativeClipboardZhihuLink.swift */; };
+		10200000000000000000001 /* OfflineStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10100000000000000000001 /* OfflineStorageService.swift */; };
+		10200000000000000000002 /* OfflineDownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10100000000000000000002 /* OfflineDownloadManager.swift */; };
+		10200000000000000000003 /* OfflineReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10100000000000000000003 /* OfflineReaderView.swift */; };
+		10200000000000000000004 /* OfflineManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10100000000000000000004 /* OfflineManagerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -232,9 +235,12 @@
 		0B300000000000000000013 /* QuestionAnswerFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionAnswerFeatureTests.swift; sourceTree = "<group>"; };
 		0E100000000000000000001 /* KaTeXResources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = KaTeXResources; sourceTree = "<group>"; };
 		0E100000000000000000002 /* QAKaTeXRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QAKaTeXRenderer.swift; sourceTree = "<group>"; };
-		0E300000000000000000001 /* KaTeXResourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KaTeXResourceTests.swift; sourceTree = "<group>"; };
 		0F100000000000000000001 /* NativeContentPosterShare.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeContentPosterShare.swift; sourceTree = "<group>"; };
 		0F100000000000000000002 /* NativeClipboardZhihuLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeClipboardZhihuLink.swift; sourceTree = "<group>"; };
+		10100000000000000000001 /* OfflineStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineStorageService.swift; sourceTree = "<group>"; };
+		10100000000000000000002 /* OfflineDownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineDownloadManager.swift; sourceTree = "<group>"; };
+		10100000000000000000003 /* OfflineReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineReaderView.swift; sourceTree = "<group>"; };
+		10100000000000000000004 /* OfflineManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineManagerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -344,6 +350,10 @@
 				0E100000000000000000002 /* QAKaTeXRenderer.swift */,
 				0F100000000000000000001 /* NativeContentPosterShare.swift */,
 				0F100000000000000000002 /* NativeClipboardZhihuLink.swift */,
+				10100000000000000000001 /* OfflineStorageService.swift */,
+				10100000000000000000002 /* OfflineDownloadManager.swift */,
+				10100000000000000000003 /* OfflineReaderView.swift */,
+				10100000000000000000004 /* OfflineManagerView.swift */,
 				0A1B2C3D4E5F600100000013 /* Assets.xcassets */,
 				0A1B2C3D4E5F600100000014 /* Info.plist */,
 				0A1B2C3D4E5F600100000015 /* LaunchScreen.storyboard */,
@@ -571,6 +581,10 @@
 				0E200000000000000000002 /* QAKaTeXRenderer.swift in Sources */,
 				0F200000000000000000001 /* NativeContentPosterShare.swift in Sources */,
 				0F200000000000000000002 /* NativeClipboardZhihuLink.swift in Sources */,
+				10200000000000000000001 /* OfflineStorageService.swift in Sources */,
+				10200000000000000000002 /* OfflineDownloadManager.swift in Sources */,
+				10200000000000000000003 /* OfflineReaderView.swift in Sources */,
+				10200000000000000000004 /* OfflineManagerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1243,6 +1243,89 @@ private final class QAAccountStore: AccountJSONStore, @unchecked Sendable {
     }
 }
 
+extension QuestionAnswerFeatureTests {
+    func testAnswerAndQuestionDTOCodableRoundtrip() throws {
+        let author = QAAuthorDTO(
+            memberID: "m1",
+            urlToken: "token1",
+            displayName: "测试作者",
+            headline: "签名",
+            avatarURL: URL(string: "https://pic.zhihu.com/avatar.jpg")
+        )
+        let imageBlock = QABodyBlock.image(QAImageDTO(
+            url: URL(string: "https://pic.zhihu.com/img.jpg")!,
+            caption: "测试图片",
+            altText: "alt",
+            dimensions: QAImageDimensions(width: 800, height: 600)
+        ))
+        let textBlock = QABodyBlock.paragraph(UUID(), [
+            QAInlineRun(text: "正文内容", style: [.strong, .emphasis], link: .question(12345))
+        ])
+        let codeBlock = QABodyBlock.code(UUID(), language: "swift", text: "let a = 1")
+        let videoBlock = QABodyBlock.video(UUID(), QAAttachmentVideoDTO(
+            videoID: 999,
+            thumbnailURL: URL(string: "https://pic.zhihu.com/v.jpg"),
+            destinationURL: URL(string: "https://video.zhihu.com/v/999"),
+            playbackURL: URL(string: "https://video.zhihu.com/play/999.mp4")
+        ))
+
+        let answer = AnswerDTO(
+            route: AnswerRouteDTO(contentID: 1001, kind: .answer, questionID: 2001, provisionalTitle: "问题标题"),
+            title: "问题标题",
+            questionID: 2001,
+            author: author,
+            blocks: [textBlock, imageBlock, codeBlock, videoBlock],
+            attachment: nil,
+            sourceURL: URL(string: "https://www.zhihu.com/answer/1001")!,
+            voteUpCount: 42,
+            favoriteCount: 10,
+            commentCount: 5,
+            voteState: .up,
+            favoriteState: .favorited,
+            createdTimeSeconds: 1700000000,
+            updatedTimeSeconds: 1700001000,
+            ipLocation: "北京",
+            invitationPreface: nil,
+            endorsements: [QAEndorsementDTO(text: "专业认证", actionURL: nil, leadingIconKey: nil)]
+        )
+
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(answer)
+        let decodedAnswer = try JSONDecoder().decode(AnswerDTO.self, from: data)
+
+        XCTAssertEqual(decodedAnswer.route.contentID, answer.route.contentID)
+        XCTAssertEqual(decodedAnswer.title, answer.title)
+        XCTAssertEqual(decodedAnswer.author.displayName, answer.author.displayName)
+        XCTAssertEqual(decodedAnswer.voteState, .up)
+        XCTAssertEqual(decodedAnswer.favoriteState, .favorited)
+        XCTAssertEqual(decodedAnswer.blocks.count, 4)
+
+        let question = QuestionDTO(
+            id: 2001,
+            title: "测试问题",
+            detailHTML: "<p>描述</p>",
+            plainTextDetail: "描述",
+            detailBlocks: [textBlock, imageBlock],
+            answerCount: 10,
+            visitCount: 100,
+            commentCount: 2,
+            followerCount: 20,
+            isFollowing: true,
+            author: author,
+            topics: [QATopicDTO(id: "t1", name: "Swift", url: nil)]
+        )
+        let questionData = try encoder.encode(question)
+        let decodedQuestion = try JSONDecoder().decode(QuestionDTO.self, from: questionData)
+
+        XCTAssertEqual(decodedQuestion.id, question.id)
+        XCTAssertEqual(decodedQuestion.title, question.title)
+        XCTAssertEqual(decodedQuestion.isFollowing, true)
+        XCTAssertEqual(decodedQuestion.topics.first?.name, "Swift")
+        XCTAssertEqual(decodedQuestion.detailBlocks.count, 2)
+    }
+}
+
+
 private enum QAStubError: LocalizedError { case failed; var errorDescription: String? { "测试失败" } }
 
 private final class StubQuestionAnswerRepository: QuestionAnswerRepository, @unchecked Sendable {

@@ -13,7 +13,7 @@ final class QuestionStore: ObservableObject {
     @Published var isDetailExpanded = true
 
     let route: QuestionRouteDTO
-    private let repository: QuestionAnswerRepository
+    let repository: QuestionAnswerRepository
     private var nextURL: URL?
     private var generation: UInt64 = 0
 

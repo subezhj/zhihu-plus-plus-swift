@@ -198,6 +198,13 @@ struct NativeSettingsView: View {
             }
             .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
 
+            Section("离线") {
+                NavigationLink(value: NativeShellRoute.offlineManager) {
+                    Label("离线缓存", systemImage: "arrow.down.circle")
+                }
+            }
+            .listRowBackground(Color.nativeSecondarySystemGroupedBackground)
+
             Section("系统") {
                 if appLock.settingPresentation.isVisible {
                     Toggle("App 锁", isOn: Binding(

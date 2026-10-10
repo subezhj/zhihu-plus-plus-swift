@@ -355,6 +355,17 @@ private final class NativeStaticImageLoader: ObservableObject {
         image = nil
         didFail = false
 
+        // 优先检查本地离线磁盘缓存
+        if let offlineData = await OfflineStorageService.shared.cachedImageData(for: url),
+           let decoded = await Task.detached(priority: .userInitiated, operation: {
+               NativeImageDownsampler.downsample(data: offlineData)
+           }).value {
+            guard loadedURL == url else { return }
+            NativeBodyImageMemoryCache.shared.store(decoded, for: url)
+            self.image = decoded
+            return
+        }
+
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
             try Task.checkCancellation()

@@ -26,6 +26,8 @@ enum NativeShellRoute: Hashable {
     case notificationSettings
     case settings
     case systemAndUpdate
+    case offlineManager
+    case offlineReader(Int64)
 
     var diagnosticRouteType: String {
         switch self {
@@ -52,6 +54,8 @@ enum NativeShellRoute: Hashable {
         case .notificationSettings: return "notification_settings"
         case .settings: return "settings"
         case .systemAndUpdate: return "system_and_update"
+        case .offlineManager: return "offline_manager"
+        case .offlineReader: return "offline_reader"
         }
     }
 }
@@ -674,6 +678,10 @@ struct NativeAppShell: View {
             )
             case .systemAndUpdate:
                 SystemAndUpdateView(openExternalLink: hostModel.openSystemExternalLink)
+            case .offlineManager:
+                OfflineManagerView()
+            case let .offlineReader(questionID):
+                OfflineReaderView(questionID: questionID)
             }
         }
         .scrollContentBackground(.hidden)

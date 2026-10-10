@@ -6,6 +6,10 @@ struct QuestionNativeView: View {
     @Environment(\.nativeContentPresentation) private var contentPresentation
     @ScaledMetric(relativeTo: .subheadline) private var detailSummaryPointSize: CGFloat = 15
 
+    @StateObject private var downloadManager = OfflineDownloadManager.shared
+    @State private var showsOfflineSheet = false
+    @State private var isOfflineCached = false
+
     var body: some View {
         Group {
             if store.question != nil {
@@ -32,7 +36,53 @@ struct QuestionNativeView: View {
         .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .navigationTitle(store.question?.title.isEmpty == false ? (store.question?.title ?? "问题") : "问题")
         .navigationBarTitleDisplayMode(.inline)
-        .task { await store.loadIfNeeded() }
+        .toolbar {
+            if let question = store.question {
+                ToolbarItem(placement: .topBarTrailing) {
+                    if downloadManager.activeQuestionID == question.id {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Button {
+                            showsOfflineSheet = true
+                        } label: {
+                            Image(systemName: isOfflineCached ? "arrow.down.circle.fill" : "arrow.down.circle")
+                                .foregroundStyle(isOfflineCached ? Color.accentColor : Color.primary)
+                        }
+                        .accessibilityLabel(isOfflineCached ? "已离线缓存" : "离线缓存此问题")
+                    }
+                }
+            }
+        }
+        .confirmationDialog("离线缓存此问题", isPresented: $showsOfflineSheet, titleVisibility: .visible) {
+            ForEach(OfflineDownloadTarget.allCases) { target in
+                Button(target.title) {
+                    if let question = store.question {
+                        downloadManager.startDownload(
+                            questionID: question.id,
+                            targetCount: target,
+                            repository: store.repository
+                        )
+                    }
+                }
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("将离线缓存问题详情、指定条数的高赞回答全文及配图。无网络时可在「设置 -> 离线缓存」中随时阅读。")
+        }
+        .task {
+            await store.loadIfNeeded()
+            if let question = store.question {
+                isOfflineCached = await OfflineStorageService.shared.isQuestionCached(questionID: question.id)
+            }
+        }
+        .onChange(of: downloadManager.activeQuestionID) { _, activeID in
+            if activeID == nil, let qid = store.question?.id {
+                Task {
+                    isOfflineCached = await OfflineStorageService.shared.isQuestionCached(questionID: qid)
+                }
+            }
+        }
         .alert(item: messageBinding) { message in
             Alert(
                 title: Text("操作结果"),

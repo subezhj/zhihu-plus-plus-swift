@@ -1,11 +1,11 @@
 import Foundation
 
-enum QAContentKind: String, Hashable, Sendable {
+enum QAContentKind: String, Codable, Hashable, Sendable {
     case answer
     case article
 }
 
-struct QuestionRouteDTO: Hashable, Sendable {
+struct QuestionRouteDTO: Codable, Hashable, Sendable {
     let questionID: Int64
     let provisionalTitle: String
 
@@ -15,7 +15,7 @@ struct QuestionRouteDTO: Hashable, Sendable {
     }
 }
 
-struct AnswerRouteDTO: Hashable, Sendable {
+struct AnswerRouteDTO: Codable, Hashable, Sendable {
     let contentID: Int64
     let kind: QAContentKind
     let questionID: Int64?
@@ -37,7 +37,7 @@ struct AnswerRouteDTO: Hashable, Sendable {
     }
 }
 
-struct AnswerPageSourceDTO: Hashable, Sendable {
+struct AnswerPageSourceDTO: Codable, Hashable, Sendable {
     let sourceName: String
     let questionID: Int64
     let order: QuestionAnswerSort
@@ -62,7 +62,7 @@ struct AnswerPageSourceDTO: Hashable, Sendable {
     }
 }
 
-enum QuestionAnswerSort: String, CaseIterable, Identifiable, Hashable, Sendable {
+enum QuestionAnswerSort: String, Codable, CaseIterable, Identifiable, Hashable, Sendable {
     case `default`
     case updated
 
@@ -70,7 +70,7 @@ enum QuestionAnswerSort: String, CaseIterable, Identifiable, Hashable, Sendable 
     var title: String { self == .default ? "默认" : "最新" }
 }
 
-struct QAAuthorDTO: Hashable, Sendable {
+struct QAAuthorDTO: Codable, Hashable, Sendable {
     let memberID: String
     let urlToken: String
     let displayName: String
@@ -89,7 +89,7 @@ struct QAAuthorDTO: Hashable, Sendable {
     }
 }
 
-struct QuestionDTO: Hashable, Sendable {
+struct QuestionDTO: Codable, Hashable, Sendable {
     let id: Int64
     let title: String
     let detailHTML: String
@@ -149,13 +149,13 @@ struct QuestionDTO: Hashable, Sendable {
     }
 }
 
-struct QATopicDTO: Identifiable, Hashable, Sendable {
+struct QATopicDTO: Identifiable, Codable, Hashable, Sendable {
     let id: String
     let name: String
     let url: URL?
 }
 
-struct AnswerPreviewDTO: Identifiable, Hashable, Sendable {
+struct AnswerPreviewDTO: Identifiable, Codable, Hashable, Sendable {
     let answerID: Int64
     let questionID: Int64
     let questionTitle: String
@@ -173,13 +173,13 @@ struct QuestionAnswerPageDTO: Sendable {
     let isEnd: Bool
 }
 
-enum QAVoteState: String, Hashable, Sendable {
+enum QAVoteState: String, Codable, Hashable, Sendable {
     case neutral
     case up
     case down
 }
 
-enum QAFavoriteState: Hashable, Sendable {
+enum QAFavoriteState: String, Codable, Hashable, Sendable {
     case unknown
     case notFavorited
     case favorited
@@ -205,7 +205,7 @@ struct QACollectionDTO: Identifiable, Hashable, Sendable {
     let isFavorited: Bool
 }
 
-struct QAEndorsementDTO: Identifiable, Hashable, Sendable {
+struct QAEndorsementDTO: Identifiable, Codable, Hashable, Sendable {
     let text: String
     let actionURL: URL?
     let leadingIconKey: String?
@@ -213,7 +213,7 @@ struct QAEndorsementDTO: Identifiable, Hashable, Sendable {
     var id: String { "\(text)|\(actionURL?.absoluteString ?? "")|\(leadingIconKey ?? "")" }
 }
 
-struct QAAttachmentVideoDTO: Hashable, Sendable {
+struct QAAttachmentVideoDTO: Codable, Hashable, Sendable {
     let videoID: Int64
     let thumbnailURL: URL?
     let destinationURL: URL?
@@ -232,7 +232,7 @@ struct QAAttachmentVideoDTO: Hashable, Sendable {
     }
 }
 
-struct AnswerDTO: Hashable, Sendable {
+struct AnswerDTO: Codable, Hashable, Sendable {
     let route: AnswerRouteDTO
     let title: String
     let questionID: Int64?
@@ -509,7 +509,7 @@ private extension String {
     var qaNilIfEmpty: String? { isEmpty ? nil : self }
 }
 
-struct QAInlineStyle: OptionSet, Hashable, Sendable {
+struct QAInlineStyle: OptionSet, Codable, Hashable, Sendable {
     let rawValue: Int
     static let strong = Self(rawValue: 1 << 0)
     static let emphasis = Self(rawValue: 1 << 1)
@@ -517,7 +517,7 @@ struct QAInlineStyle: OptionSet, Hashable, Sendable {
     static let code = Self(rawValue: 1 << 3)
 }
 
-struct QAInlineRun: Identifiable, Hashable, Sendable {
+struct QAInlineRun: Identifiable, Codable, Hashable, Sendable {
     let id: UUID
     let text: String
     let style: QAInlineStyle
@@ -531,7 +531,7 @@ struct QAInlineRun: Identifiable, Hashable, Sendable {
     }
 }
 
-enum QALinkDestination: Hashable, Sendable {
+enum QALinkDestination: Codable, Hashable, Sendable {
     case answer(Int64)
     case article(Int64)
     case question(Int64)
@@ -541,12 +541,12 @@ enum QALinkDestination: Hashable, Sendable {
     case external(URL)
 }
 
-enum QAListKind: Hashable, Sendable {
+enum QAListKind: String, Codable, Hashable, Sendable {
     case ordered
     case unordered
 }
 
-struct QAListItem: Identifiable, Hashable, Sendable {
+struct QAListItem: Identifiable, Codable, Hashable, Sendable {
     let id: UUID
     let runs: [QAInlineRun]
     let ordinal: Int?
@@ -565,7 +565,7 @@ struct QAListItem: Identifiable, Hashable, Sendable {
     }
 }
 
-struct QAListGroup: Hashable, Sendable {
+struct QAListGroup: Codable, Hashable, Sendable {
     let kind: QAListKind
     let startIndex: Int
     let items: [QAListItem]
@@ -577,7 +577,7 @@ struct QAListGroup: Hashable, Sendable {
     }
 }
 
-struct QAImageDimensions: Hashable, Sendable {
+struct QAImageDimensions: Codable, Hashable, Sendable {
     let width: Int
     let height: Int
 
@@ -594,7 +594,7 @@ struct QAImageDimensions: Hashable, Sendable {
     var aspectRatio: Double { Double(width) / Double(height) }
 }
 
-struct QAImageDTO: Identifiable, Hashable, Sendable {
+struct QAImageDTO: Identifiable, Codable, Hashable, Sendable {
     let id: UUID
     let url: URL
     let caption: String?
@@ -616,7 +616,7 @@ struct QAImageDTO: Identifiable, Hashable, Sendable {
     }
 }
 
-enum QABodyBlock: Identifiable, Hashable, Sendable {
+enum QABodyBlock: Identifiable, Codable, Hashable, Sendable {
     case paragraph(UUID, [QAInlineRun])
     case heading(UUID, level: Int, runs: [QAInlineRun])
     case quote(UUID, [QAInlineRun])
