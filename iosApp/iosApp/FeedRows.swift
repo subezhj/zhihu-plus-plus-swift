@@ -12,9 +12,9 @@ struct FeedItemRow: View {
 
     var body: some View {
         rowButton
-            .questionAuthorContextMenu(
-                author: item.questionAuthor,
-                block: blockQuestionAuthor
+            .feedItemContextMenu(
+                item: item,
+                blockAuthor: blockQuestionAuthor
             )
             .accessibilityLabel("\(item.title)，\(item.details)")
     }
@@ -274,21 +274,24 @@ private struct FeedItemAuthorLabel: View {
 
 private extension View {
     @ViewBuilder
-    func questionAuthorContextMenu(
-        author: FeedAuthorDTO?,
-        block: @escaping (FeedAuthorDTO) -> Void
+    func feedItemContextMenu(
+        item: FeedItemDTO,
+        blockAuthor: @escaping (FeedAuthorDTO) -> Void
     ) -> some View {
-        if let author {
-            contextMenu {
+        contextMenu {
+            Button {
+                UIPasteboard.general.string = item.title
+            } label: {
+                Label("复制标题", systemImage: "doc.on.doc")
+            }
+
+            if let author = item.questionAuthor {
                 Button(role: .destructive) {
-                    block(author)
+                    blockAuthor(author)
                 } label: {
                     Label("屏蔽该提问者", systemImage: "person.crop.circle.badge.xmark")
                 }
             }
-            .accessibilityHint("长按可屏蔽该问题的提问者")
-        } else {
-            self
         }
     }
 }

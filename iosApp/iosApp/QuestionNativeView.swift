@@ -96,14 +96,14 @@ struct QuestionNativeView: View {
     private var questionContent: some View {
         if let question = store.question {
             List {
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 14) {
                     Text(question.title)
                         .font(NativeTypography.pageTitle(scale: contentPresentation.fontScale))
                         .textSelection(.enabled)
                         .fixedSize(horizontal: false, vertical: true)
 
                     if !question.detailBlocks.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 8) {
                             Button {
                                 withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
                                     store.isDetailExpanded.toggle()
@@ -111,11 +111,11 @@ struct QuestionNativeView: View {
                             } label: {
                                 HStack {
                                     Text("问题描述")
-                                        .font(.headline)
+                                        .font(.subheadline.weight(.semibold))
                                         .foregroundStyle(.primary)
                                     Spacer()
                                     Image(systemName: "chevron.down")
-                                        .font(.subheadline.weight(.semibold))
+                                        .font(.caption.weight(.semibold))
                                         .foregroundStyle(.secondary)
                                         .rotationEffect(.degrees(store.isDetailExpanded ? 180 : 0))
                                 }
@@ -132,12 +132,12 @@ struct QuestionNativeView: View {
                                 .transition(.opacity)
                             } else {
                                 Text(question.plainTextDetail)
-                                    .font(.system(size: detailSummaryPointSize * contentPresentation.fontScale))
+                                    .font(.system(size: (detailSummaryPointSize - 1) * contentPresentation.fontScale))
                                     .lineSpacing(contentPresentation.extraLineSpacing(
-                                        for: detailSummaryPointSize * contentPresentation.fontScale
+                                        for: (detailSummaryPointSize - 1) * contentPresentation.fontScale
                                     ))
                                     .foregroundStyle(.secondary)
-                                    .lineLimit(3)
+                                    .lineLimit(2)
                                     .transition(.opacity)
                             }
                         }
@@ -281,21 +281,27 @@ private struct QAQuestionStats: View {
     let question: QuestionDTO
 
     var body: some View {
-        HStack(spacing: 0) {
-            stat("回答", question.answerCount)
-            stat("浏览", question.visitCount)
-            stat("评论", question.commentCount)
-            stat("关注", question.followerCount)
+        HStack(spacing: 8) {
+            statBadge(systemName: "doc.text", label: "回答", value: question.answerCount)
+            statBadge(systemName: "eye", label: "浏览", value: question.visitCount)
+            statBadge(systemName: "person.2", label: "关注", value: question.followerCount)
+            Spacer(minLength: 0)
         }
         .accessibilityElement(children: .combine)
     }
 
-    private func stat(_ label: String, _ value: Int) -> some View {
-        VStack(spacing: 3) {
-            Text(value, format: .number.notation(.compactName)).font(.headline.monospacedDigit())
-            Text(label).font(.caption).foregroundStyle(.secondary)
+    private func statBadge(systemName: String, label: String, value: Int) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: systemName)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+            Text("\(value.formatted(.number.notation(.compactName))) \(label)")
+                .font(.caption2.weight(.medium).monospacedDigit())
+                .foregroundStyle(.secondary)
         }
-        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 5)
+        .background(Color.nativeSecondarySystemGroupedBackground, in: Capsule())
     }
 }
 

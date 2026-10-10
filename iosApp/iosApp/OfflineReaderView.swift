@@ -8,6 +8,7 @@ struct OfflineReaderView: View {
     @State private var showsIndexSheet = false
     @State private var showsCommentsSheet = false
     @Environment(\.nativeContentPresentation) private var contentPresentation
+    @Environment(\.nativeHapticFeedback) private var hapticFeedback
 
     var body: some View {
         Group {
@@ -56,6 +57,7 @@ struct OfflineReaderView: View {
                     if package.answers.indices.contains(selectedIndex) {
                         let answer = package.answers[selectedIndex]
                         answerBody(answer, totalCount: package.answers.count)
+                            .id(answer.route.contentID)
                     } else {
                         Text("该问题下暂无缓存回答")
                             .foregroundStyle(.secondary)
@@ -66,6 +68,12 @@ struct OfflineReaderView: View {
                 .padding(.vertical, 14)
                 .padding(.bottom, 80) // 留出底部悬浮 ActionBar 的间距
             }
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 35)
+                    .onEnded { value in
+                        handleSwipeGesture(value, totalCount: package.answers.count)
+                    }
+            )
 
             // 悬浮液态玻璃操作底栏
             if !package.answers.isEmpty {
@@ -86,6 +94,43 @@ struct OfflineReaderView: View {
         }
     }
 
+    private func handleSwipeGesture(_ value: DragGesture.Value, totalCount: Int) {
+        let horizontalTranslation = value.translation.width
+        let verticalTranslation = value.translation.height
+        // 确保是明显的水平滑动，且横向位移远大于竖向位移以避免与纵向滚动冲突
+        guard abs(horizontalTranslation) > 60, abs(horizontalTranslation) > abs(verticalTranslation) * 1.5 else { return }
+
+        if horizontalTranslation < 0 {
+            // 向左轻扫 -> 下一条
+            nextAnswer(totalCount: totalCount)
+        } else {
+            // 向右轻扫 -> 上一条
+            previousAnswer()
+        }
+    }
+
+    private func previousAnswer() {
+        guard selectedIndex > 0 else {
+            hapticFeedback(.navigationBoundary)
+            return
+        }
+        hapticFeedback(.selection)
+        withAnimation(.easeInOut(duration: 0.25)) {
+            selectedIndex -= 1
+        }
+    }
+
+    private func nextAnswer(totalCount: Int) {
+        guard selectedIndex < totalCount - 1 else {
+            hapticFeedback(.navigationBoundary)
+            return
+        }
+        hapticFeedback(.selection)
+        withAnimation(.easeInOut(duration: 0.25)) {
+            selectedIndex += 1
+        }
+    }
+
     // MARK: - 悬浮液态玻璃操作底栏
 
     @ViewBuilder
@@ -97,9 +142,7 @@ struct OfflineReaderView: View {
         HStack(spacing: 0) {
             // 上一条回答
             Button {
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    if selectedIndex > 0 { selectedIndex -= 1 }
-                }
+                previousAnswer()
             } label: {
                 VStack(spacing: 2) {
                     Image(systemName: "chevron.left")
@@ -116,6 +159,7 @@ struct OfflineReaderView: View {
 
             // 中间目录/进度
             Button {
+                hapticFeedback(.selection)
                 showsIndexSheet = true
             } label: {
                 VStack(spacing: 2) {
@@ -132,6 +176,7 @@ struct OfflineReaderView: View {
 
             // 评论
             Button {
+                hapticFeedback(.selection)
                 showsCommentsSheet = true
             } label: {
                 VStack(spacing: 2) {
@@ -148,9 +193,7 @@ struct OfflineReaderView: View {
 
             // 下一条回答
             Button {
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    if selectedIndex < totalCount - 1 { selectedIndex += 1 }
-                }
+                nextAnswer(totalCount: totalCount)
             } label: {
                 VStack(spacing: 2) {
                     Image(systemName: "chevron.right")
@@ -325,8 +368,16 @@ struct OfflineReaderView: View {
             .navigationTitle("回答目录 (\(package.answers.count))")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("关闭") { showsIndexSheet = false }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showsIndexSheet = false
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(.secondary)
+                            .font(.title3)
+                    }
+                    .accessibilityLabel("关闭")
                 }
             }
         }
@@ -409,8 +460,16 @@ struct OfflineReaderView: View {
             .navigationTitle("热门评论 (\(comments.count))")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("关闭") { showsCommentsSheet = false }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showsCommentsSheet = false
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(.secondary)
+                            .font(.title3)
+                    }
+                    .accessibilityLabel("关闭")
                 }
             }
         }

@@ -42,8 +42,21 @@ struct OfflineManagerView: View {
             // 缓存问题列表
             Section("已缓存问题 (\(manifests.count))") {
                 if manifests.isEmpty {
-                    Text("暂无离线缓存的问题")
-                        .foregroundStyle(.secondary)
+                    VStack(spacing: 12) {
+                        Image(systemName: "arrow.down.circle")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.tertiary)
+                        Text("暂无离线内容")
+                            .font(.headline)
+                            .foregroundStyle(.secondary)
+                        Text("在任意问题详情页右上角点击下载按钮，即可将问题及多条高赞回答缓存至本地。")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 20)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 32)
                 } else {
                     ForEach(manifests) { manifest in
                         NavigationLink(value: NativeShellRoute.offlineReader(manifest.questionID)) {
