@@ -778,13 +778,13 @@ private struct CommentComposerBar: View {
             }
 
             // 主单行输入工具条：[表情] [图片] [胶囊输入框] [发送]
-            HStack(alignment: .bottom, spacing: 6) {
+            HStack(alignment: .center, spacing: 8) {
                 // 表情按钮
                 Button { showsEmojiPicker = true } label: {
                     Image(systemName: "face.smiling")
-                        .font(.system(size: 20, weight: .regular))
+                        .font(.system(size: 21, weight: .regular))
                         .foregroundStyle(.secondary)
-                        .frame(width: 32, height: 34)
+                        .frame(width: 36, height: 38)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -797,16 +797,16 @@ private struct CommentComposerBar: View {
                     matching: .images
                 ) {
                     Image(systemName: "photo")
-                        .font(.system(size: 19, weight: .regular))
+                        .font(.system(size: 20, weight: .regular))
                         .foregroundStyle(.secondary)
-                        .frame(width: 32, height: 34)
+                        .frame(width: 36, height: 38)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("选择图片")
                 .accessibilityIdentifier("comment_photo_picker")
 
-                // 核心输入框：自适应紧凑胶囊，不占过多高度
+                // 核心输入框：垂直居中、更宽更舒服的点击与输入空间 (minHeight 38pt, 适度内边距)
                 CommentDraftField(
                     store: store,
                     isFocused: $isDraftFocused,
@@ -814,9 +814,10 @@ private struct CommentComposerBar: View {
                 )
                 .textFieldStyle(.plain)
                 .font(NativeTypography.commentBody())
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .frame(minHeight: 38)
+                .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .accessibilityIdentifier("comment_draft_field")
 
                 // 发送按钮
@@ -829,13 +830,13 @@ private struct CommentComposerBar: View {
                 } label: {
                     if case .submitting = store.draft.submissionState {
                         ProgressView().controlSize(.small)
-                            .frame(width: 32, height: 34)
+                            .frame(width: 36, height: 38)
                     } else {
                         let canSubmit = (!store.draft.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || store.draft.imageData != nil) && !store.draft.submissionState.isSubmitting
                         Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 26, weight: .semibold))
+                            .font(.system(size: 28, weight: .semibold))
                             .foregroundStyle(canSubmit ? Color.accentColor : Color.secondary.opacity(0.28))
-                            .frame(width: 32, height: 34)
+                            .frame(width: 36, height: 38)
                             .contentShape(Rectangle())
                     }
                 }
@@ -850,14 +851,14 @@ private struct CommentComposerBar: View {
             }
         }
         .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .padding(.vertical, 8)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(.ultraThinMaterial)
                 .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 2)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .stroke(Color.primary.opacity(0.07), lineWidth: 0.5)
         )
         .padding(.horizontal, 10)
