@@ -98,46 +98,30 @@ private struct CommentThreadContainer: View {
     let close: (() -> Void)?
 
     var body: some View {
-        CommentLevelView(store: store, level: .root, close: close)
-            .background {
-                if case let .replies(rootCommentID) = store.activeLevel {
-                    NavigationLink(
-                        destination: CommentLevelView(store: store, level: .replies(rootCommentID: rootCommentID), close: nil),
-                        isActive: Binding(
-                            get: {
-                                if case .replies = store.activeLevel { return true }
-                                return false
-                            },
-                            set: { isPresented in
-                                if !isPresented {
-                                    store.dismissReplies()
-                                }
-                            }
-                        )
-                    ) {
-                        EmptyView()
-                    }
-                    .hidden()
+        NavigationStack(path: $store.navigationPath) {
+            CommentLevelView(store: store, level: .root, close: close)
+                .navigationDestination(for: CommentLevelKey.self) { level in
+                    CommentLevelView(store: store, level: level, close: nil)
                 }
-            }
-            .alert(
-                item: Binding(
-                    get: { store.message },
-                    set: { store.messageBindingChanged(to: $0) }
-                )
-            ) { message in
-                Alert(
-                    title: Text("操作未完成"),
-                    message: Text(message.text),
-                    dismissButton: .default(Text("知道了"))
-                )
-            }
-            .environment(\.openURL, OpenURLAction { url in
-                handleCommentURL(url)
-            })
-            // 用户主页弹窗（方案 B）：弹窗内点内容先收起弹窗，再由底层导航栈全屏打开详情
-            .personCoverSheet(item: personCoverBinding, onNavigate: onPersonNavigate)
-            .task { store.start() }
+        }
+        .alert(
+            item: Binding(
+                get: { store.message },
+                set: { store.messageBindingChanged(to: $0) }
+            )
+        ) { message in
+            Alert(
+                title: Text("操作未完成"),
+                message: Text(message.text),
+                dismissButton: .default(Text("知道了"))
+            )
+        }
+        .environment(\.openURL, OpenURLAction { url in
+            handleCommentURL(url)
+        })
+        // 用户主页弹窗（方案 B）：弹窗内点内容先收起弹窗，再由底层导航栈全屏打开详情
+        .personCoverSheet(item: personCoverBinding, onNavigate: onPersonNavigate)
+        .task { store.start() }
     }
 
     private func handleCommentURL(_ url: URL) -> OpenURLAction.Result {
@@ -876,7 +860,7 @@ private struct CommentEmojiPicker: View {
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 6)
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 14) {
                     ForEach(CommentEmojiCatalog.entries) { emoji in
@@ -899,7 +883,6 @@ private struct CommentEmojiPicker: View {
             .navigationTitle("选择表情")
             .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationViewStyle(.stack)
         .modifier(CommentEmojiPresentationModifier())
     }
 }

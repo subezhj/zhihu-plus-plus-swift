@@ -384,15 +384,13 @@ struct NativeAppShell: View {
             NativeMediaGallery(urls: presentation.urls, initialIndex: presentation.initialIndex)
         }
         .sheet(item: $presentedCommentsSheet) { route in
-            NavigationView {
-                NativeCommentNavigationRouteView(
-                    hostModel: hostModel,
-                    route: route,
-                    onPersonNavigate: { handlePersonIntent($0, in: selectedTab) },
-                    onNavigate: { handleQAIntent($0, in: selectedTab) },
-                    close: { presentedCommentsSheet = nil }
-                )
-            }
+            NativeCommentNavigationRouteView(
+                hostModel: hostModel,
+                route: route,
+                onPersonNavigate: { handlePersonIntent($0, in: selectedTab) },
+                onNavigate: { handleQAIntent($0, in: selectedTab) },
+                close: { presentedCommentsSheet = nil }
+            )
             .tint(preferences.accentTheme.color)
             .preferredColorScheme(preferences.themeMode.colorScheme)
             .environment(\.nativeContentPresentation, preferences.contentPresentation)
