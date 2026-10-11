@@ -719,87 +719,107 @@ private struct CommentComposerBar: View {
     }
 
     private var activeComposer: some View {
-        VStack(spacing: 6) {
-            // 顶部：目标提示 + 右侧圆形关闭按钮
-            HStack(alignment: .center) {
-                HStack(spacing: 4) {
-                    Image(systemName: "arrowshape.turn.up.left.fill")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
-                    Text(store.activeReplyTargetName.map { "回复 @\($0)" } ?? (level == .root ? "发表评论" : "发表回复"))
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(.primary)
-                }
-                Spacer()
-                Button {
-                    dismissComposer()
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .symbolRenderingMode(.hierarchical)
-                        .foregroundStyle(.secondary)
-                        .font(.system(size: 17))
-                        .frame(width: 28, height: 28)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("取消输入")
-            }
+        VStack(spacing: 4) {
+            // 顶层微型提示条：仅在回复特定人或有待发送图片时出现，极度轻巧克制
+            if store.activeReplyTargetName != nil || store.draft.imageData != nil {
+                HStack(spacing: 8) {
+                    if let target = store.activeReplyTargetName {
+                        HStack(spacing: 3) {
+                            Image(systemName: "arrowshape.turn.up.left.fill")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundStyle(Color.accentColor)
+                            Text("回复 @\(target)")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundStyle(.primary)
+                        }
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.accentColor.opacity(0.1), in: Capsule())
+                    }
 
-            if let imageData = store.draft.imageData, let image = UIImage(data: imageData) {
-                HStack {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 48, height: 38)
-                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                    Text("待发送图片")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                    if let imageData = store.draft.imageData, let image = UIImage(data: imageData) {
+                        HStack(spacing: 4) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 20, height: 20)
+                                .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
+                            Text("已选图片")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundStyle(.secondary)
+                            Button {
+                                store.setDraftImage(nil)
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 9, weight: .bold))
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.primary.opacity(0.06), in: Capsule())
+                    }
+
                     Spacer()
-                    Button("移除", role: .destructive) { store.setDraftImage(nil) }
-                        .font(.caption2.weight(.medium))
+
+                    Button {
+                        dismissComposer()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(.secondary)
+                            .font(.system(size: 14))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("取消回复")
                 }
-                .padding(.horizontal, 2)
+                .padding(.horizontal, 4)
             }
 
-            // 主体输入区域：紧凑匀称高度
-            CommentDraftField(store: store, isFocused: $isDraftFocused)
-                .textFieldStyle(.plain)
-                .font(NativeTypography.commentBody())
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .frame(maxWidth: .infinity, minHeight: 38, maxHeight: 90)
-                .accessibilityIdentifier("comment_draft_field")
-
-            // 底部操作区：表情/图片 (左) 与 发送胶囊 (右)
-            HStack(spacing: 6) {
+            // 主单行输入工具条：[表情] [图片] [胶囊输入框] [发送]
+            HStack(alignment: .bottom, spacing: 6) {
+                // 表情按钮
                 Button { showsEmojiPicker = true } label: {
                     Image(systemName: "face.smiling")
-                        .font(.system(size: 18, weight: .medium))
+                        .font(.system(size: 20, weight: .regular))
                         .foregroundStyle(.secondary)
-                        .frame(width: 32, height: 32)
+                        .frame(width: 32, height: 34)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("选择表情")
                 .accessibilityIdentifier("comment_emoji_picker")
 
+                // 图片选择按钮
                 PhotosPicker(
                     selection: $selectedPhotoItem,
                     matching: .images
                 ) {
                     Image(systemName: "photo")
-                        .font(.system(size: 18, weight: .medium))
+                        .font(.system(size: 19, weight: .regular))
                         .foregroundStyle(.secondary)
-                        .frame(width: 32, height: 32)
+                        .frame(width: 32, height: 34)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("选择图片")
                 .accessibilityIdentifier("comment_photo_picker")
 
-                Spacer()
+                // 核心输入框：自适应紧凑胶囊，不占过多高度
+                CommentDraftField(
+                    store: store,
+                    isFocused: $isDraftFocused,
+                    placeholder: store.activeReplyTargetName.map { "回复 @\($0)…" } ?? (level == .root ? "写评论…" : "写回复…")
+                )
+                .textFieldStyle(.plain)
+                .font(NativeTypography.commentBody())
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .accessibilityIdentifier("comment_draft_field")
 
+                // 发送按钮
                 Button {
                     if case .failed = store.draft.submissionState {
                         store.retrySubmission()
@@ -809,13 +829,13 @@ private struct CommentComposerBar: View {
                 } label: {
                     if case .submitting = store.draft.submissionState {
                         ProgressView().controlSize(.small)
-                            .frame(width: 28, height: 28)
+                            .frame(width: 32, height: 34)
                     } else {
                         let canSubmit = (!store.draft.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || store.draft.imageData != nil) && !store.draft.submissionState.isSubmitting
                         Image(systemName: "arrow.up.circle.fill")
                             .font(.system(size: 26, weight: .semibold))
-                            .foregroundStyle(canSubmit ? Color.accentColor : Color.secondary.opacity(0.3))
-                            .frame(width: 30, height: 30)
+                            .foregroundStyle(canSubmit ? Color.accentColor : Color.secondary.opacity(0.28))
+                            .frame(width: 32, height: 34)
                             .contentShape(Rectangle())
                     }
                 }
@@ -829,19 +849,19 @@ private struct CommentComposerBar: View {
                 .accessibilityIdentifier("comment_submit")
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(.ultraThinMaterial)
-                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 3)
+                .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 2)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.primary.opacity(0.07), lineWidth: 0.5)
         )
-        .padding(.horizontal, 12)
-        .padding(.bottom, 4)
+        .padding(.horizontal, 10)
+        .padding(.bottom, 2)
     }
 
     private func dismissComposer() {
@@ -1163,9 +1183,10 @@ private enum CommentAttributedText {
 private struct CommentDraftField: View {
     @ObservedObject var store: CommentSessionStore
     let isFocused: FocusState<Bool>.Binding
+    var placeholder: String = "写评论…"
 
     var body: some View {
-        TextField("写下你的友善评论…", text: draftBinding, axis: .vertical)
+        TextField(placeholder, text: draftBinding, axis: .vertical)
             .lineLimit(1...4)
             .focused(isFocused)
     }
