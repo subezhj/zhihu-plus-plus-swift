@@ -693,25 +693,25 @@ private struct CommentComposerBar: View {
         Button {
             store.beginComment(level: level)
         } label: {
-            HStack(spacing: 10) {
+            HStack(spacing: 8) {
                 Image(systemName: "square.and.pencil")
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Color.accentColor)
                 Text(level == .root ? "写评论，发表你的看法…" : "回复这条评论…")
-                    .font(NativeTypography.commentBody())
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                 Spacer()
             }
-            .padding(.horizontal, 16)
-            .frame(minHeight: 46)
+            .padding(.horizontal, 14)
+            .frame(minHeight: 38)
             .background(Color.nativeSecondarySystemGroupedBackground, in: Capsule())
             .overlay(
                 Capsule()
                     .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
             )
-            .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 3)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 6)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -719,15 +719,15 @@ private struct CommentComposerBar: View {
     }
 
     private var activeComposer: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
             // 顶部：目标提示 + 右侧圆形关闭按钮
             HStack(alignment: .center) {
-                HStack(spacing: 5) {
+                HStack(spacing: 4) {
                     Image(systemName: "arrowshape.turn.up.left.fill")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 10, weight: .semibold))
                         .foregroundStyle(Color.accentColor)
                     Text(store.activeReplyTargetName.map { "回复 @\($0)" } ?? (level == .root ? "发表评论" : "发表回复"))
-                        .font(.subheadline.weight(.medium))
+                        .font(.caption.weight(.medium))
                         .foregroundStyle(.primary)
                 }
                 Spacer()
@@ -737,8 +737,8 @@ private struct CommentComposerBar: View {
                     Image(systemName: "xmark.circle.fill")
                         .symbolRenderingMode(.hierarchical)
                         .foregroundStyle(.secondary)
-                        .font(.system(size: 20))
-                        .frame(width: 32, height: 32)
+                        .font(.system(size: 17))
+                        .frame(width: 28, height: 28)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("取消输入")
@@ -749,35 +749,35 @@ private struct CommentComposerBar: View {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 56, height: 46)
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .frame(width: 48, height: 38)
+                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                     Text("待发送图片")
-                        .font(.caption)
+                        .font(.caption2)
                         .foregroundStyle(.secondary)
                     Spacer()
                     Button("移除", role: .destructive) { store.setDraftImage(nil) }
-                        .font(.caption.weight(.medium))
+                        .font(.caption2.weight(.medium))
                 }
-                .padding(.horizontal, 4)
+                .padding(.horizontal, 2)
             }
 
-            // 主体输入区域：扩大可视高度与编辑范围，避免输入框局促
+            // 主体输入区域：紧凑匀称高度
             CommentDraftField(store: store, isFocused: $isDraftFocused)
                 .textFieldStyle(.plain)
                 .font(NativeTypography.commentBody())
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                .frame(maxWidth: .infinity, minHeight: 56, maxHeight: 140)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .frame(maxWidth: .infinity, minHeight: 38, maxHeight: 90)
                 .accessibilityIdentifier("comment_draft_field")
 
             // 底部操作区：表情/图片 (左) 与 发送胶囊 (右)
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 Button { showsEmojiPicker = true } label: {
                     Image(systemName: "face.smiling")
-                        .font(.system(size: 20, weight: .medium))
+                        .font(.system(size: 18, weight: .medium))
                         .foregroundStyle(.secondary)
-                        .frame(width: 38, height: 38)
+                        .frame(width: 32, height: 32)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -789,9 +789,9 @@ private struct CommentComposerBar: View {
                     matching: .images
                 ) {
                     Image(systemName: "photo")
-                        .font(.system(size: 20, weight: .medium))
+                        .font(.system(size: 18, weight: .medium))
                         .foregroundStyle(.secondary)
-                        .frame(width: 38, height: 38)
+                        .frame(width: 32, height: 32)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -809,13 +809,13 @@ private struct CommentComposerBar: View {
                 } label: {
                     if case .submitting = store.draft.submissionState {
                         ProgressView().controlSize(.small)
-                            .frame(width: 34, height: 34)
+                            .frame(width: 28, height: 28)
                     } else {
                         let canSubmit = (!store.draft.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || store.draft.imageData != nil) && !store.draft.submissionState.isSubmitting
                         Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 30, weight: .semibold))
+                            .font(.system(size: 26, weight: .semibold))
                             .foregroundStyle(canSubmit ? Color.accentColor : Color.secondary.opacity(0.3))
-                            .frame(width: 36, height: 36)
+                            .frame(width: 30, height: 30)
                             .contentShape(Rectangle())
                     }
                 }
@@ -829,19 +829,19 @@ private struct CommentComposerBar: View {
                 .accessibilityIdentifier("comment_submit")
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(.ultraThinMaterial)
-                .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 4)
+                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 3)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
         )
         .padding(.horizontal, 12)
-        .padding(.bottom, 6)
+        .padding(.bottom, 4)
     }
 
     private func dismissComposer() {
@@ -1166,7 +1166,7 @@ private struct CommentDraftField: View {
 
     var body: some View {
         TextField("写下你的友善评论…", text: draftBinding, axis: .vertical)
-            .lineLimit(2...6)
+            .lineLimit(1...4)
             .focused(isFocused)
     }
 

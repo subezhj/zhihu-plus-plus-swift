@@ -393,6 +393,13 @@ struct NativeAppShell: View {
                     close: { presentedCommentsSheet = nil }
                 )
             }
+            .tint(preferences.accentTheme.color)
+            .preferredColorScheme(preferences.themeMode.colorScheme)
+            .environment(\.nativeContentPresentation, preferences.contentPresentation)
+            .environment(
+                \.nativeHapticFeedback,
+                .live(configuration: preferences.hapticFeedbackConfiguration)
+            )
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
