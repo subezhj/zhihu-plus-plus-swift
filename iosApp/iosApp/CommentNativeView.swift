@@ -211,7 +211,7 @@ private struct CommentLevelView: View {
                         Image(systemName: "xmark.circle.fill")
                             .symbolRenderingMode(.hierarchical)
                             .foregroundStyle(.secondary)
-                            .font(.title3)
+                            .font(.system(size: 22, weight: .semibold))
                     }
                     .accessibilityLabel(level == .root ? "关闭评论" : "关闭回复")
                     .accessibilityIdentifier(level == .root ? "comment_close" : "comment_reply_close")
@@ -254,6 +254,8 @@ private struct CommentLevelView: View {
             }
         }
         .pickerStyle(.segmented)
+        .padding(.horizontal, 4)
+        .padding(.vertical, 4)
         .accessibilityIdentifier("comment_sort")
     }
 
@@ -601,14 +603,18 @@ private struct CommentRow: View {
         } label: {
             HStack(spacing: 5) {
                 Text("查看 \(comment.childCommentCount) 条回复")
-                    .font(.system(size: 11.5 * presentation.fontScale, weight: .medium))
+                    .font(.system(size: 12 * presentation.fontScale, weight: .medium))
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 8, weight: .bold))
+                    .font(.system(size: 9, weight: .semibold))
             }
             .foregroundStyle(Color.accentColor)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .background(Color.accentColor.opacity(0.08), in: Capsule())
+            .background(Color.primary.opacity(0.04), in: Capsule())
+            .overlay(
+                Capsule()
+                    .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
+            )
         }
         .buttonStyle(.plain)
         .padding(.top, 2)
@@ -799,7 +805,7 @@ private struct CommentComposerBar: View {
                 CommentDraftField(
                     store: store,
                     isFocused: $isDraftFocused,
-                    placeholder: store.activeReplyTargetName.map { "回复 @\($0)…" } ?? (level == .root ? "写评论，发表你的看法…" : "写回复…")
+                    placeholder: store.activeReplyTargetName.map { "回复 @\($0)…" } ?? (level == .root ? "写评论…" : "写回复…")
                 )
                 .textFieldStyle(.plain)
                 .font(.system(size: 15))

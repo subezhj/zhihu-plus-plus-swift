@@ -353,7 +353,8 @@ struct NativeNotificationsView: View {
                 },
                 loadingMessage: "正在加载通知",
                 footerLoadingMessage: "正在加载更多通知",
-                showsEmptyState: false
+                showsEmptyState: false,
+                showsLoadingRow: false
             )
         }
         .listStyle(.plain)

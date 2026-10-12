@@ -146,7 +146,8 @@ struct NativeCollectionContentView: View {
                 },
                 loadingMessage: "正在加载收藏",
                 footerLoadingMessage: "正在加载更多",
-                showsEmptyState: false
+                showsEmptyState: false,
+                showsLoadingRow: false
             )
         }
         .listStyle(.plain)
@@ -155,7 +156,13 @@ struct NativeCollectionContentView: View {
         .navigationTitle(store.collection?.title ?? "收藏夹")
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await store.refresh() }
-        .overlay { initialState }
+        .overlay {
+            if store.items.isEmpty {
+                initialState
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
+            }
+        }
         .task {
             if store.items.isEmpty, !store.isLoading { await store.refresh() }
         }
@@ -199,7 +206,8 @@ struct NativeHistoryView: View {
                 },
                 footerLoadingMessage: "正在加载更多",
                 emptyMessage: "暂无历史记录",
-                emptySystemImage: "clock.arrow.circlepath"
+                emptySystemImage: "clock.arrow.circlepath",
+                showsLoadingRow: false
             )
         }
         .listStyle(.plain)

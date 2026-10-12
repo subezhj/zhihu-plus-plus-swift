@@ -93,7 +93,7 @@ struct PagingListContent<Source: PagingSource, Row: View>: View {
             .padding(.vertical, 6)
             .listRowSeparator(.hidden)
             .listRowBackground(background)
-        } else if source.hasMore {
+        } else if source.hasMore, !source.items.isEmpty {
             HStack {
                 Spacer()
                 ProgressView(footerLoadingMessage)
