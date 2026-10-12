@@ -329,7 +329,7 @@ struct OfflineReaderView: View {
 
     @ViewBuilder
     private func offlineIndexSheet(package: OfflineQuestionPackage) -> some View {
-        NavigationView {
+        NavigationStack {
             List(Array(package.answers.enumerated()), id: \.element.route.contentID) { index, ans in
                 Button {
                     selectedIndex = index
@@ -368,14 +368,14 @@ struct OfflineReaderView: View {
             .navigationTitle("回答目录 (\(package.answers.count))")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button {
                         showsIndexSheet = false
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .symbolRenderingMode(.hierarchical)
                             .foregroundStyle(.secondary)
-                            .font(.title3)
+                            .font(.system(size: 22, weight: .semibold))
                     }
                     .accessibilityLabel("关闭")
                 }
@@ -401,7 +401,7 @@ struct OfflineReaderView: View {
 
     @ViewBuilder
     private func offlineCommentsSheet(answer: AnswerDTO, comments: [CommentDTO]) -> some View {
-        NavigationView {
+        NavigationStack {
             Group {
                 if comments.isEmpty {
                     VStack(spacing: 8) {
@@ -460,14 +460,14 @@ struct OfflineReaderView: View {
             .navigationTitle("热门评论 (\(comments.count))")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button {
                         showsCommentsSheet = false
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .symbolRenderingMode(.hierarchical)
                             .foregroundStyle(.secondary)
-                            .font(.title3)
+                            .font(.system(size: 22, weight: .semibold))
                     }
                     .accessibilityLabel("关闭")
                 }

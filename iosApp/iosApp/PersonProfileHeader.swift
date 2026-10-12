@@ -120,6 +120,8 @@ struct PersonProfileHeader: View {
             VStack(spacing: 3) {
                 Text(count.formatted(.number.notation(.compactName)))
                     .font(.headline.monospacedDigit())
+                    .minimumScaleFactor(0.8)
+                    .lineLimit(1)
                     .foregroundStyle(isSelected ? Color.white : Color.primary)
                 Text(label)
                     .font(.caption)
@@ -145,7 +147,7 @@ struct PersonProfileHeader: View {
             followButton
                 .buttonStyle(.plain)
                 .padding(.horizontal, 16)
-                .frame(minHeight: 38)
+                .frame(minHeight: 44)
                 .liquidGlassCapsule(isProminent: !profile.isFollowing)
                 .overlay(
                     Capsule()
@@ -155,7 +157,7 @@ struct PersonProfileHeader: View {
             blockButton
                 .buttonStyle(.plain)
                 .padding(.horizontal, 16)
-                .frame(minHeight: 38)
+                .frame(minHeight: 44)
                 .liquidGlassCapsule(isProminent: false)
                 .overlay(
                     Capsule()

@@ -566,15 +566,17 @@ struct WriteAnswerNativeView: View {
         .navigationTitle(store.existingAnswerID == nil ? "写回答" : "编辑回答")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItem(placement: .confirmationAction) {
                 Button("发布") {
                     Task { if let id = await store.publish() { onPublished(id) } }
                 }
+                .fontWeight(.semibold)
                 .disabled(!store.canSubmit)
             }
-            ToolbarItem(placement: .bottomBar) {
+            ToolbarItem(placement: .topBarLeading) {
                 Button { Task { showsSavedConfirmation = await store.saveDraft() } } label: {
-                    Label("保存草稿", systemImage: "tray.and.arrow.down")
+                    Label("存草稿", systemImage: "tray.and.arrow.down")
+                        .font(.subheadline)
                 }
                 .disabled(!store.canSubmit)
             }
@@ -660,13 +662,15 @@ struct WritePinNativeView: View {
         .navigationTitle("发想法")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItem(placement: .confirmationAction) {
                 Button("发布") { Task { if let id = await store.publish() { onPublished(id) } } }
+                    .fontWeight(.semibold)
                     .disabled(!store.canSubmit)
             }
-            ToolbarItem(placement: .bottomBar) {
+            ToolbarItem(placement: .topBarLeading) {
                 Button { Task { showsSavedConfirmation = await store.saveDraft() } } label: {
-                    Label("保存草稿", systemImage: "tray.and.arrow.down")
+                    Label("存草稿", systemImage: "tray.and.arrow.down")
+                        .font(.subheadline)
                 }
                 .disabled(!store.canSubmit)
             }

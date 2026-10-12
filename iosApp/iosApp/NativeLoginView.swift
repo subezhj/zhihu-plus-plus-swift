@@ -191,13 +191,15 @@ struct NativeLoginView: View {
         .navigationTitle("登录知乎")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
+            ToolbarItem(placement: .cancellationAction) {
                 Button {
                     guard model.cancelByUser() else { return }
                     onClose()
                 } label: {
-                    Image(systemName: "xmark")
-                        .frame(minWidth: 44, minHeight: 44)
+                    Image(systemName: "xmark.circle.fill")
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundStyle(.secondary)
+                        .font(.system(size: 22, weight: .semibold))
                 }
                 .accessibilityLabel("关闭")
                 .accessibilityIdentifier("login_close")
@@ -206,6 +208,8 @@ struct NativeLoginView: View {
 
             ToolbarItem(placement: .bottomBar) {
                 Label("安全网页登录", systemImage: "globe")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                     .frame(minHeight: 44)
                     .accessibilityIdentifier("login_mode_web")
             }

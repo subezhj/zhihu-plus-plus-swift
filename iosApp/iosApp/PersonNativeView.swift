@@ -448,7 +448,7 @@ private struct PersonAvatarPreview: View {
     @State private var scale: CGFloat = 1
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 Color.black.ignoresSafeArea()
                 AsyncImage(url: url) { phase in

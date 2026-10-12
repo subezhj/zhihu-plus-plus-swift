@@ -106,7 +106,7 @@ struct SearchNativeView: View {
     /// 普通搜索页（热搜/搜索 tab）搜索框：居中占满宽度
     private var searchField: some View {
         searchFieldBody
-            .frame(minWidth: 320, maxWidth: .infinity)
+            .frame(minWidth: 220, maxWidth: .infinity)
             .frame(height: 40)
             .liquidGlassCapsule(isProminent: false)
             .accessibilityElement(children: .contain)
