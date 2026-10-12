@@ -700,7 +700,12 @@ struct NativeAppShell: View {
             case .offlineManager:
                 OfflineManagerView()
             case let .offlineReader(questionID):
-                OfflineReaderView(questionID: questionID)
+                OfflineReaderView(
+                    questionID: questionID,
+                    onOpenOnline: { route in
+                        navigate(.answer(route), in: tab)
+                    }
+                )
             }
         }
         .scrollContentBackground(.hidden)

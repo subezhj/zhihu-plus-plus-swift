@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OfflineReaderView: View {
     let questionID: Int64
+    var onOpenOnline: ((AnswerRoutePayload) -> Void)? = nil
     @State private var package: OfflineQuestionPackage?
     @State private var selectedIndex: Int = 0
     @State private var isDetailExpanded = false
@@ -29,7 +30,19 @@ struct OfflineReaderView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             if let package, !package.answers.isEmpty {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    if let onOpenOnline,
+                       package.answers.indices.contains(selectedIndex) {
+                        let currentAnswer = package.answers[selectedIndex]
+                        Button {
+                            hapticFeedback(.selection)
+                            onOpenOnline(currentAnswer.route)
+                        } label: {
+                            Label("在线查看", systemImage: "globe")
+                        }
+                        .accessibilityLabel("在联网状态下打开此回答")
+                    }
+
                     Button {
                         showsIndexSheet = true
                     } label: {
@@ -467,11 +480,11 @@ struct OfflineReaderView: View {
                                     }
                                 }
 
-                                // 评论文本内容（与回答页标准字号和动态缩放保持一致）
+                                // 评论文本内容（与正常评论区 14pt commentBody 保持一致）
                                 Text(QARichContentParser.plainText(comment.contentHTML))
-                                    .font(NativeTypography.body(scale: contentPresentation.fontScale))
+                                    .font(NativeTypography.commentBody(scale: contentPresentation.fontScale))
                                     .foregroundStyle(.primary)
-                                    .lineSpacing(contentPresentation.extraLineSpacing(for: 15.5 * contentPresentation.fontScale))
+                                    .lineSpacing(contentPresentation.extraLineSpacing(for: 14 * contentPresentation.fontScale))
                                     .textSelection(.enabled)
                                     .padding(.leading, 42)
                             }
