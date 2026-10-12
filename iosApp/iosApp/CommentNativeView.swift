@@ -222,15 +222,8 @@ private struct CommentLevelView: View {
                 Button {
                     store.beginComment(level: level)
                 } label: {
-                    ZStack {
-                        Circle()
-                            .fill(Color(uiColor: .tertiarySystemFill))
-                            .frame(width: 30, height: 30)
-
-                        Image(systemName: "square.and.pencil")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.accentColor)
-                    }
+                    Image(systemName: "message")
+                        .font(.system(size: 17, weight: .semibold))
                 }
                 .accessibilityLabel(level == .root ? "写评论" : "写回复")
                 .accessibilityIdentifier("comment_toolbar_compose")
