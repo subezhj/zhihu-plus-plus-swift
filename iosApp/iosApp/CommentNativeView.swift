@@ -218,12 +218,19 @@ private struct CommentLevelView: View {
                 }
             }
 
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .confirmationAction) {
                 Button {
                     store.beginComment(level: level)
                 } label: {
-                    Image(systemName: "square.and.pencil")
-                        .font(.system(size: 17, weight: .semibold))
+                    ZStack {
+                        Circle()
+                            .fill(Color(uiColor: .tertiarySystemFill))
+                            .frame(width: 30, height: 30)
+
+                        Image(systemName: "square.and.pencil")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(Color.accentColor)
+                    }
                 }
                 .accessibilityLabel(level == .root ? "写评论" : "写回复")
                 .accessibilityIdentifier("comment_toolbar_compose")
