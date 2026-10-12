@@ -543,7 +543,7 @@ struct NativeContentPosterShareView: View {
             }
         }
         .task(id: document.id) { await render() }
-        .onChange(of: showsHeader) { _ in
+        .onChange(of: showsHeader) {
             Task { await render() }
         }
     }

@@ -77,7 +77,7 @@ struct AnswerNativeView: View {
                 .padding(.vertical, 2)
 
                 if !content.endorsements.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
+                    ScrollView(.horizontal) {
                         HStack(spacing: 8) {
                             ForEach(content.endorsements) { endorsement in
                                 if let url = endorsement.actionURL {
@@ -93,6 +93,7 @@ struct AnswerNativeView: View {
                             }
                         }
                     }
+                    .scrollIndicators(.hidden)
                 }
 
                 if metadata.dateEdge == .leading {

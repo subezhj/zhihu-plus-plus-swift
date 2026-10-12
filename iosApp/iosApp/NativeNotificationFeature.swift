@@ -386,7 +386,7 @@ struct NativeNotificationsView: View {
         .task {
             if store.items.isEmpty, !store.isLoading { await store.refresh() }
         }
-        .onChange(of: preferences.displayInApp) { _ in
+        .onChange(of: preferences.displayInApp) {
             store.preferencesChanged()
         }
     }

@@ -67,7 +67,7 @@ struct NativeChannelSwitcher<Channel: Identifiable & Hashable, ChannelContent: V
                 swipeExclusionFrames = $0
             }
         }
-        .onChange(of: reduceMotion) { shouldReduceMotion in
+        .onChange(of: reduceMotion) { _, shouldReduceMotion in
             if shouldReduceMotion { dragTranslation = 0 }
         }
         .onDisappear { dragTranslation = 0 }
@@ -449,15 +449,16 @@ private struct NativeChannelSelector<Channel: Identifiable & Hashable>: View {
 
     var body: some View {
         ScrollViewReader { proxy in
-            ScrollView(.horizontal, showsIndicators: false) {
+            ScrollView(.horizontal) {
                 channelButtons
                     .padding(.vertical, 8)
             }
+            .scrollIndicators(.hidden)
             .nativeChannelSwipeExclusion()
             .onAppear {
                 scrollToSelection(using: proxy, animated: false)
             }
-            .onChange(of: selection) { _ in
+            .onChange(of: selection) {
                 scrollToSelection(using: proxy, animated: !reduceMotion)
             }
         }

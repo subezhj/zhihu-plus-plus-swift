@@ -401,19 +401,19 @@ struct NativeAppShell: View {
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
-        .onChange(of: selectedTab) { _ in
+        .onChange(of: selectedTab) {
             homeTabDoubleTapGate.cancel()
         }
-        .onChange(of: navigation.isAtRoot(in: .home)) { isAtHomeRoot in
+        .onChange(of: navigation.isAtRoot(in: .home)) { _, isAtHomeRoot in
             if !isAtHomeRoot { homeTabDoubleTapGate.cancel() }
         }
-        .onChange(of: isAppUnlocked) { isUnlocked in
+        .onChange(of: isAppUnlocked) { _, isUnlocked in
             if !isUnlocked { homeTabDoubleTapGate.cancel() }
             if isUnlocked, scenePhase == .active {
                 inspectClipboardAfterActivationIfNeeded()
             }
         }
-        .onChange(of: scenePhase) { phase in
+        .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .active:
                 inspectClipboardAfterActivationIfNeeded()
@@ -423,7 +423,7 @@ struct NativeAppShell: View {
                 clipboardInspectionArmed = true
             }
         }
-        .onChange(of: account.identity.map { "\($0.id)|\($0.urlToken ?? "")" }) { _ in
+        .onChange(of: account.identity.map { "\($0.id)|\($0.urlToken ?? "")" }) {
             navigation.resetAll()
             recommendationStore.accountDidChange()
             followingStore.accountDidChange()
@@ -446,7 +446,7 @@ struct NativeAppShell: View {
                 }
             }
         }
-        .onChange(of: preferences.homeRecommendationSource) { _ in
+        .onChange(of: preferences.homeRecommendationSource) {
             Task { await recommendationStore.recommendationSourceDidChange() }
         }
         .task {

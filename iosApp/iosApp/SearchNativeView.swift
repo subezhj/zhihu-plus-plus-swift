@@ -71,7 +71,7 @@ struct SearchNativeView: View {
         }
         .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
-        .onChange(of: store.queryText) { value in
+        .onChange(of: store.queryText) { _, value in
             if value.isEmpty, !store.submittedQuery.isEmpty {
                 store.clearQuery()
                 if store.showsHotSearch {

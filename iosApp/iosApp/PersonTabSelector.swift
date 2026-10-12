@@ -5,13 +5,14 @@ struct PersonTabSelector: View {
     let onSelect: (PersonTab) -> Void
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
+        ScrollView(.horizontal) {
             tabs
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
                 .liquidGlassCapsule()
                 .padding(.horizontal, 4)
         }
+        .scrollIndicators(.hidden)
         .accessibilityIdentifier("person_main_tabs")
     }
 
@@ -33,7 +34,7 @@ struct PersonSubscriptionTabSelector: View {
     let onSelect: (PersonSubscriptionTab) -> Void
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
+        ScrollView(.horizontal) {
             HStack(spacing: 8) {
                 ForEach(PersonSubscriptionTab.allCases) { tab in
                     Button(tab.title) { onSelect(tab) }
@@ -46,6 +47,7 @@ struct PersonSubscriptionTabSelector: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
         }
+        .scrollIndicators(.hidden)
         .accessibilityIdentifier("person_subscription_tabs")
     }
 }

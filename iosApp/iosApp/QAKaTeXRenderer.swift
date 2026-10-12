@@ -492,11 +492,12 @@ struct QAKaTeXFormulaView: View {
     }
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
+        ScrollView(.horizontal) {
             content
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
         }
+        .scrollIndicators(.hidden)
         .frame(maxWidth: .infinity, alignment: .center)
         .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
         .contextMenu {

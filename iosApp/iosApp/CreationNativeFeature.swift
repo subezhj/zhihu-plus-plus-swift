@@ -595,7 +595,7 @@ struct WriteAnswerNativeView: View {
         .background(Color.nativeSystemBackground.ignoresSafeArea())
         .alert("保存成功", isPresented: $showsSavedConfirmation) { Button("好") {} } message: { Text("草稿已保存") }
         .alert("操作失败", isPresented: errorBinding) { Button("好") {} } message: { Text(store.errorMessage ?? "未知错误") }
-        .onChange(of: store.systemIntent) { intent in
+        .onChange(of: store.systemIntent) { _, intent in
             guard let intent else { return }
             onSystemIntent(intent) {
                 if let id = await store.publish() { onPublished(id) }
@@ -678,7 +678,7 @@ struct WritePinNativeView: View {
         .alert("保存成功", isPresented: $showsSavedConfirmation) { Button("好") {} } message: { Text("草稿已保存") }
         .alert("操作失败", isPresented: errorBinding) { Button("好") {} } message: { Text(store.errorMessage ?? "未知错误") }
         .background(Color.nativeSystemBackground.ignoresSafeArea())
-        .onChange(of: store.systemIntent) { intent in
+        .onChange(of: store.systemIntent) { _, intent in
             guard let intent else { return }
             onSystemIntent(intent) {
                 if let id = await store.publish() { onPublished(id) }

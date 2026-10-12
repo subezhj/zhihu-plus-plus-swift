@@ -505,12 +505,12 @@ struct DailyNativeView: View {
             .onAppear {
                 if scrollToTopRequest > 0 { scrollToTop(proxy, animated: false) }
             }
-            .onChange(of: scrollToTopRequest) { _ in scrollToTop(proxy, animated: true) }
+            .onChange(of: scrollToTopRequest) { scrollToTop(proxy, animated: true) }
             .task(id: isActiveChannel) {
                 guard isActiveChannel else { return }
                 await store.loadInitialIfNeeded()
             }
-            .onChange(of: isActiveChannel) { isActive in
+            .onChange(of: isActiveChannel) { _, isActive in
                 if !isActive {
                     navigationTask?.cancel()
                     supplementalLoadTask?.cancel()

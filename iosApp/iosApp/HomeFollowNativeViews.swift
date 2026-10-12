@@ -207,7 +207,7 @@ struct NativeRootLargeTitle: View {
                 latestMinY = minY
                 reportCollapseProgress(minY: minY)
             }
-            .onChange(of: isActive) { active in
+            .onChange(of: isActive) { _, active in
                 guard active, latestMinY.isFinite else { return }
                 reportCollapseProgress(minY: latestMinY)
             }
@@ -371,7 +371,7 @@ struct HomeNativeView: View {
                 // scroll position. New requests are handled by onChange below.
                 observedScrollToTopRequest = scrollToTopRequest
             }
-            .onChange(of: scrollToTopRequest) { newRequest in
+            .onChange(of: scrollToTopRequest) { _, newRequest in
                 let shouldScroll = NativeScrollToTopRequestPolicy.shouldHandleChange(
                     previousRequest: observedScrollToTopRequest,
                     newRequest: newRequest
@@ -381,7 +381,7 @@ struct HomeNativeView: View {
                     scrollToTop(proxy, animated: true)
                 }
             }
-            .onChange(of: store.refreshFeedbackSequence) { _ in
+            .onChange(of: store.refreshFeedbackSequence) {
                 guard isActiveChannel else { return }
                 hapticFeedback(.refreshSucceeded)
             }
@@ -507,7 +507,7 @@ struct FollowNativeView: View {
             .onAppear {
                 if scrollToTopRequest > 0 { scrollToTop(proxy, animated: false) }
             }
-            .onChange(of: scrollToTopRequest) { _ in scrollToTop(proxy, animated: true) }
+            .onChange(of: scrollToTopRequest) { scrollToTop(proxy, animated: true) }
         }
         .navigationTitle("")
         .task(id: NativeChannelTaskIdentity(
@@ -539,7 +539,7 @@ struct FollowNativeView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 4)
 
-                ScrollView(.horizontal, showsIndicators: false) {
+                ScrollView(.horizontal) {
                     LazyHStack(spacing: 16) {
                         ForEach(store.recentUsers) { user in
                             Button {
@@ -575,6 +575,7 @@ struct FollowNativeView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 6)
                 }
+                .scrollIndicators(.hidden)
                 .nativeChannelSwipeExclusion()
             }
             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 6, trailing: 0))

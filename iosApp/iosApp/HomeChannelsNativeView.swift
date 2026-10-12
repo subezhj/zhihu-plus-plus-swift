@@ -115,7 +115,7 @@ struct HomeChannelsNativeView: View {
             transitionOperationalVisibility(to: false)
             cancelDoubleTapRefresh()
         }
-        .onChange(of: selectedChannelID) { newChannelID in
+        .onChange(of: selectedChannelID) { _, newChannelID in
             guard newChannelID != lastSelectedChannelID else { return }
             cancelDoubleTapRefresh()
             if wasOperationallyVisible,
@@ -127,14 +127,14 @@ struct HomeChannelsNativeView: View {
                 scheduleIdleRefreshIfNeeded(for: selectedChannel)
             }
         }
-        .onChange(of: isOperationallyVisible) { _ in
+        .onChange(of: isOperationallyVisible) {
             synchronizeOperationalVisibility()
         }
-        .onChange(of: doubleTapRefreshRequest) { request in
+        .onChange(of: doubleTapRefreshRequest) { _, request in
             guard request > 0 else { return }
             scheduleDoubleTapRefresh()
         }
-        .onChange(of: scenePhase) { _ in
+        .onChange(of: scenePhase) {
             synchronizeOperationalVisibility()
         }
         .task {

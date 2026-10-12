@@ -144,7 +144,7 @@ struct QuestionNativeView: View {
                     }
 
                     if !question.topics.isEmpty {
-                        ScrollView(.horizontal, showsIndicators: false) {
+                        ScrollView(.horizontal) {
                             HStack(spacing: 8) {
                                 ForEach(question.topics) { topic in
                                     if let url = topic.url {
@@ -161,6 +161,7 @@ struct QuestionNativeView: View {
                                 }
                             }
                         }
+                        .scrollIndicators(.hidden)
                     }
 
                     QAQuestionStats(question: question)

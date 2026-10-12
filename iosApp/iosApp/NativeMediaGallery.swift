@@ -43,7 +43,7 @@ struct NativeMediaGallery: View {
 
                     // Apple 官方分页：ScrollView + LazyHStack + scrollTargetBehavior(.paging) + scrollPosition
                     // 惰性渲染仅可见页（解决多图 HStack 全量平铺卡顿）；缩放时 scrollDisabled 锁住翻页
-                    ScrollView(.horizontal, showsIndicators: false) {
+                    ScrollView(.horizontal) {
                         LazyHStack(spacing: 0) {
                             ForEach(urls.indices, id: \.self) { index in
                                 NativeZoomableRemoteImage(
@@ -60,6 +60,7 @@ struct NativeMediaGallery: View {
                         }
                         .scrollTargetLayout()
                     }
+                    .scrollIndicators(.hidden)
                     .scrollTargetBehavior(.paging)
                     .scrollPosition(id: $pageID)
                     .onChange(of: pageID) { _, newValue in

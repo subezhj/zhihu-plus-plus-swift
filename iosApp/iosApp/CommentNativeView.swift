@@ -188,7 +188,7 @@ private struct CommentLevelView: View {
         }
         .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
         .background(CommentScrollViewAccessor { scrollView = $0 })
-        .onChange(of: store.scrollToStartLevel) { target in
+        .onChange(of: store.scrollToStartLevel) { _, target in
             guard target == level else { return }
             DispatchQueue.main.async {
                 guard let scrollView else { return }
@@ -530,7 +530,7 @@ private struct CommentRow: View {
 
                 // 评论图片
                 if !comment.media.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
+                    ScrollView(.horizontal) {
                         HStack(spacing: 8) {
                             ForEach(comment.media) { media in
                                 Button { store.openMedia(commentID: comment.id, mediaID: media.id) } label: {
@@ -562,6 +562,7 @@ private struct CommentRow: View {
                             }
                         }
                     }
+                    .scrollIndicators(.hidden)
                     .padding(.leading, 42)
                 }
 
@@ -644,10 +645,10 @@ private struct CommentComposerBar: View {
             }
         }
         .animation(.easeOut(duration: 0.18), value: store.composerPresentation.isActive(for: level))
-        .onChange(of: store.composerPresentation) { presentation in
+        .onChange(of: store.composerPresentation) { _, presentation in
             isDraftFocused = presentation.isActive(for: level)
         }
-        .onChange(of: selectedPhotoItem) { newItem in
+        .onChange(of: selectedPhotoItem) { _, newItem in
             guard let newItem else { return }
             Task {
                 do {
