@@ -417,44 +417,75 @@ struct OfflineReaderView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     List(comments) { comment in
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack(spacing: 9) {
-                                AsyncImage(url: comment.author.avatarURL) { image in
-                                    image.resizable().scaledToFill()
-                                } placeholder: {
-                                    Image(systemName: "person.crop.circle.fill").resizable().foregroundStyle(.tertiary)
+                        VStack(alignment: .leading, spacing: 0) {
+                            VStack(alignment: .leading, spacing: 10) {
+                                HStack(alignment: .top, spacing: 10) {
+                                    AsyncImage(url: comment.author.avatarURL) { image in
+                                        image.resizable().scaledToFill()
+                                    } placeholder: {
+                                        Image(systemName: "person.crop.circle.fill")
+                                            .resizable()
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .frame(width: 32, height: 32)
+                                    .clipShape(Circle())
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(comment.author.displayName)
+                                            .font(NativeTypography.authorName(scale: contentPresentation.fontScale))
+                                            .foregroundStyle(.primary)
+
+                                        HStack(spacing: 4) {
+                                            Text(Date(timeIntervalSince1970: TimeInterval(comment.createdTimeSeconds)).formatted(date: .abbreviated, time: .shortened))
+                                                .font(NativeTypography.caption(scale: contentPresentation.fontScale))
+                                                .foregroundStyle(.secondary)
+
+                                            if let ip = comment.ipLocation, !ip.isEmpty {
+                                                Text("·")
+                                                    .font(NativeTypography.caption(scale: contentPresentation.fontScale))
+                                                    .foregroundStyle(.tertiary)
+                                                Text(ip.hasPrefix("IP 属地") ? ip : "IP 属地\(ip)")
+                                                    .font(NativeTypography.caption(scale: contentPresentation.fontScale))
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                        }
+                                    }
+
+                                    Spacer(minLength: 8)
+
+                                    if comment.likeCount > 0 {
+                                        HStack(spacing: 3) {
+                                            Image(systemName: "heart")
+                                                .font(.system(size: 13, weight: .medium))
+                                                .foregroundStyle(.secondary)
+                                            Text("\(comment.likeCount)")
+                                                .font(NativeTypography.caption2(scale: contentPresentation.fontScale))
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 4)
+                                    }
                                 }
-                                .frame(width: 28, height: 28)
-                                .clipShape(Circle())
 
-                                Text(comment.author.displayName)
-                                    .font(.subheadline.weight(.semibold))
-
-                                Spacer()
-
-                                if comment.likeCount > 0 {
-                                    Label("\(comment.likeCount)", systemImage: "hand.thumbsup")
-                                        .font(.caption2.monospacedDigit())
-                                        .foregroundStyle(.secondary)
-                                }
+                                // 评论文本内容（与回答页标准字号和动态缩放保持一致）
+                                Text(QARichContentParser.plainText(comment.contentHTML))
+                                    .font(NativeTypography.body(scale: contentPresentation.fontScale))
+                                    .foregroundStyle(.primary)
+                                    .lineSpacing(contentPresentation.extraLineSpacing(for: 15.5 * contentPresentation.fontScale))
+                                    .textSelection(.enabled)
+                                    .padding(.leading, 42)
                             }
+                            .padding(.vertical, 10)
 
-                            // 评论文本内容
-                            Text(QARichContentParser.plainText(comment.contentHTML))
-                                .font(.subheadline)
-                                .foregroundStyle(.primary)
-
-                            HStack {
-                                if let ip = comment.ipLocation, !ip.isEmpty {
-                                    Text("IP属地: \(ip)")
-                                }
-                                Text(Date(timeIntervalSince1970: TimeInterval(comment.createdTimeSeconds)).formatted(date: .abbreviated, time: .shortened))
-                            }
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
+                            NativeThinDivider()
                         }
-                        .padding(.vertical, 4)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.nativeSystemBackground)
                     }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .background(Color.nativeSystemGroupedBackground.ignoresSafeArea())
                 }
             }
             .navigationTitle("热门评论 (\(comments.count))")

@@ -217,6 +217,17 @@ private struct CommentLevelView: View {
                     .accessibilityIdentifier(level == .root ? "comment_close" : "comment_reply_close")
                 }
             }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    store.beginComment(level: level)
+                } label: {
+                    Image(systemName: "square.and.pencil")
+                        .font(.system(size: 17, weight: .semibold))
+                }
+                .accessibilityLabel(level == .root ? "写评论" : "写回复")
+                .accessibilityIdentifier("comment_toolbar_compose")
+            }
         }
         .accessibilityIdentifier(level == .root ? "comment_root" : "comment_direct_replies")
         .sheet(item: $posterDocument) { document in
@@ -639,9 +650,6 @@ private struct CommentComposerBar: View {
             if store.composerPresentation.isActive(for: level) {
                 activeComposer
                     .transition(.move(edge: .bottom).combined(with: .opacity))
-            } else {
-                collapsedComposer
-                    .transition(.opacity)
             }
         }
         .animation(.easeOut(duration: 0.18), value: store.composerPresentation.isActive(for: level))
@@ -678,35 +686,6 @@ private struct CommentComposerBar: View {
         } message: {
             Text(photoError ?? "请稍后重试")
         }
-    }
-
-    private var collapsedComposer: some View {
-        Button {
-            store.beginComment(level: level)
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "square.and.pencil")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Color.accentColor)
-                Text(level == .root ? "写评论，发表你的看法…" : "回复这条评论…")
-                    .font(.system(size: 15))
-                    .foregroundStyle(.secondary)
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-            .frame(minHeight: 44)
-            .background(Color.nativeSecondarySystemGroupedBackground, in: Capsule())
-            .overlay(
-                Capsule()
-                    .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
-            )
-            .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 6)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("comment_composer_open")
     }
 
     private var activeComposer: some View {
