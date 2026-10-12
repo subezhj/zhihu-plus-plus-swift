@@ -61,22 +61,14 @@ struct AnswerNativeView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(content.questionID == nil)
-                    .padding(.bottom, 4)
-
-                    Divider()
-                        .opacity(0.6)
-                        .padding(.vertical, 2)
+                    .padding(.bottom, 2)
                 } else {
                     Text(content.title)
                         .font(.title2.bold())
                         .fixedSize(horizontal: false, vertical: true)
                         .textSelection(.enabled)
                         .lineSpacing(4)
-                        .padding(.bottom, 4)
-
-                    Divider()
-                        .opacity(0.6)
-                        .padding(.vertical, 2)
+                        .padding(.bottom, 2)
                 }
 
                 QAAuthorRow(author: content.author) {
@@ -114,7 +106,7 @@ struct AnswerNativeView: View {
                 }
 
                 Divider()
-                    .opacity(0.6)
+                    .opacity(0.3)
                     .padding(.vertical, 4)
 
                 QABodyView(
@@ -145,7 +137,7 @@ struct AnswerNativeView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.bottom, 76)
+                .padding(.bottom, 96)
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
@@ -253,6 +245,9 @@ private struct QAAuthorRow: View {
                 Spacer()
                 Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
             }
+            .padding(.vertical, 4)
+            .padding(.horizontal, 6)
+            .background(Color.primary.opacity(0.02), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -384,7 +379,7 @@ private struct QACollectionsSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Group {
                 if store.collections.isEmpty {
                     switch store.collectionsState {
@@ -422,12 +417,12 @@ private struct QACollectionsSheet: View {
             .navigationTitle("收藏到")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .confirmationAction) {
                     Button("完成") { dismiss() }
+                        .fontWeight(.semibold)
                 }
             }
         }
-        .navigationViewStyle(.stack)
         .modifier(QACollectionSheetPresentationModifier())
     }
 }
