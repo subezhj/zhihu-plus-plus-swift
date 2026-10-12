@@ -2,7 +2,7 @@ import SwiftUI
 
 struct OfflineReaderView: View {
     let questionID: Int64
-    var onOpenOnline: ((AnswerRoutePayload) -> Void)? = nil
+    var onOpenOnline: ((AnswerRouteDTO) -> Void)? = nil
     @State private var package: OfflineQuestionPackage?
     @State private var selectedIndex: Int = 0
     @State private var isDetailExpanded = false
